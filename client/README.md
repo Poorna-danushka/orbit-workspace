@@ -1,6 +1,6 @@
-# SmartTask AI Frontend
+# Orbit Frontend
 
-This repository contains the frontend for the SmartTask AI project — a task and project management dashboard built with Next.js and React.
+This repository contains the frontend for the Orbit project — a task and project management dashboard built with Next.js and React.
 
 ## Overview
 

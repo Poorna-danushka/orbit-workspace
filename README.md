@@ -1,4 +1,4 @@
-# SmartTask AI - Intelligent Task & Project Management
+# Orbit - Intelligent Task & Project Management
 
 A comprehensive AI-powered task management and project planning platform with real-time collaboration, analytics, and intelligent automation.
 
@@ -16,26 +16,27 @@ A comprehensive AI-powered task management and project planning platform with re
 
 ## 🎯 Project Overview
 
-SmartTask AI is a full-stack application designed to help teams and individuals manage projects and tasks efficiently with AI-powered insights and real-time collaboration features.
+**Orbit** is a full-stack application designed to help teams and individuals manage projects and tasks efficiently with AI-powered insights, Kanban workflows, and real-time collaboration.
 
-**Frontend**: React + Next.js application with modern UI/UX
-**Backend**: Express.js API with PostgreSQL database
+**Frontend**: React 18 + Next.js 16 (App Router) application with modern dark-mode UI/UX  
+**Backend**: Express.js REST API with MongoDB database via Prisma ORM  
 
 ## ✨ Features
 
 ### User Features
 - 📊 **Dashboard**: Overview of projects, tasks, and analytics
 - 📁 **Project Management**: Create, edit, and organize projects with collaborative team rosters
-- ✅ **Task Management**: Kanban board with interactive drag-and-drop, task lists, and details
+- ✅ **Task Management**: Interactive Kanban board with drag-and-drop, task lists, and priority tagging
+- 🧠 **AI Analytics**: Intelligent task workload summaries and focus area recommendations
 - 📈 **Analytics**: Productivity metrics and progress tracking
 - 🔔 **Notifications**: Real-time task updates and mentions via WebSockets
 - 👤 **Profile Management**: User profile customization and custom avatar uploads
 - 🔑 **Password Recovery**: Secure forgot-password email requests and reset-password validation flows
-- 🔍 **Global Search**: Search across tasks and projects
+- 🔍 **Global Search**: Deep search across tasks and projects
 - 📎 **File Attachments**: Upload, display, and manage files on individual tasks
 
 ### Admin Features
-- 👥 **User Management**: View, delete, and modify user roles in a comprehensive users list with actual avatar support
+- 👥 **User Management**: View, delete, and modify user roles in a comprehensive users list with avatar support
 - 📊 **System Analytics**: Platform-wide analytics, user sign-up counts, and project stats
 - 📢 **Global Broadcast**: Send real-time announcements/notifications to all active users
 - 📁 **Platform Audit**: Complete project listing and administrative oversight
@@ -77,13 +78,12 @@ NextJS App Router
 ### State Management
 - **Redux Toolkit**: Centralized state management for auth, user data
 - **Custom Hooks**: Reusable logic for common operations
-- **Local Storage**: Client-side caching (with security considerations)
 - **Cookies**: Secure token persistence with HTTP-only flags
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **UI Library**: React 18
 - **Styling**: Tailwind CSS
 - **State Management**: Redux Toolkit
@@ -91,12 +91,11 @@ NextJS App Router
 - **Charts**: Recharts for analytics
 - **Icons**: Lucide Icons
 - **Type Safety**: TypeScript
-- **Code Quality**: ESLint
 
 ### Backend
 - **Runtime**: Node.js
 - **Framework**: Express.js
-- **Database**: PostgreSQL with Prisma ORM
+- **Database**: MongoDB with Prisma ORM
 - **Authentication**: JWT (Access & Refresh tokens)
 - **Real-time**: Socket.io
 - **File Upload**: Multer
@@ -105,42 +104,31 @@ NextJS App Router
 ## 📁 Project Structure
 
 ```
-aitask/
+orbit/
 ├── client/                          # Next.js Frontend
 │   ├── src/
 │   │   ├── app/                    # App Router pages
 │   │   │   ├── admin_features/     # Admin dashboard pages
 │   │   │   ├── user_features/      # User dashboard pages
 │   │   │   ├── login/              # Login page
-│   │   │   ├── register/           # Registration page
+   │   │   ├── register/           # Registration page
 │   │   │   ├── admin-login/        # Admin login page
 │   │   │   ├── homepage/           # Home page
 │   │   │   ├── layout.tsx          # Root layout
 │   │   │   └── page.tsx            # Index page
 │   │   ├── components/             # Reusable components
-│   │   │   ├── kanban/            # Kanban board components
-│   │   │   ├── ui/                # UI components
-│   │   │   └── providers/         # App providers
 │   │   ├── lib/                   # Utilities & helpers
-│   │   │   ├── axios.ts           # Axios instance with interceptors
-│   │   │   ├── adminAxios.ts      # Admin axios instance
-│   │   │   ├── tokenStorage.ts    # Cookie-based token management
-│   │   │   └── api/               # API service files
 │   │   └── store/                 # Redux store
-│   │       ├── index.ts
-│   │       └── slices/            # Redux slices
 │   ├── public/                     # Static assets
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── next.config.ts
+│   └── package.json
 ├── server/                          # Express Backend
 │   ├── src/
 │   │   ├── controllers/           # Route handlers
 │   │   ├── routes/                # API routes
 │   │   ├── middlewares/           # Auth & custom middleware
-│   │   ├── services/              # Business logic
+│   │   ├── services/              # Business logic (AI, etc.)
 │   │   └── utils/                 # Utilities
-│   ├── prisma/                    # Database schema
+│   ├── prisma/                    # MongoDB schema
 │   └── package.json
 └── README.md
 ```
@@ -149,7 +137,7 @@ aitask/
 
 ### Prerequisites
 - Node.js 18+
-- PostgreSQL 12+
+- MongoDB (Atlas Cluster or local MongoDB instance)
 - npm or yarn
 
 ### Frontend Setup
@@ -172,7 +160,7 @@ npm run dev
 ```
 
 4. **Open application**:
-Navigate to http://localhost:3000
+Navigate to [http://localhost:3000](http://localhost:3000)
 
 ### Backend Setup
 
@@ -182,15 +170,9 @@ cd server
 npm install
 ```
 
-2. **Setup PostgreSQL database**:
-```bash
-# Create database
-createdb smarttask_ai
-```
-
-3. **Configure environment** (`.env`):
+2. **Configure environment** (`.env`):
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/smarttask_ai
+DATABASE_URL=mongodb+srv://user:password@cluster0.mongodb.net/orbit?retryWrites=true&w=majority
 JWT_SECRET=your-secret-key
 JWT_REFRESH_SECRET=your-refresh-secret
 CLIENT_URL=http://localhost:3000
@@ -198,12 +180,13 @@ NODE_ENV=development
 PORT=5000
 ```
 
-4. **Run migrations**:
+3. **Generate Prisma Client & Push Collections**:
 ```bash
-npx prisma migrate dev
+npx prisma generate
+npx prisma db push
 ```
 
-5. **Start server**:
+4. **Start server**:
 ```bash
 npm start
 ```
@@ -218,22 +201,13 @@ npm run dev      # Start development server
 npm run build    # Build for production
 npm start        # Start production server
 npm run lint     # Run ESLint
-npm run type-check # TypeScript type checking
 ```
 
 **Backend**:
 ```bash
 npm start        # Start server
 npm run dev      # Start with nodemon
-npm test         # Run tests
 ```
-
-### Code Standards
-- Follow ESLint configuration
-- Use TypeScript for type safety
-- Write meaningful commit messages
-- Add comments for complex logic
-- Test before committing
 
 ## 🔐 Authentication & Security
 
@@ -266,27 +240,6 @@ npm test         # Run tests
 - ✅ Type-safe error handling
 - ✅ CORS enabled for safe cross-origin requests
 
-## 🔗 API Integration
-
-### Token Storage (tokenStorage.ts)
-Centralized cookie management for non-sensitive user metadata (JWT tokens are set as server-only `HttpOnly` cookies and are not accessible by JavaScript):
-```typescript
-saveAuthTokens(user, _isAdmin?)  // Saves user metadata in 'userInfo' cookie
-clearAuthTokens(_isAdmin?)      // Clears user metadata cookie
-getStoredUser(_isAdmin?)        // Reads user metadata from cookie
-isAdminSession()                // Checks if stored user is an admin
-getAccessToken(_isAdmin?)       // Returns null (handled via HttpOnly cookies)
-getRefreshToken(_isAdmin?)      // Returns null (handled via HttpOnly cookies)
-```
-
-### Axios Instances
-- **User API** (`lib/axios.ts`): For user requests with auto token refresh (cookies sent automatically)
-- **Admin API** (`lib/adminAxios.ts`): For admin-only requests (cookies sent automatically)
-
-### Interceptors
-- **Request Interceptor**: Extracts the `csrfToken` cookie and injects it as an `X-CSRF-Token` header for state-changing requests to prevent CSRF attacks.
-- **Response Interceptor**: Catches `401 Unauthorized` responses and fires a unified silent refresh request to the `/refresh` endpoint. It uses a shared refresh promise pattern to prevent multiple concurrent API failures from initiating duplicate token refreshes.
-
 ## 📚 Available Routes
 
 ### User Routes
@@ -314,21 +267,6 @@ getRefreshToken(_isAdmin?)      // Returns null (handled via HttpOnly cookies)
 - `/forgot-password` - Request a password reset link
 - `/reset-password` - Reset password using validation token
 
-## 🤝 Contributing
-
-1. Create a feature branch: `git checkout -b feature/your-feature`
-2. Make your changes with meaningful commits
-3. Push to your branch: `git push origin feature/your-feature`
-4. Open a Pull Request
-
 ## 📝 License
 
 MIT License - see LICENSE file for details
-
-## 📞 Support
-
-For issues and questions, please create an issue in the repository.
-
----
-
-**Last Updated**: June 2026

@@ -19,7 +19,7 @@ export default function Home() {
           <Link href="/homepage" className="flex items-center gap-2 min-w-0 group">
             <BrainCircuit className="w-6 h-6 sm:w-7 sm:h-7 text-purple-400 group-hover:text-purple-300 transition-colors shrink-0" />
             <span className="text-base sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400 whitespace-nowrap group-hover:from-purple-300 group-hover:to-blue-300 transition-all">
-              SmartTask AI
+              Orbit
             </span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
@@ -55,7 +55,7 @@ export default function Home() {
         </h1>
 
         <p className="text-sm sm:text-lg md:text-xl text-gray-400 max-w-2xl mb-8 sm:mb-12 leading-relaxed px-2">
-          SmartTask AI is a professional productivity platform that combines powerful project management with cutting-edge AI to help your team work smarter, not harder.
+          Orbit is a professional productivity platform that combines powerful project management with cutting-edge AI to help your team work smarter, not harder.
         </p>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">

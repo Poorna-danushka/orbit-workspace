@@ -47,8 +47,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   /* ── auth rehydration ── */
   useEffect(() => {
     const storedUser = getStoredUser();
-    // Only restore session if the stored user is a regular (non-admin) user
-    if (storedUser && storedUser.role !== 'admin' && !isAuthenticated) {
+    if (storedUser && !isAuthenticated) {
       dispatch(setCredentials({ user: storedUser }));
     }
     setTimeout(() => setHydrated(true), 0);
@@ -169,7 +168,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <span className="font-bold text-sm bg-clip-text text-transparent
                            bg-gradient-to-r from-purple-400 to-blue-400">
-            SmartTask AI
+            Orbit
           </span>
         </div>
 
@@ -219,7 +218,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <span className="font-bold text-sm bg-clip-text text-transparent
                            bg-gradient-to-r from-purple-400 to-blue-400">
-            SmartTask AI
+            Orbit
           </span>
           <button
             className="ml-auto md:hidden p-1 rounded-lg text-gray-600 hover:text-gray-300

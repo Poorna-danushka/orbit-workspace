@@ -226,8 +226,11 @@ export default function Projects() {
 
   useEffect(() => { fetchProjects(); }, [fetchProjects]);
 
+  const [formError, setFormError] = useState<string | null>(null);
+
   const openCreate = () => {
     setEditProject(null);
+    setFormError(null);
     setForm({ title: '', description: '', status: 'active' });
     setIsModalOpen(true);
   };
@@ -235,6 +238,7 @@ export default function Projects() {
   const openEdit = (e: React.MouseEvent, project: Project) => {
     e.preventDefault(); e.stopPropagation();
     setEditProject(project);
+    setFormError(null);
     setForm({ title: project.title, description: project.description || '', status: project.status });
     setIsModalOpen(true);
   };
@@ -242,6 +246,7 @@ export default function Projects() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setFormError(null);
     try {
       if (editProject) {
         await api.put(`/projects/${editProject.id}`, form);
@@ -251,8 +256,9 @@ export default function Projects() {
         setProjects(prev => [res.data, ...prev]);
       }
       setIsModalOpen(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Submit failed', err);
+      setFormError(err.response?.data?.message || 'Failed to save project');
     } finally {
       setSubmitting(false);
     }
@@ -464,6 +470,11 @@ export default function Projects() {
                 <X className="w-5 h-5" />
               </button>
             </div>
+            {formError && (
+              <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                {formError}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm text-gray-400 mb-1.5">Project Name *</label>

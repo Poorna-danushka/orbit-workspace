@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SmartTask AI - Productivity Reimagined",
-  description: "AI-Powered Task Management System",
+  title: "Orbit - Productivity & Project Intelligence",
+  description: "Next-Generation AI Task & Project Management Workspace",
 };
 
 export default function RootLayout({
