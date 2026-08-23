@@ -1,29 +1,6 @@
 const crypto = require('crypto');
 
 /**
- * Custom Cookie Parser Middleware
- * Parses incoming Request Cookie headers and populates req.cookies.
- */
-const cookieParser = (req, res, next) => {
-  const list = {};
-  const cookieHeader = req.headers.cookie;
-  if (cookieHeader) {
-    cookieHeader.split(';').forEach((cookie) => {
-      const parts = cookie.split('=');
-      const name = parts.shift().trim();
-      const value = parts.join('=');
-      try {
-        list[name] = decodeURIComponent(value);
-      } catch {
-        list[name] = value;
-      }
-    });
-  }
-  req.cookies = list;
-  next();
-};
-
-/**
  * CSRF Token Handlers
  * Implements stateless Double-Submit Cookie Pattern.
  */
@@ -77,7 +54,6 @@ const csrfProtection = (req, res, next) => {
 };
 
 module.exports = {
-  cookieParser,
   csrfTokenSetter,
   csrfProtection
 };

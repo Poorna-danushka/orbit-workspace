@@ -2,12 +2,7 @@ const prisma = require('../config/prisma');
 const { verifyAccessToken } = require('../utils/token.util');
 
 const verifyAdmin = async (req, res, next) => {
-  const cookies = req.cookies || {};
-  // Use unified cookie name; also accept legacy names for backward compatibility
-  const token =
-    cookies.accessToken ||
-    cookies.adminAccessToken ||
-    cookies.userAccessToken;
+  const token = req.cookies?.accessToken;
 
   if (!token) {
     return res.status(401).json({ message: 'No authorization token provided' });
@@ -22,7 +17,7 @@ const verifyAdmin = async (req, res, next) => {
       return res.status(403).json({ message: 'Admin access required' });
     }
 
-    req.user = { userId, role: decoded.role };
+    req.user = { userId, role: user.role };
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Invalid or expired admin token' });

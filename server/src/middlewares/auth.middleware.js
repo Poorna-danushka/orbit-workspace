@@ -1,12 +1,7 @@
 const { verifyAccessToken } = require('../utils/token.util');
 
 const verifyToken = (req, res, next) => {
-  const cookies = req.cookies || {};
-  // Use unified cookie name; also accept legacy names for backward compatibility
-  const token =
-    cookies.accessToken ||
-    cookies.userAccessToken ||
-    cookies.adminAccessToken;
+  const token = req.cookies?.accessToken;
 
   if (!token) {
     return res.status(401).json({ message: 'No authorization token provided' });

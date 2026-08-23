@@ -42,8 +42,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       // 2. Validate backend session with HttpOnly cookies
       try {
         const res = await api.get('/user/me');
-        if (res.data?.user && res.data.user.role === 'admin') {
-          dispatch(setCredentials({ user: res.data.user }));
+        const currentUser = res.data?.user || res.data;
+        if (currentUser && currentUser.role === 'admin') {
+          dispatch(setCredentials({ user: currentUser }));
           setChecking(false);
         } else {
           dispatch(logout());

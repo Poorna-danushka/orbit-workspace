@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const prisma = require('../config/prisma');
 const {
@@ -31,9 +32,6 @@ const clearAllAuthCookies = (res) => {
   };
   res.clearCookie('accessToken', opts);
   res.clearCookie('refreshToken', opts);
-  // Also clear with default options just in case
-  res.clearCookie('accessToken', { path: '/' });
-  res.clearCookie('refreshToken', { path: '/' });
 };
 
 /** Set auth cookies using unified names */
@@ -66,7 +64,6 @@ exports.register = async (req, res) => {
     });
 
     const accessToken = generateAccessToken(user);
-    clearAllAuthCookies(res);
     setAuthCookies(res, accessToken, refreshPayload.token);
 
     res.status(201).json({
@@ -99,8 +96,6 @@ exports.login = async (req, res) => {
     });
 
     const accessToken = generateAccessToken(user);
-    // Always clear ALL old session cookies first to avoid cookie conflicts
-    clearAllAuthCookies(res);
     setAuthCookies(res, accessToken, refreshPayload.token);
 
     res.json({
@@ -113,13 +108,53 @@ exports.login = async (req, res) => {
   }
 };
 
+exports.googleAuth = async (req, res) => {
+  try {
+    const { email, displayName, photoURL } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required from Google authentication' });
+    }
+
+    let user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      const randomPassword = crypto.randomBytes(32).toString('hex');
+      const hashedPassword = await bcrypt.hash(randomPassword, 12);
+      user = await prisma.user.create({
+        data: {
+          email,
+          username: displayName || email.split('@')[0],
+          password: hashedPassword,
+          avatar: photoURL || null,
+          role: 'user',
+        },
+      });
+    }
+
+    const refreshPayload = generateRefreshToken(user);
+    await prisma.refreshToken.create({
+      data: {
+        userId: user.id,
+        tokenHash: refreshPayload.tokenHash,
+        expiresAt: refreshPayload.expiresAt,
+      },
+    });
+
+    const accessToken = generateAccessToken(user);
+    setAuthCookies(res, accessToken, refreshPayload.token);
+
+    res.json({
+      message: 'Google login successful',
+      user: { id: user.id, username: user.username, email: user.email, role: user.role, avatar: user.avatar ?? null },
+    });
+  } catch (error) {
+    console.error('Google auth error:', error);
+    res.status(500).json({ message: 'Server error during Google authentication' });
+  }
+};
+
 exports.refresh = async (req, res) => {
   try {
-    // Support both unified and legacy cookie names during transition
-    const refreshToken =
-      req.cookies.refreshToken ||
-      req.cookies.userRefreshToken ||
-      req.cookies.adminRefreshToken;
+    const refreshToken = req.cookies?.refreshToken;
 
     if (!refreshToken) {
       return res.status(401).json({ message: 'Refresh token is required' });
@@ -155,8 +190,6 @@ exports.refresh = async (req, res) => {
     ]);
 
     const nextAccessToken = generateAccessToken(user);
-    // Always write using unified names and clear legacy ones
-    clearAllAuthCookies(res);
     setAuthCookies(res, nextAccessToken, nextRefresh.token);
 
     res.json({
@@ -171,20 +204,19 @@ exports.refresh = async (req, res) => {
 
 exports.logout = async (req, res) => {
   try {
-    const userId = req.user?.userId;
-    if (!userId) {
-      return res.status(401).json({ message: 'Authorization required' });
-    }
-
-    const refreshToken =
-      req.cookies.refreshToken ||
-      req.cookies.userRefreshToken ||
-      req.cookies.adminRefreshToken;
+    const refreshToken = req.cookies?.refreshToken;
+    let userId = req.user?.userId;
 
     if (refreshToken) {
+      try {
+        const decoded = verifyRefreshToken(refreshToken);
+        if (!userId) userId = decoded.sub || decoded.userId;
+      } catch {}
       const tokenHash = hashToken(refreshToken);
-      await prisma.refreshToken.updateMany({ where: { tokenHash, userId }, data: { revokedAt: new Date() } });
-    } else {
+      await prisma.refreshToken.updateMany({ where: { tokenHash }, data: { revokedAt: new Date() } });
+    }
+
+    if (userId) {
       await prisma.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } });
     }
 
@@ -192,7 +224,8 @@ exports.logout = async (req, res) => {
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
     console.error('Logout error:', error);
-    res.status(500).json({ message: 'Server error' });
+    clearAllAuthCookies(res);
+    res.json({ message: 'Logged out successfully' });
   }
 };
 

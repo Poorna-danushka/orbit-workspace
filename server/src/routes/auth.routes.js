@@ -25,6 +25,7 @@ router.post('/login', validate([
   body('password').exists().withMessage('Password is required'),
 ]), authController.login);
 
+router.post('/google', authController.googleAuth);
 router.post('/refresh', authController.refresh);
 
 router.post('/forgot-password', validate([
@@ -36,6 +37,6 @@ router.post('/reset-password', validate([
   body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters'),
 ]), authController.resetPassword);
 
-router.post('/logout', verifyToken, authController.logout);
+router.post('/logout', authController.logout);
 
 module.exports = router;

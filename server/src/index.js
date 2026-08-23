@@ -21,8 +21,8 @@ const searchRoutes = require('./routes/search.routes');
 // Socket manager
 const { initSocket } = require('./sockets/socketManager');
 
-// Security middlewares
-const { cookieParser, csrfTokenSetter, csrfProtection } = require('./middlewares/security.middleware');
+const cookieParser = require('cookie-parser');
+const { csrfTokenSetter, csrfProtection } = require('./middlewares/security.middleware');
 
 const app = express();
 const server = http.createServer(app);
@@ -51,7 +51,7 @@ app.use(cors({
   optionsSuccessStatus: 204,
 }));
 
-app.use(cookieParser);
+app.use(cookieParser());
 app.use(csrfTokenSetter);
 app.use(csrfProtection);
 app.use(express.json({ limit: '1mb' }));

@@ -13,4 +13,5 @@ export interface RegisterPayload {
 
 export const login = (payload: LoginPayload) => api.post('/auth/login', payload);
 export const register = (payload: RegisterPayload) => api.post('/auth/register', payload);
-export const refresh = (refreshToken: string) => api.post('/auth/refresh', { refreshToken });
+export const refresh = () => api.post('/auth/refresh');
+export const logout = () => api.post('/auth/logout');

@@ -36,6 +36,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_URL || `${serverUrl}/api`;
  */
 const api = axios.create({
   baseURL,
+  withCredentials: true,
 });
 
 api.defaults.withCredentials = true;
@@ -66,24 +67,6 @@ api.interceptors.request.use(
  * Response Interceptor
  * 
  * Handles authentication errors and automatic token refresh.
- * 
- * Process on 401 (Unauthorized) error:
- * 1. Check if request already attempted refresh (prevent infinite loops)
- * 2. Call /auth/refresh endpoint (HttpOnly cookies sent automatically)
- * 3. Get new user info from response
- * 4. Save new metadata to cookies
- * 5. Update Redux auth state
- * 6. Retry original request
- * 
- * On refresh failure:
- * 1. Clear all auth metadata from cookies
- * 2. Dispatch logout action (clear Redux state)
- * 3. User will be redirected to login on next page access
- * 
- * @param {import('axios').AxiosResponse} response - Successful response
- * @returns {import('axios').AxiosResponse} Response data
- * 
- * @throws {Error} Propagates original error if not 401 or refresh fails
  */
 let refreshPromise: Promise<any> | null = null;
 
@@ -100,8 +83,16 @@ api.interceptors.response.use(
     }
     const originalRequest = error.config;
 
-    // Only attempt refresh for 401 errors and if not already retrying
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthRoute =
+      originalRequest?.url?.includes('/auth/login') ||
+      originalRequest?.url?.includes('/auth/register') ||
+      originalRequest?.url?.includes('/auth/google') ||
+      originalRequest?.url?.includes('/auth/refresh') ||
+      originalRequest?.url?.includes('/auth/forgot-password') ||
+      originalRequest?.url?.includes('/auth/reset-password');
+
+    // Only attempt refresh for 401 errors on non-auth routes and if not already retrying
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthRoute) {
       originalRequest._retry = true;
       try {
         if (!refreshPromise) {

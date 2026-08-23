@@ -53,8 +53,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }
       try {
         const res = await api.get('/user/me');
-        if (res.data?.user) {
-          dispatch(setCredentials({ user: res.data.user }));
+        const currentUser = res.data?.user || res.data;
+        if (currentUser) {
+          dispatch(setCredentials({ user: currentUser }));
         }
       } catch (err) {
         if (!storedUser) {
@@ -66,7 +67,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }
     };
     initAuth();
-  }, [dispatch, isAuthenticated, router]);
+  }, [dispatch, router]);
 
   useEffect(() => {
     if (hydrated && !isAuthenticated) router.replace('/login');

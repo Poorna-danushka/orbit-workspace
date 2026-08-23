@@ -8,7 +8,7 @@ exports.getMe = async (req, res) => {
       select: { id: true, username: true, email: true, role: true, avatar: true, createdAt: true },
     });
     if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json(user);
+    res.json({ user, ...user });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
