@@ -26,6 +26,5 @@ module.exports = {
   JWT_ISSUER: process.env.JWT_ISSUER,
   JWT_AUDIENCE: process.env.JWT_AUDIENCE,
   CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:3000',
-  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   PORT: process.env.PORT || 5000,
 };

@@ -34,7 +34,7 @@ const csrfTokenSetter = (req, res, next) => {
     const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('csrfToken', csrfToken, {
       secure: isProduction,
-      sameSite: isProduction ? 'none' : 'strict',
+      sameSite: isProduction ? 'none' : 'lax',
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });

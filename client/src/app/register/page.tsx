@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import Link from 'next/link';
-import { User, Mail, Lock, Loader2, ArrowRight, ArrowLeft, BrainCircuit } from 'lucide-react';
+import { User, Mail, Lock, Loader2, ArrowRight, ArrowLeft, Layers } from 'lucide-react';
 import api from '@/lib/axios';
 import { AxiosError } from 'axios';
 import { setCredentials } from '@/store/slices/authSlice';
@@ -29,10 +29,14 @@ export default function Register() {
       const response = await api.post('/auth/register', { username, email, password });
       const { user } = response.data;
 
-      saveAuthTokens(user, false);
+      saveAuthTokens(user);
       dispatch(setCredentials({ user }));
 
-      router.push('/user_features/dashboard');
+      if (user.role === 'admin') {
+        router.push('/admin_features/dashboard');
+      } else {
+        router.push('/user_features/dashboard');
+      }
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
       const response = axiosError.response?.data as any;
@@ -55,9 +59,14 @@ export default function Register() {
         photoURL: gUser.photoURL,
       });
       const { user } = response.data;
-      saveAuthTokens(user, false);
+      saveAuthTokens(user);
       dispatch(setCredentials({ user }));
-      router.push('/user_features/dashboard');
+
+      if (user.role === 'admin') {
+        router.push('/admin_features/dashboard');
+      } else {
+        router.push('/user_features/dashboard');
+      }
     } catch (err: any) {
       console.error('Google registration failed:', err);
       setError(err?.response?.data?.message || err?.message || 'Google authentication failed');
@@ -91,7 +100,7 @@ export default function Register() {
               href="/homepage"
               className="inline-flex items-center justify-center gap-2 mb-2 group"
             >
-              <BrainCircuit className="w-6 h-6 text-blue-400 group-hover:text-blue-300 transition-colors" />
+              <Layers className="w-6 h-6 text-blue-400 group-hover:text-blue-300 transition-colors" />
               <h1 className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 group-hover:from-blue-300 group-hover:to-purple-300 transition-all">
                 Join Orbit
               </h1>

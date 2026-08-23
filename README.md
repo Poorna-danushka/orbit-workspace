@@ -1,4 +1,4 @@
-# Orbit - Intelligent Task & Project Management
+# Orbit - Collaborative Task & Project Management
 
 A modern, full-stack collaborative project and task management platform featuring real-time synchronization, Kanban workflows, role-based administration, Cloudinary media storage, and Firebase authentication.
 
@@ -93,7 +93,7 @@ Orbit-workspace/
 │   │   │   └── page.tsx                # Entry Redirection
 │   │   ├── components/                 # UI components
 │   │   ├── lib/                        # API clients, axios interceptors, token storage, firebase
-│   │   └── store/                      # Redux Toolkit Slices (auth, adminAuth, projects, tasks)
+│   │   └── store/                      # Redux Toolkit Slices (auth)
 │   └── package.json
 │
 ├── server/                              # Express.js Backend

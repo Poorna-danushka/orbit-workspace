@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Mail, Loader2, ArrowRight, ArrowLeft, BrainCircuit, CheckCircle2 } from 'lucide-react';
+import { Mail, Loader2, ArrowRight, ArrowLeft, Layers, CheckCircle2 } from 'lucide-react';
 import api from '@/lib/axios';
 
 export default function ForgotPassword() {
@@ -45,7 +45,7 @@ export default function ForgotPassword() {
         <div className="relative z-10">
           <div className="text-center mb-6 sm:mb-8">
             <div className="inline-flex items-center justify-center gap-2 mb-2 group">
-              <BrainCircuit className="w-6 h-6 text-purple-400" />
+              <Layers className="w-6 h-6 text-purple-400" />
               <h1 className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
                 Reset Password
               </h1>

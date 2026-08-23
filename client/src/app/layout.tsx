@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Orbit - Productivity & Project Intelligence",
-  description: "Next-Generation AI Task & Project Management Workspace",
+  title: "Orbit - Productivity & Project Management Workspace",
+  description: "Next-Generation Collaborative Task & Project Management Workspace",
 };
 
 export default function RootLayout({

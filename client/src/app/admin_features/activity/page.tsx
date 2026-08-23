@@ -5,7 +5,7 @@ import {
   Activity, UserPlus, FolderPlus, CheckCircle2,
   LogIn, Shield, Clock, Loader2, RefreshCw, Bell, Download, Wifi, WifiOff
 } from 'lucide-react';
-import adminApi from '@/lib/adminAxios';
+import api from '@/lib/axios';
 
 interface ActivityItem {
   type: string;
@@ -56,7 +56,7 @@ export default function AdminActivity() {
   const fetchActivity = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await adminApi.get('/admin/activity');
+      const res = await api.get('/admin/activity');
       setActivities(res.data);
     } catch (err) {
       console.error('Failed to fetch activity', err);

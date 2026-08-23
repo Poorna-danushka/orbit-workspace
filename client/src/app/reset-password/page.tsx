@@ -3,7 +3,7 @@
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Lock, Loader2, ArrowRight, ArrowLeft, BrainCircuit, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Lock, Loader2, ArrowRight, ArrowLeft, Layers, CheckCircle2, AlertCircle } from 'lucide-react';
 import api from '@/lib/axios';
 
 function ResetPasswordForm() {
@@ -170,7 +170,7 @@ export default function ResetPassword() {
         <div className="relative z-10">
           <div className="text-center mb-6 sm:mb-8">
             <div className="inline-flex items-center justify-center gap-2 mb-2 group">
-              <BrainCircuit className="w-6 h-6 text-purple-400" />
+              <Layers className="w-6 h-6 text-purple-400" />
               <h1 className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
                 Choose New Password
               </h1>

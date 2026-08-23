@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { getStoredUser, clearAuthTokens } from '@/lib/tokenStorage';
 import {
   LayoutDashboard, FolderKanban, CheckSquare, LogOut,
-  BrainCircuit, Bell, Menu, X, BarChart2, User, ChevronRight, Shield, Search
+  Layers, Bell, Menu, X, BarChart2, User, ChevronRight, Shield, Search
 } from 'lucide-react';
 
 type Notification = { isRead: boolean };
@@ -46,15 +46,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   /* ── auth rehydration ── */
   useEffect(() => {
-    const storedUser = getStoredUser();
-    if (storedUser && !isAuthenticated) {
-      dispatch(setCredentials({ user: storedUser }));
-    }
-    setTimeout(() => setHydrated(true), 0);
-  }, [dispatch, isAuthenticated]);
+    const initAuth = async () => {
+      const storedUser = getStoredUser();
+      if (storedUser && !isAuthenticated) {
+        dispatch(setCredentials({ user: storedUser }));
+      }
+      try {
+        const res = await api.get('/user/me');
+        if (res.data?.user) {
+          dispatch(setCredentials({ user: res.data.user }));
+        }
+      } catch (err) {
+        if (!storedUser) {
+          dispatch(logout());
+          router.replace('/login');
+        }
+      } finally {
+        setHydrated(true);
+      }
+    };
+    initAuth();
+  }, [dispatch, isAuthenticated, router]);
 
   useEffect(() => {
-    if (hydrated && !isAuthenticated) router.push('/login');
+    if (hydrated && !isAuthenticated) router.replace('/login');
   }, [hydrated, isAuthenticated, router]);
 
   /* ── notifications polling ── */
@@ -116,17 +131,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <BrainCircuit className="w-10 h-10 text-purple-400 animate-pulse" />
+          <Layers className="w-10 h-10 text-purple-400 animate-pulse" />
           <p className="text-gray-600 text-sm">Loading workspace…</p>
         </div>
       </div>
     );
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch {}
     clearAuthTokens();
     dispatch(logout());
-    router.push('/login');
+    router.replace('/login');
   };
 
   const adminLink = user?.role === 'admin'
@@ -164,7 +182,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-purple-600 to-blue-500
                           flex items-center justify-center shadow-[0_0_14px_rgba(139,92,246,0.4)]">
-            <BrainCircuit className="w-3.5 h-3.5 text-white" />
+            <Layers className="w-3.5 h-3.5 text-white" />
           </div>
           <span className="font-bold text-sm bg-clip-text text-transparent
                            bg-gradient-to-r from-purple-400 to-blue-400">
@@ -214,7 +232,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-purple-600 to-blue-500
                           flex items-center justify-center flex-shrink-0
                           shadow-[0_0_14px_rgba(139,92,246,0.4)]">
-            <BrainCircuit className="w-3.5 h-3.5 text-white" />
+            <Layers className="w-3.5 h-3.5 text-white" />
           </div>
           <span className="font-bold text-sm bg-clip-text text-transparent
                            bg-gradient-to-r from-purple-400 to-blue-400">

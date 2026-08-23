@@ -25,98 +25,51 @@ import { clearAuthTokens, getStoredUser } from '@/lib/tokenStorage';
  * @property {string} email - User email address
  * @property {string} role - User role (user | admin)
  */
-interface User {
+export interface User {
   id: string;
   username: string;
   email: string;
   role: string;
-  /** Optional profile picture URL (relative path stored in DB, e.g. /uploads/avatar-xxx.jpg) */
   avatar?: string | null;
 }
 
-/**
- * Authentication Redux state
- * 
- * @interface AuthState
- * @property {User|null} user - Current logged-in user or null
- * @property {boolean} isAuthenticated - Whether user is currently authenticated
- */
-interface AuthState {
+export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
+  loading: boolean;
 }
 
-/**
- * Initial auth state
- * All values are null/false until user logs in
- */
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
+  loading: true,
 };
 
-/**
- * User Auth Redux Slice
- * 
- * Creates reducers and actions for managing user authentication state.
- * Works in conjunction with tokenStorage (cookies) and axios interceptors.
- */
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    /**
-     * Set user credentials after successful login
-     * 
-     * Called by login and register pages.
-     * Updates both Redux state and cookies for persistence.
-     * 
-     * @param {AuthState} state - Current Redux state
-     * @param {PayloadAction<{user: User}>} action - Login response
-     * 
-     * @example
-     * dispatch(setCredentials({ user }))
-     */
     setCredentials: (state, action: PayloadAction<{ user: User }>) => {
       state.user = action.payload.user;
       state.isAuthenticated = true;
+      state.loading = false;
     },
-
-    /**
-     * Clear user session on logout
-     * 
-     * Clears Redux state and removes all auth cookies.
-     * Called after user clicks logout or on token refresh failure.
-     * Browser will redirect to login after this action.
-     * 
-     * @param {AuthState} state - Current Redux state
-     * 
-     * @example
-     * dispatch(logout())
-     */
+    updateUser: (state, action: PayloadAction<Partial<User>>) => {
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload };
+      }
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
+      state.loading = false;
       if (typeof window !== 'undefined') {
         clearAuthTokens();
       }
     },
-
-    /**
-     * Rehydrate auth state from secure cookies
-     * 
-     * Called on page load/refresh to restore user session from cookies.
-     * 
-     * Flow:
-     * 1. Get user info from cookie
-     * 2. If it exists, restore to Redux state
-     * 
-     * @param {AuthState} state - Current Redux state
-     * 
-     * @example
-     * // Called in useEffect on app initialization
-     * dispatch(rehydrateAuth())
-     */
     rehydrateAuth: (state) => {
       if (typeof window !== 'undefined') {
         const user = getStoredUser();
@@ -124,21 +77,12 @@ const authSlice = createSlice({
           state.user = user;
           state.isAuthenticated = true;
         }
+        state.loading = false;
       }
     },
   },
 });
 
-/**
- * Export auth actions for use in components
- * 
- * @example
- * import { setCredentials, logout, rehydrateAuth } from '@/store/slices/authSlice'
- */
-export const { setCredentials, logout, rehydrateAuth } = authSlice.actions;
-
-/**
- * Export auth reducer for store configuration
- */
+export const { setCredentials, updateUser, setLoading, logout, rehydrateAuth } = authSlice.actions;
 export default authSlice.reducer;
 

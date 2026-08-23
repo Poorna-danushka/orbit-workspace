@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { Users, Search, Trash2, Loader2, RefreshCw, Shield, User, Calendar, ShieldAlert, X, AlertTriangle } from 'lucide-react';
-import adminApi from '@/lib/adminAxios';
+import api from '@/lib/axios';
 import { getAvatarUrl } from '@/lib/config';
 import { RootState } from '@/store';
 
@@ -24,7 +24,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function AdminUsers() {
-  const { admin } = useSelector((state: RootState) => state.adminAuth);
+  const { user: currentUser } = useSelector((state: RootState) => state.auth);
   const [users, setUsers] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -38,7 +38,7 @@ export default function AdminUsers() {
     setLoading(true);
     setActionError(null);
     try {
-      const res = await adminApi.get('/admin/users');
+      const res = await api.get('/admin/users');
       setUsers(res.data);
     } catch (err: any) {
       console.error('Failed to fetch users', err);
@@ -56,7 +56,7 @@ export default function AdminUsers() {
     setDeleteId(user.id);
     setActionError(null);
     try {
-      await adminApi.delete(`/admin/users/${user.id}`);
+      await api.delete(`/admin/users/${user.id}`);
       setUsers(prev => prev.filter(u => u.id !== user.id));
       setConfirmDelete(null);
     } catch (err: any) {
@@ -72,7 +72,7 @@ export default function AdminUsers() {
     setActionError(null);
     const newRole = user.role === 'admin' ? 'user' : 'admin';
     try {
-      await adminApi.patch(`/admin/users/${user.id}/role`, { role: newRole });
+      await api.patch(`/admin/users/${user.id}/role`, { role: newRole });
       setUsers(prev =>
         prev.map(u => (u.id === user.id ? { ...u, role: newRole } : u))
       );
@@ -218,7 +218,7 @@ export default function AdminUsers() {
               </thead>
               <tbody className="divide-y divide-white/[0.04] text-sm">
                 {filtered.map(user => {
-                  const isSelf = Boolean(admin && (user.id === admin.id || user.email === admin.email));
+                  const isSelf = Boolean(currentUser && (user.id === currentUser.id || user.email === currentUser.email));
 
                   return (
                     <tr key={user.id} className="hover:bg-white/[0.02] transition-colors">

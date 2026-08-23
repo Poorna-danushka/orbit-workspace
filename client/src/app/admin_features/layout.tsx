@@ -9,8 +9,10 @@ import {
   LogOut, Shield, ChevronRight, Menu, X, User
 } from 'lucide-react';
 import { RootState } from '@/store';
-import { adminLogout, rehydrateAdmin } from '@/store/slices/adminAuthSlice';
+import { logout, setCredentials, rehydrateAuth } from '@/store/slices/authSlice';
 import { getAvatarUrl } from '@/lib/config';
+import { getStoredUser } from '@/lib/tokenStorage';
+import api from '@/lib/axios';
 
 const navItems = [
   { name: 'Overview', href: '/admin_features/dashboard', icon: LayoutDashboard },
@@ -23,40 +25,62 @@ const navItems = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch();
-  const { isAuthenticated, admin } = useSelector((state: RootState) => state.adminAuth);
+  const { isAuthenticated, user, loading } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
   const pathname = usePathname();
-  const [hydrated, setHydrated] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // Rehydrate admin session from secure cookie storage on every page load/refresh
-    dispatch(rehydrateAdmin());
-    setTimeout(() => setHydrated(true), 0);
-  }, [dispatch]);
+    const initAuth = async () => {
+      // 1. Instant rehydrate from local cache
+      const stored = getStoredUser();
+      if (stored && stored.role === 'admin') {
+        dispatch(setCredentials({ user: stored }));
+      }
 
-  useEffect(() => {
-    if (hydrated && !isAuthenticated) {
-      router.push('/admin-login');
-    }
-  }, [hydrated, isAuthenticated, router]);
+      // 2. Validate backend session with HttpOnly cookies
+      try {
+        const res = await api.get('/user/me');
+        if (res.data?.user && res.data.user.role === 'admin') {
+          dispatch(setCredentials({ user: res.data.user }));
+          setChecking(false);
+        } else {
+          dispatch(logout());
+          router.replace('/login');
+        }
+      } catch (err) {
+        if (!stored || stored.role !== 'admin') {
+          dispatch(logout());
+          router.replace('/login');
+        } else {
+          setChecking(false);
+        }
+      }
+    };
 
-  if (!hydrated || !isAuthenticated) {
+    initAuth();
+  }, [dispatch, router]);
+
+  if (checking && (!isAuthenticated || user?.role !== 'admin')) {
     return (
       <div className="min-h-screen bg-[#080a0f] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 to-orange-500 flex items-center justify-center animate-pulse">
             <Shield className="w-5 h-5 text-white" />
           </div>
-          <p className="text-gray-600 text-sm">Verifying access...</p>
+          <p className="text-gray-400 text-sm">Verifying access...</p>
         </div>
       </div>
     );
   }
 
-  const handleLogout = () => {
-    dispatch(adminLogout());
-    router.push('/admin-login');
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch {}
+    dispatch(logout());
+    router.replace('/login');
   };
 
   const pageName = navItems.find(n => n.href === pathname)?.name || pathname.split('/').pop() || 'Admin';
@@ -123,21 +147,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             className="flex items-center gap-3 px-2 py-2 mb-3 rounded-xl hover:bg-white/[0.04] transition-colors group cursor-pointer"
             title="View Admin Profile"
           >
-            {admin?.avatar ? (
+            {user?.avatar ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={getAvatarUrl(admin.avatar)}
-                alt={admin.username}
+                src={getAvatarUrl(user.avatar)}
+                alt={user.username}
                 className="w-9 h-9 rounded-full object-cover flex-shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.3)] group-hover:scale-105 transition-transform"
               />
             ) : (
               <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-red-500 to-orange-400 flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.3)] group-hover:scale-105 transition-transform">
-                {admin?.username?.[0]?.toUpperCase()}
+                {user?.username?.[0]?.toUpperCase()}
               </div>
             )}
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-semibold truncate leading-none text-white group-hover:text-red-400 transition-colors">{admin?.username}</p>
-              <p className="text-[11px] text-gray-600 truncate mt-0.5">{admin?.email}</p>
+              <p className="text-sm font-semibold truncate leading-none text-white group-hover:text-red-400 transition-colors">{user?.username}</p>
+              <p className="text-[11px] text-gray-600 truncate mt-0.5">{user?.email}</p>
             </div>
             <span className="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded-full font-semibold flex-shrink-0">ADMIN</span>
           </Link>

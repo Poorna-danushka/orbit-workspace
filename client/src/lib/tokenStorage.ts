@@ -1,18 +1,17 @@
 /**
- * Token Storage Module
+ * User Metadata Storage & Cookie Helpers
  *
- * Manages non-sensitive user metadata in cookies.
- * JWT access/refresh tokens are stored exclusively in HttpOnly cookies
- * set by the server and are never accessible from JavaScript.
+ * Manages non-sensitive user metadata in browser cookies/localStorage.
+ * Authentication tokens (JWT access & refresh tokens) are managed exclusively
+ * by the server via HttpOnly cookies and are never accessible from JavaScript.
  *
  * @module tokenStorage
  */
 
-/** Check if code is running in a browser environment */
 const isBrowser = typeof window !== 'undefined';
 
 /**
- * Get cookie value by name
+ * Get cookie value by name (e.g. csrfToken, userInfo)
  */
 export const getCookie = (name: string): string | null => {
   if (!isBrowser) return null;
@@ -32,9 +31,13 @@ export const getCookie = (name: string): string | null => {
  */
 export const setCookie = (name: string, value: string, days = 7) => {
   if (!isBrowser) return;
+  try {
+    localStorage.setItem(name, value);
+  } catch {}
   const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
-  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
-  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict${secure}`;
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const secure = isHttps ? '; Secure' : '';
+  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax${secure}`;
 };
 
 /**
@@ -42,7 +45,10 @@ export const setCookie = (name: string, value: string, days = 7) => {
  */
 export const removeCookie = (name: string) => {
   if (!isBrowser) return;
-  document.cookie = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Strict`;
+  try {
+    localStorage.removeItem(name);
+  } catch {}
+  document.cookie = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
 };
 
 /** Safely parse JSON */
@@ -64,46 +70,45 @@ export interface StoredUser {
 }
 
 /**
- * Save user metadata to a cookie (not the JWT — that's HttpOnly server-side).
- * Uses a single unified cookie name `userInfo` regardless of role.
+ * Save non-sensitive user metadata for instant UI hydration.
  */
-export const saveAuthTokens = (user: StoredUser | null, _isAdmin = false) => {
+export const saveAuthTokens = (user: StoredUser | null) => {
   if (user) {
-    // Remove any legacy role-specific cookies first
     removeCookie('adminInfo');
     removeCookie('userInfo');
-    // Save under unified name
     setCookie('userInfo', JSON.stringify(user), 7);
   }
 };
 
 /**
- * Clear auth user metadata cookie.
+ * Clear auth user metadata.
  */
-export const clearAuthTokens = (_isAdmin = false) => {
+export const clearAuthTokens = () => {
   removeCookie('userInfo');
-  removeCookie('adminInfo'); // also clear legacy
+  removeCookie('adminInfo');
 };
 
 /**
- * Get stored user info from cookies.
- * Reads from unified `userInfo` cookie; falls back to legacy `adminInfo`.
+ * Get stored user metadata from localStorage or cookies.
  */
-export const getStoredUser = (_isAdmin = false): StoredUser | null => {
+export const getStoredUser = (): StoredUser | null => {
+  if (isBrowser) {
+    try {
+      const local = localStorage.getItem('userInfo') || localStorage.getItem('adminInfo');
+      if (local) {
+        const parsed = jsonParse<StoredUser>(local);
+        if (parsed) return parsed;
+      }
+    } catch {}
+  }
   return jsonParse<StoredUser>(getCookie('userInfo')) ||
          jsonParse<StoredUser>(getCookie('adminInfo'));
 };
 
 /**
- * Check if an active admin session exists
+ * Check if the stored user has admin role
  */
 export const isAdminSession = (): boolean => {
   const user = getStoredUser();
   return user?.role === 'admin';
 };
-
-/**
- * Stubs — JWTs live in HttpOnly cookies set by the server.
- */
-export const getAccessToken = (_isAdmin = false) => null;
-export const getRefreshToken = (_isAdmin = false) => null;

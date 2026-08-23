@@ -6,7 +6,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell, Legend
 } from 'recharts';
 import { TrendingUp, Users, FolderKanban, CheckCircle2, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
-import adminApi from '@/lib/adminAxios';
+import api from '@/lib/axios';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
@@ -17,7 +17,7 @@ export default function AdminAnalytics() {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const res = await adminApi.get('/admin/stats');
+      const res = await api.get('/admin/stats');
       setStats(res.data);
     } catch (err) {
       console.error('Failed to fetch stats', err);

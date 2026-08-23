@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { FolderKanban, Search, Trash2, Loader2, RefreshCw, CheckSquare, Calendar, User } from 'lucide-react';
-import adminApi from '@/lib/adminAxios';
+import api from '@/lib/axios';
 
 interface Project {
   id: string;
@@ -33,7 +33,7 @@ export default function AdminProjects() {
   const fetchProjects = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await adminApi.get('/admin/projects');
+      const res = await api.get('/admin/projects');
       setProjects(res.data);
     } catch (err) {
       console.error('Failed to fetch projects', err);
@@ -47,7 +47,7 @@ export default function AdminProjects() {
   const handleDelete = async (project: Project) => {
     setDeleteId(project.id);
     try {
-      await adminApi.delete(`/admin/projects/${project.id}`);
+      await api.delete(`/admin/projects/${project.id}`);
       setProjects(prev => prev.filter(p => p.id !== project.id));
       setConfirmDelete(null);
     } catch (err) {

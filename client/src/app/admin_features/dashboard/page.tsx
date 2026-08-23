@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Users, FolderKanban, CheckCircle2, AlertTriangle, Loader2, TrendingUp, Zap, Send, Bell, CheckCheck } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import adminApi from '@/lib/adminAxios';
+import api from '@/lib/axios';
 import StatCard from '@/components/ui/StatCard';
 import { getAvatarUrl } from '@/lib/config';
 
@@ -19,8 +19,8 @@ export default function AdminDashboard() {
     const fetchData = async () => {
       try {
         const [statsRes, activityRes] = await Promise.all([
-          adminApi.get('/admin/stats'),
-          adminApi.get('/admin/activity'),
+          api.get('/admin/stats'),
+          api.get('/admin/activity'),
         ]);
         setStats(statsRes.data);
         setActivity(activityRes.data);
@@ -38,7 +38,7 @@ export default function AdminDashboard() {
     if (!broadcast.trim()) return;
     setBroadcasting(true);
     try {
-      await adminApi.post('/admin/broadcast', { message: broadcast });
+      await api.post('/admin/broadcast', { message: broadcast });
       setBroadcastStatus('success');
       setBroadcast('');
       setTimeout(() => setBroadcastStatus('idle'), 3000);

@@ -7,17 +7,17 @@ import {
   Lock, Eye, EyeOff, AlertCircle, CheckCircle2, Calendar, User, Activity, Users, FolderKanban
 } from 'lucide-react';
 import { RootState } from '@/store';
-import { setAdminCredentials } from '@/store/slices/adminAuthSlice';
-import adminApi from '@/lib/adminAxios';
+import { setCredentials, updateUser } from '@/store/slices/authSlice';
+import api from '@/lib/axios';
 import { saveAuthTokens } from '@/lib/tokenStorage';
 import { getAvatarUrl } from '@/lib/config';
 
 export default function AdminProfile() {
-  const { admin } = useSelector((state: RootState) => state.adminAuth);
+  const { user } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
 
   // Profile state
-  const [username, setUsername] = useState(admin?.username || '');
+  const [username, setUsername] = useState(user?.username || '');
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [saveError, setSaveError] = useState('');
@@ -33,7 +33,7 @@ export default function AdminProfile() {
   const [pwError, setPwError] = useState('');
 
   // Avatar state
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(admin?.avatar || null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.avatar || null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,15 +44,16 @@ export default function AdminProfile() {
     const fetchAdminData = async () => {
       try {
         const [statsRes, profileRes] = await Promise.all([
-          adminApi.get('/admin/stats').catch(() => null),
-          adminApi.get('/admin/profile').catch(() => null),
+          api.get('/admin/stats').catch(() => null),
+          api.get('/user/me').catch(() => null),
         ]);
         if (statsRes?.data) setStats(statsRes.data);
-        if (profileRes?.data) {
-          setUsername(profileRes.data.username);
-          if (profileRes.data.avatar) setAvatarUrl(profileRes.data.avatar);
-          dispatch(setAdminCredentials({ admin: profileRes.data }));
-          saveAuthTokens(profileRes.data, true);
+        if (profileRes?.data?.user) {
+          const u = profileRes.data.user;
+          setUsername(u.username);
+          if (u.avatar) setAvatarUrl(u.avatar);
+          dispatch(setCredentials({ user: u }));
+          saveAuthTokens(u);
         }
       } catch {}
     };
@@ -65,11 +66,10 @@ export default function AdminProfile() {
     setSaveStatus('idle');
     setSaveError('');
     try {
-      const res = await adminApi.patch('/admin/profile', { username });
-      if (admin) {
-        const updatedAdmin = { ...admin, username: res.data.user.username, avatar: res.data.user.avatar ?? admin.avatar };
-        dispatch(setAdminCredentials({ admin: updatedAdmin }));
-        saveAuthTokens(updatedAdmin, true);
+      const res = await api.patch('/user/profile', { username });
+      if (res.data?.user) {
+        dispatch(updateUser(res.data.user));
+        saveAuthTokens(res.data.user);
       }
       setSaveStatus('success');
       setTimeout(() => setSaveStatus('idle'), 3000);
@@ -92,15 +92,12 @@ export default function AdminProfile() {
     formData.append('avatar', file);
 
     try {
-      const res = await adminApi.post('/admin/avatar', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const res = await api.post('/user/avatar', formData);
       const newUrl = res.data.user.avatar;
       setAvatarUrl(newUrl);
-      if (admin) {
-        const updatedAdmin = { ...admin, avatar: newUrl };
-        dispatch(setAdminCredentials({ admin: updatedAdmin }));
-        saveAuthTokens(updatedAdmin, true);
+      if (res.data?.user) {
+        dispatch(updateUser(res.data.user));
+        saveAuthTokens(res.data.user);
       }
     } catch (err: any) {
       alert(err?.response?.data?.message || 'Avatar upload failed');
@@ -128,7 +125,7 @@ export default function AdminProfile() {
 
     setChangingPw(true);
     try {
-      await adminApi.patch('/admin/change-password', { currentPassword: currentPw, newPassword: newPw });
+      await api.patch('/user/change-password', { currentPassword: currentPw, newPassword: newPw });
       setPwStatus('success');
       setCurrentPw(''); setNewPw(''); setConfirmPw('');
       setTimeout(() => setPwStatus('idle'), 3000);
@@ -179,7 +176,7 @@ export default function AdminProfile() {
                   />
                 ) : (
                   <div className="w-full h-full rounded-[22px] bg-[#0c0e13] flex items-center justify-center text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-red-400 to-orange-300">
-                    {admin?.username?.[0]?.toUpperCase() || 'A'}
+                    {user?.username?.[0]?.toUpperCase() || 'A'}
                   </div>
                 )}
               </div>
@@ -208,13 +205,13 @@ export default function AdminProfile() {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-3">
-                    <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">{admin?.username}</h1>
+                    <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">{user?.username}</h1>
                     <span className="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
                       <Shield className="w-3.5 h-3.5" /> Super Admin
                     </span>
                   </div>
                   <p className="text-gray-400 mt-1 flex items-center gap-2 text-sm">
-                    <Mail className="w-4 h-4 text-gray-500" /> {admin?.email}
+                    <Mail className="w-4 h-4 text-gray-500" /> {user?.email}
                   </p>
                 </div>
               </div>
@@ -283,7 +280,7 @@ export default function AdminProfile() {
                     </div>
                     <input
                       type="email"
-                      value={admin?.email || ''}
+                      value={user?.email || ''}
                       disabled
                       className="w-full pl-11 pr-4 py-3 bg-black/20 border border-white/5 rounded-xl text-white cursor-not-allowed text-sm"
                     />
@@ -307,7 +304,7 @@ export default function AdminProfile() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={saving || username === admin?.username}
+                  disabled={saving || username === user?.username}
                   className="px-5 py-2.5 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(239,68,68,0.25)]"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saveStatus === 'success' ? <Check className="w-4 h-4" /> : null}

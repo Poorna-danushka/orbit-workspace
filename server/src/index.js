@@ -12,7 +12,6 @@ const authRoutes = require('./routes/auth.routes');
 const projectRoutes = require('./routes/project.routes');
 const taskRoutes = require('./routes/task.routes');
 const notificationRoutes = require('./routes/notification.routes');
-const aiRoutes = require('./routes/ai.routes');
 const adminRoutes = require('./routes/admin.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 const userRoutes = require('./routes/user.routes');
@@ -88,11 +87,13 @@ const authLimiter = rateLimit({
 });
 
 app.use('/api', apiLimiter);
+app.get('/api/csrf-token', (req, res) => {
+  res.json({ csrfToken: req.csrfToken || req.cookies?.csrfToken || '' });
+});
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/ai', aiRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/user', userRoutes);

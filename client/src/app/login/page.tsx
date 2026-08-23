@@ -4,11 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import Link from 'next/link';
-import { Mail, Lock, Loader2, ArrowRight, ArrowLeft, BrainCircuit } from 'lucide-react';
+import { Mail, Lock, Loader2, ArrowRight, ArrowLeft, Layers } from 'lucide-react';
 import api from '@/lib/axios';
 import { AxiosError } from 'axios';
 import { setCredentials } from '@/store/slices/authSlice';
-import { setAdminCredentials } from '@/store/slices/adminAuthSlice';
 import { saveAuthTokens } from '@/lib/tokenStorage';
 import { signInWithGoogle } from '@/lib/firebase';
 
@@ -29,14 +28,12 @@ export default function Login() {
       const response = await api.post('/auth/login', { email, password });
       const { user } = response.data;
 
+      saveAuthTokens(user);
+      dispatch(setCredentials({ user }));
+
       if (user.role === 'admin') {
-        saveAuthTokens(user, true);
-        dispatch(setAdminCredentials({ admin: user }));
-        dispatch(setCredentials({ user }));
         router.push('/admin_features/dashboard');
       } else {
-        saveAuthTokens(user, false);
-        dispatch(setCredentials({ user }));
         router.push('/user_features/dashboard');
       }
     } catch (error: unknown) {
@@ -60,14 +57,12 @@ export default function Login() {
         photoURL: gUser.photoURL,
       });
       const { user } = response.data;
+      saveAuthTokens(user);
+      dispatch(setCredentials({ user }));
+
       if (user.role === 'admin') {
-        saveAuthTokens(user, true);
-        dispatch(setAdminCredentials({ admin: user }));
-        dispatch(setCredentials({ user }));
         router.push('/admin_features/dashboard');
       } else {
-        saveAuthTokens(user, false);
-        dispatch(setCredentials({ user }));
         router.push('/user_features/dashboard');
       }
     } catch (err: any) {
@@ -79,7 +74,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))] p-4 sm:p-6">
+    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))] p-4 sm:p-6 py-12">
 
       {/* Back Button — floating top-left */}
       <Link
@@ -103,7 +98,7 @@ export default function Login() {
               href="/homepage"
               className="inline-flex items-center justify-center gap-2 mb-2 group"
             >
-              <BrainCircuit className="w-6 h-6 text-purple-400 group-hover:text-purple-300 transition-colors" />
+              <Layers className="w-6 h-6 text-purple-400 group-hover:text-purple-300 transition-colors" />
               <h1 className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 group-hover:from-purple-300 group-hover:to-blue-300 transition-all">
                 Orbit
               </h1>

@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, AreaChart, Area
 } from 'recharts';
-import { Loader2, RefreshCw, AlertTriangle, Lightbulb, Target, Activity } from 'lucide-react';
+import { Loader2, RefreshCw, Activity } from 'lucide-react';
 import api from '@/lib/axios';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#6b7280'];
@@ -18,8 +18,8 @@ export default function Analytics() {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/dashboard/stats');
-      setDashData(res.data);
+      const statsRes = await api.get('/dashboard/stats');
+      setDashData(statsRes.data);
     } catch (err) {
       console.error('Analytics fetch failed', err);
     } finally {
@@ -27,7 +27,9 @@ export default function Analytics() {
     }
   };
 
-  useEffect(() => { fetchAnalytics(); }, []);
+  useEffect(() => {
+    fetchAnalytics();
+  }, []);
 
   const total = dashData?.totalTasks || 0;
   const completed = dashData?.completedTasks || 0;
@@ -52,24 +54,6 @@ export default function Analytics() {
 
   const weeklyData = dashData?.weeklyData || [];
 
-  const recommendations = [];
-  if (overdue > 0) recommendations.push(`You have ${overdue} overdue task(s). Prioritize these immediately.`);
-  if (urgent > 0) recommendations.push(`${urgent} urgent task(s) need your attention today.`);
-  if (productivity < 50) recommendations.push('Completion rate is below 50%. Consider breaking large tasks into subtasks.');
-  if (pending > inProgress * 2) recommendations.push('You have many tasks in Todo. Move tasks to In Progress to maintain momentum.');
-  if (recommendations.length === 0) recommendations.push('Great job! Keep maintaining your current completion pace.');
-
-  const risks = [];
-  if (overdue > 3) risks.push('High number of overdue tasks may impact target deadlines.');
-  if (urgent > 5) risks.push('Too many urgent tasks suggests a prioritization bottleneck.');
-  if (risks.length === 0) risks.push('No critical risks detected in current workload.');
-
-  const focusAreas = [
-    'Complete overdue tasks first',
-    'Balance urgent vs high priority items',
-    'Maintain consistent daily completion velocity',
-  ];
-
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -80,7 +64,7 @@ export default function Analytics() {
         <button
           onClick={fetchAnalytics}
           disabled={loading}
-          className="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-xl font-medium shadow-[0_0_15px_rgba(120,119,198,0.3)] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+          className="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-xl font-medium shadow-[0_0_15px_rgba(120,119,198,0.3)] transition-all flex items-center justify-center gap-2 disabled:opacity-60 text-sm"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
           {loading ? 'Refreshing...' : 'Refresh Data'}
@@ -101,7 +85,9 @@ export default function Analytics() {
                 <Activity className="w-6 h-6 text-purple-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-purple-200 mb-1">Performance Summary</h3>
+                <h3 className="text-lg font-semibold text-purple-200 mb-1">
+                  Performance Summary
+                </h3>
                 <p className="text-gray-300 text-sm leading-relaxed">
                   You have {total} total tasks across {dashData?.totalProjects || 0} active projects. Your overall completion rate is {productivity}%.
                 </p>
@@ -188,52 +174,6 @@ export default function Analytics() {
                 Add tasks with due dates to track weekly activity
               </div>
             )}
-          </div>
-
-          {/* Productivity Insights Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-2xl bg-white/5 border border-white/5">
-              <div className="flex items-center gap-2 mb-4">
-                <Lightbulb className="w-5 h-5 text-yellow-400" />
-                <h3 className="text-base font-semibold">Recommendations</h3>
-              </div>
-              <ul className="space-y-3">
-                {recommendations.map((r: string, i: number) => (
-                  <li key={i} className="text-sm text-gray-300 flex items-start gap-2">
-                    <span className="w-5 h-5 rounded-full bg-yellow-400/20 text-yellow-400 text-xs flex items-center justify-center flex-shrink-0 mt-0.5 font-bold">{i + 1}</span>
-                    {r}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="p-6 rounded-2xl bg-white/5 border border-red-500/10">
-              <div className="flex items-center gap-2 mb-4">
-                <AlertTriangle className="w-5 h-5 text-red-400" />
-                <h3 className="text-base font-semibold">Risk Warnings</h3>
-              </div>
-              <ul className="space-y-3">
-                {risks.map((r: string, i: number) => (
-                  <li key={i} className="text-sm text-gray-300 flex items-start gap-2">
-                    <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0 mt-2"></span>
-                    {r}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="p-6 rounded-2xl bg-white/5 border border-white/5">
-              <div className="flex items-center gap-2 mb-4">
-                <Target className="w-5 h-5 text-blue-400" />
-                <h3 className="text-base font-semibold">Focus Areas</h3>
-              </div>
-              <ul className="space-y-3">
-                {focusAreas.map((f: string, i: number) => (
-                  <li key={i} className="text-sm text-gray-300 flex items-start gap-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0 mt-2"></span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         </>
       )}

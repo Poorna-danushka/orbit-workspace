@@ -84,30 +84,31 @@ exports.searchUsers = async (req, res) => {
   }
 };
 
+const { uploadBufferToCloudinary } = require('../utils/cloudinary.util');
+
 /**
  * Upload or replace the authenticated user's profile picture.
  * Expects a multipart/form-data POST with field name "avatar".
- * Saves the public URL to the user record and returns the updated user.
+ * Streams buffer directly to Cloudinary and saves secure_url to user record.
  */
 exports.uploadAvatar = async (req, res) => {
   try {
-    if (!req.file) {
+    if (!req.file || !req.file.buffer) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
     const userId = req.user.userId;
-    // Build a publicly accessible URL for the uploaded file
-    const avatarUrl = `/uploads/${req.file.filename}`;
+    const uploadResult = await uploadBufferToCloudinary(req.file.buffer, 'orbit/avatars', 'image');
 
     const user = await prisma.user.update({
       where: { id: userId },
-      data: { avatar: avatarUrl },
+      data: { avatar: uploadResult.secure_url },
       select: { id: true, username: true, email: true, role: true, avatar: true },
     });
 
     res.json({ message: 'Avatar updated', user });
   } catch (error) {
     console.error('Upload avatar error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error during avatar upload' });
   }
 };

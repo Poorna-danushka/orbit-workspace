@@ -14,24 +14,26 @@ const cookieOptions = (days) => {
   return {
     httpOnly: true,
     secure: isProduction,
-    // cross-domain (Vercel → Render) requires 'none'; local dev uses 'strict'
-    sameSite: isProduction ? 'none' : 'strict',
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: days * 24 * 60 * 60 * 1000,
     path: '/',
   };
 };
 
-/** Clear all legacy and current auth cookies */
+/** Clear all auth cookies */
 const clearAllAuthCookies = (res) => {
-  const opts = { path: '/' };
-  // Current unified names
+  const isProduction = process.env.NODE_ENV === 'production';
+  const opts = {
+    path: '/',
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+  };
   res.clearCookie('accessToken', opts);
   res.clearCookie('refreshToken', opts);
-  // Legacy role-prefixed names (clean up if still present)
-  res.clearCookie('userAccessToken', opts);
-  res.clearCookie('userRefreshToken', opts);
-  res.clearCookie('adminAccessToken', opts);
-  res.clearCookie('adminRefreshToken', opts);
+  // Also clear with default options just in case
+  res.clearCookie('accessToken', { path: '/' });
+  res.clearCookie('refreshToken', { path: '/' });
 };
 
 /** Set auth cookies using unified names */
