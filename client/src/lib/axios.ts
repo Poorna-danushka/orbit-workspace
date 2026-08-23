@@ -20,7 +20,8 @@ import { saveAuthTokens, clearAuthTokens, getCookie } from './tokenStorage';
  * API base URL
  * Uses environment variable or defaults to local development server
  */
-const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:5000';
+const baseURL = process.env.NEXT_PUBLIC_API_URL || `${serverUrl}/api`;
 
 /**
  * Axios instance for user API requests
@@ -89,6 +90,14 @@ let refreshPromise: Promise<any> | null = null;
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    const status = error.response?.status;
+    const url = `${error.config?.baseURL || ''}${error.config?.url || ''}`;
+    const method = error.config?.method?.toUpperCase() || 'REQUEST';
+    const serverMessage = error.response?.data?.message;
+
+    if (status && status >= 400) {
+      console.warn(`[API ${status} Error] ${method} ${url}:`, serverMessage || error.message);
+    }
     const originalRequest = error.config;
 
     // Only attempt refresh for 401 errors and if not already retrying

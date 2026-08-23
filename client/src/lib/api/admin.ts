@@ -8,3 +8,8 @@ export const changeAdminRole = (id: string, role: string) => adminApi.patch(`/ad
 export const getAdminProjects = () => adminApi.get('/admin/projects');
 export const deleteAdminProject = (id: string) => adminApi.delete(`/admin/projects/${id}`);
 export const broadcastMessage = (message: string) => adminApi.post('/admin/broadcast', { message });
+export const getAdminProfile = () => adminApi.get('/admin/profile');
+export const updateAdminProfile = (payload: { username: string }) => adminApi.patch('/admin/profile', payload);
+export const changeAdminPassword = (payload: { currentPassword: string; newPassword: string }) => adminApi.patch('/admin/change-password', payload);
+export const uploadAdminAvatar = (formData: FormData) => adminApi.post('/admin/avatar', formData);
+

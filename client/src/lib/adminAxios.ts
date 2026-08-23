@@ -6,13 +6,20 @@ import {
   getCookie,
 } from './tokenStorage';
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:5000';
+const baseURL = process.env.NEXT_PUBLIC_API_URL || `${serverUrl}/api`;
 
-const adminApi = axios.create({ baseURL, headers: { 'Content-Type': 'application/json' } });
+const adminApi = axios.create({ baseURL });
 
 adminApi.defaults.withCredentials = true;
 
 adminApi.interceptors.request.use((config) => {
+  if (config.data instanceof FormData) {
+    if (config.headers) delete config.headers['Content-Type'];
+  } else if (config.headers && !config.headers['Content-Type']) {
+    config.headers['Content-Type'] = 'application/json';
+  }
+
   const csrfToken = getCookie('csrfToken');
   if (csrfToken && config.headers) {
     config.headers['X-CSRF-Token'] = csrfToken;
@@ -25,6 +32,14 @@ let adminRefreshPromise: Promise<any> | null = null;
 adminApi.interceptors.response.use(
   (response) => response,
   async (error) => {
+    const status = error.response?.status;
+    const url = `${error.config?.baseURL || ''}${error.config?.url || ''}`;
+    const method = error.config?.method?.toUpperCase() || 'REQUEST';
+    const serverMessage = error.response?.data?.message;
+
+    if (status && status >= 400) {
+      console.warn(`[Admin API ${status} Error] ${method} ${url}:`, serverMessage || error.message);
+    }
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
