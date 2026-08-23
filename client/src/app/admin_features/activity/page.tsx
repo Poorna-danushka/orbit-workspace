@@ -155,7 +155,7 @@ export default function AdminActivity() {
           { label: 'Projects Created', value: activities.filter(a => a.type === 'project_create').length },
           { label: 'Tasks Completed', value: activities.filter(a => a.type === 'task_complete').length },
         ].map((s, i) => (
-          <div key={i} className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+          <div key={i} className="p-4 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
             <p className="text-2xl font-bold">{s.value}</p>
             <p className="text-xs text-gray-500 mt-1">{s.label}</p>
           </div>
@@ -202,7 +202,7 @@ export default function AdminActivity() {
                   const config = TYPE_CONFIG[event.type] || TYPE_CONFIG.notification;
                   const Icon = config.icon;
                   return (
-                    <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] transition-colors">
+                    <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10 hover:bg-white/[0.04] transition-colors">
                       <div className={`w-9 h-9 rounded-xl ${config.bg} flex items-center justify-center flex-shrink-0`}>
                         <Icon className={`w-4 h-4 ${config.color}`} />
                       </div>

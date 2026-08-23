@@ -73,7 +73,7 @@ export default function AdminAnalytics() {
         {summaryCards.map((s, i) => {
           const Icon = s.icon;
           return (
-            <div key={i} className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors">
+            <div key={i} className="p-4 sm:p-5 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10 hover:bg-white/[0.05] transition-colors">
               <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl ${s.bg} flex items-center justify-center mb-3 sm:mb-4`}>
                 <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${s.color}`} />
               </div>
@@ -88,7 +88,7 @@ export default function AdminAnalytics() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* User Growth Chart */}
-        <div className="lg:col-span-2 p-6 rounded-2xl bg-white/[0.03] border border-white/5">
+        <div className="lg:col-span-2 p-6 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
           <h3 className="text-base font-semibold mb-1">User Growth</h3>
           <p className="text-xs text-gray-600 mb-6">New registrations per day — last 7 days</p>
           {userGrowthData.some((d: any) => d.users > 0) ? (
@@ -118,7 +118,7 @@ export default function AdminAnalytics() {
         </div>
 
         {/* Task Status Breakdown */}
-        <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/5">
+        <div className="p-6 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
           <h3 className="text-base font-semibold mb-1">Task Status</h3>
           <p className="text-xs text-gray-600 mb-6">Platform-wide task breakdown</p>
           {taskStatusData.length > 0 ? (
@@ -140,7 +140,7 @@ export default function AdminAnalytics() {
       {/* Productivity & Platform Health */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Productivity Meter */}
-        <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/5">
+        <div className="p-6 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
           <h3 className="text-base font-semibold mb-6">Platform Productivity</h3>
           <div className="flex items-center justify-center mb-6">
             <div className="relative w-36 h-36">
@@ -181,7 +181,7 @@ export default function AdminAnalytics() {
         </div>
 
         {/* Quick Stats Table */}
-        <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/5">
+        <div className="p-6 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
           <h3 className="text-base font-semibold mb-6">Platform Summary</h3>
           <div className="space-y-4">
             {[

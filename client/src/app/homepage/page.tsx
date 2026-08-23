@@ -1,109 +1,39 @@
 import Link from 'next/link';
-import { ArrowRight, Layout, Zap, BarChart2, Layers } from 'lucide-react';
+import { ArrowRight, BarChart3, Check, Layers, Sparkles, Zap } from 'lucide-react';
+
+const features = [
+  { icon: Layers, title: 'One clear workspace', text: 'Keep projects, tasks, files, and conversations connected in one focused home.' },
+  { icon: BarChart3, title: 'Momentum you can see', text: 'Turn activity into useful signals so your team knows what to do next.' },
+  { icon: Zap, title: 'Built for flow', text: 'Move from idea to done without the busywork between every handoff.' },
+];
 
 export default function Home() {
   return (
-    <div className="min-h-screen min-h-[100svh] bg-[#0a0a0a] text-white selection:bg-purple-500/30 flex flex-col overflow-x-hidden">
-
-      {/* Dynamic Background — fixed, covers full viewport */}
-      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-purple-600/20 rounded-full blur-[120px] mix-blend-screen"></div>
-        <div className="absolute top-[15%] right-[-10%] w-[50%] h-[60%] bg-blue-600/20 rounded-full blur-[120px] mix-blend-screen"></div>
-        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
-      </div>
-
-      {/* Navbar — sticky, full-width, glass effect */}
-      <nav className="sticky top-0 z-20 w-full shrink-0 bg-[#0a0a0a]/70 backdrop-blur-xl border-b border-white/5">
-        <div className="flex items-center justify-between px-4 sm:px-8 lg:px-12 py-3 sm:py-4 max-w-7xl mx-auto w-full">
-          <Link href="/homepage" className="flex items-center gap-2 min-w-0 group">
-            <Layers className="w-6 h-6 sm:w-7 sm:h-7 text-purple-400 group-hover:text-purple-300 transition-colors shrink-0" />
-            <span className="text-base sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400 whitespace-nowrap group-hover:from-purple-300 group-hover:to-blue-300 transition-all">
-              Orbit
-            </span>
-          </Link>
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            <Link
-              href="/login"
-              className="text-xs sm:text-sm font-medium text-gray-300 hover:text-white transition-colors px-2 py-1"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/register"
-              className="text-xs sm:text-sm font-medium px-3 py-1.5 sm:px-5 sm:py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 transition-all backdrop-blur-md whitespace-nowrap"
-            >
-              Get Started
-            </Link>
-          </div>
+    <div className="min-h-screen overflow-hidden bg-[#08090d] text-white selection:bg-[#8b7cff]/30">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_75%_15%,rgba(85,104,255,0.18),transparent_28%),radial-gradient(circle_at_10%_30%,rgba(139,124,255,0.14),transparent_24%)]" />
+      <nav className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-12">
+        <Link href="/homepage" className="flex items-center gap-2.5 font-semibold tracking-tight">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-[#8b7cff] text-[#08090d] shadow-[0_0_24px_rgba(139,124,255,0.35)]"><Layers className="size-5" /></span>
+          <span className="text-lg">Orbit</span>
+        </Link>
+        <div className="flex items-center gap-3 text-sm">
+          <Link href="/login" className="rounded-lg px-3 py-2 text-white/65 transition hover:bg-white/5 hover:text-white">Sign in</Link>
+          <Link href="/register" className="rounded-lg bg-white px-4 py-2 font-semibold text-[#08090d] transition hover:bg-white/85">Get started <ArrowRight className="ml-1 inline size-4" /></Link>
         </div>
       </nav>
-
-      {/* Hero Section */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-4 sm:px-6 py-12 sm:py-16 md:py-20 max-w-5xl mx-auto w-full">
-        <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs sm:text-sm text-purple-300 mb-6 sm:mb-8 backdrop-blur-md">
-          <span className="flex h-2 w-2 rounded-full bg-purple-400 animate-pulse"></span>
-          <span>Next-Generation Project Workspace</span>
-        </div>
-
-        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-4 sm:mb-6 leading-[1.15] px-2">
-          Manage projects with
-          <br className="hidden sm:inline" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-indigo-400">
-            seamless collaboration
-          </span>
-        </h1>
-
-        <p className="text-sm sm:text-lg md:text-xl text-gray-400 max-w-2xl mb-8 sm:mb-12 leading-relaxed px-2">
-          Orbit is a modern, high-performance workspace designed for fast-moving teams. Manage projects, track tasks, and collaborate effortlessly in real-time.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
-          <Link
-            href="/register"
-            className="group px-6 sm:px-8 py-3.5 sm:py-4 rounded-full bg-white text-black font-semibold text-base sm:text-lg hover:bg-gray-100 transition-all flex items-center justify-center gap-2 shadow-[0_0_40px_rgba(255,255,255,0.3)]"
-          >
-            Start for free
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </Link>
-          <Link
-            href="/login"
-            className="px-6 sm:px-8 py-3.5 sm:py-4 rounded-full bg-white/5 border border-white/10 font-semibold text-base sm:text-lg hover:bg-white/10 transition-all backdrop-blur-sm text-center flex items-center justify-center"
-          >
-            View Live Demo
-          </Link>
-        </div>
+      <main className="relative z-10 mx-auto max-w-7xl px-5 pb-20 pt-14 sm:px-8 sm:pt-24 lg:px-12">
+        <section className="grid items-center gap-14 lg:grid-cols-[1.05fr_.95fr]">
+          <div>
+            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-white/65"><Sparkles className="size-3.5 text-[#8b7cff]" /> The calm command center for ambitious teams</div>
+            <h1 className="max-w-3xl text-balance text-5xl font-semibold leading-[1.05] tracking-[-0.05em] sm:text-7xl">Make progress <span className="text-[#9b8fff]">visible.</span></h1>
+            <p className="mt-7 max-w-xl text-pretty text-base leading-7 text-white/55 sm:text-lg">Orbit gives your team a shared space to plan clearly, move quickly, and finish the work that matters.</p>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row"><Link href="/register" className="rounded-xl bg-[#8b7cff] px-5 py-3.5 text-center font-semibold text-[#08090d] transition hover:bg-[#a69cff]"><span>Start building free</span><ArrowRight className="ml-2 inline size-4" /></Link><Link href="/login" className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3.5 text-center font-semibold text-white/80 transition hover:bg-white/[0.08]">Sign in to workspace</Link></div>
+            <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs text-white/45"><span><Check className="mr-1 inline size-3.5 text-[#8b7cff]" />Projects and tasks</span><span><Check className="mr-1 inline size-3.5 text-[#8b7cff]" />Real-time activity</span><span><Check className="mr-1 inline size-3.5 text-[#8b7cff]" />Built for teams</span></div>
+          </div>
+          <div className="relative rounded-3xl border border-white/10 bg-white/[0.045] p-3 shadow-2xl shadow-[#3d35a0]/20 backdrop-blur-xl"><div className="rounded-2xl border border-white/10 bg-[#11131b] p-5"><div className="flex items-center justify-between border-b border-white/10 pb-5"><div><p className="text-xs text-white/40">Workspace overview</p><h2 className="mt-1 text-xl font-semibold">Good morning, team</h2></div><span className="rounded-lg bg-[#8b7cff]/15 px-2.5 py-1 text-xs text-[#b5afff]">Live</span></div><div className="mt-5 grid grid-cols-3 gap-3">{[['12','Active tasks'],['08','Completed'],['04','Projects']].map(([value,label])=><div key={label} className="rounded-xl border border-white/8 bg-white/[0.035] p-3"><p className="text-2xl font-semibold">{value}</p><p className="mt-1 text-[11px] text-white/40">{label}</p></div>)}</div><div className="mt-5 rounded-xl border border-white/8 bg-white/[0.025] p-4"><div className="mb-4 flex items-center justify-between"><span className="text-sm font-medium">This week</span><span className="text-xs text-[#9b8fff]">+24% momentum</span></div><div className="flex h-28 items-end gap-2">{[32,48,42,70,56,88,76].map((height,index)=><div key={index} className="flex-1 rounded-t-md bg-[#8b7cff]/70" style={{ height: `${height}%` }} />)}</div></div></div></div>
+        </section>
+        <section className="mt-24 grid gap-4 md:grid-cols-3">{features.map(({ icon: Icon, title, text })=><article key={title} className="rounded-2xl border border-white/10 bg-white/[0.035] p-6 transition hover:-translate-y-1 hover:bg-white/[0.06]"><Icon className="size-5 text-[#9b8fff]" /><h3 className="mt-7 text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-white/50">{text}</p></article>)}</section>
       </main>
-
-      {/* Features Grid */}
-      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pb-12 sm:pb-20 md:pb-24 pt-4 sm:pt-8 w-full">
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-
-          <div className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl hover:bg-white/10 transition-colors group">
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-5 sm:mb-6 group-hover:scale-110 transition-transform">
-              <Layout className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Intuitive Kanban</h3>
-            <p className="text-gray-400 leading-relaxed text-sm">Drag and drop tasks effortlessly. Organize your workflow visually with our lightning-fast board system.</p>
-          </div>
-
-          <div className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl hover:bg-white/10 transition-colors group">
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-5 sm:mb-6 group-hover:scale-110 transition-transform">
-              <BarChart2 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Productivity Analytics</h3>
-            <p className="text-gray-400 leading-relaxed text-sm">Track task velocity, monitor completion rates, and stay ahead with real-time workspace performance metrics.</p>
-          </div>
-
-          <div className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl hover:bg-white/10 transition-colors group sm:col-span-2 md:col-span-1">
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center mb-5 sm:mb-6 group-hover:scale-110 transition-transform">
-              <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-400" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Real-time Sync</h3>
-            <p className="text-gray-400 leading-relaxed text-sm">Collaborate seamlessly with your team. See task status changes, member activities, and updates instantly.</p>
-          </div>
-
-        </div>
-      </section>
     </div>
   );
 }

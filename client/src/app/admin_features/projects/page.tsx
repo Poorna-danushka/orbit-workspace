@@ -94,7 +94,7 @@ export default function AdminProjects() {
           { label: 'Completed', value: projects.filter(p => p.status === 'completed').length, color: 'text-blue-400' },
           { label: 'Total Tasks', value: totalTasks, color: 'text-purple-400' },
         ].map((s, i) => (
-          <div key={i} className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/5">
+          <div key={i} className="p-4 sm:p-5 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
             <p className={`text-2xl sm:text-3xl font-bold ${s.color}`}>{s.value}</p>
             <p className="text-xs text-gray-500 mt-1">{s.label}</p>
           </div>
@@ -144,7 +144,7 @@ export default function AdminProjects() {
           {filtered.map(project => {
             const taskPct = Math.min(100, (project._count.tasks / Math.max(1, totalTasks / projects.length)) * 100);
             return (
-              <div key={project.id} className="group p-5 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] hover:border-white/10 transition-all relative overflow-hidden">
+              <div key={project.id} className="group p-5 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10 hover:bg-white/[0.05] hover:border-white/10 transition-all relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-0.5 h-full bg-gradient-to-b from-red-500 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity" />
 
                 <div className="flex items-start justify-between mb-4">

@@ -11,19 +11,17 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase app once
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+// Keep Firebase auth lazy so email/password pages still render when Google
+// configuration is unavailable or invalid in a local/preview environment.
+const getFirebaseApp = () =>
+  getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
-
-/**
- * Trigger Firebase Google Sign-In popup
- */
 export const signInWithGoogle = async () => {
-  const result = await signInWithPopup(auth, googleProvider);
+  const auth = getAuth(getFirebaseApp());
+  const result = await signInWithPopup(auth, new GoogleAuthProvider());
   const user = result.user;
   const idToken = await user.getIdToken();
+
   return {
     user: {
       email: user.email,
@@ -35,4 +33,4 @@ export const signInWithGoogle = async () => {
   };
 };
 
-export default app;
+export default getFirebaseApp;

@@ -87,7 +87,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pageName = navItems.find(n => n.href === pathname)?.name || pathname.split('/').pop() || 'Admin';
 
   return (
-    <div className="fixed inset-0 bg-[#080a0f] text-white flex overflow-hidden">
+    <div className="fixed inset-0 bg-[#08090d] text-white flex overflow-hidden">
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-[#080a0f]/90 backdrop-blur-md border-b border-white/[0.06] z-50 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
@@ -105,7 +105,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Sidebar */}
-      <aside className={`absolute md:static inset-y-0 left-0 z-40 w-64 bg-[#0c0e13] border-r border-white/[0.06] flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} h-full flex-shrink-0`}>
+      <aside className={`absolute md:static inset-y-0 left-0 z-40 w-64 bg-[#101218] border-r border-white/[0.08] flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} h-full flex-shrink-0`}>
         {/* Logo */}
         <div className="h-16 flex items-center gap-3 px-5 border-b border-white/[0.06]">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-red-600 to-orange-500 flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.35)]">
@@ -179,7 +179,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Header */}
-        <header className="h-16 flex-shrink-0 flex items-center justify-between px-6 md:px-8 border-b border-white/[0.06] bg-[#080a0f]/60 backdrop-blur-md mt-14 md:mt-0 relative z-30">
+        <header className="h-16 flex-shrink-0 flex items-center justify-between px-6 md:px-8 border-b border-white/[0.08] bg-[#101218]/85 backdrop-blur-md mt-14 md:mt-0 relative z-30">
           <div className="flex items-center gap-2 text-sm hidden md:flex">
             <span className="text-gray-600">Admin</span>
             <ChevronRight className="w-3.5 h-3.5 text-gray-700" />

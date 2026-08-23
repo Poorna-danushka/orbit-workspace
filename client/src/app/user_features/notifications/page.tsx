@@ -160,9 +160,9 @@ export default function Notifications() {
               <div
                 key={n.id}
                 onClick={() => !n.isRead && markRead(n.id)}
-                className={`flex items-start gap-4 p-4 rounded-2xl border transition-all ${n.isRead
-                  ? 'bg-white/[0.02] border-white/[0.04] opacity-60 cursor-default'
-                  : 'bg-white/5 border-purple-500/20 hover:bg-white/8 cursor-pointer'
+                className={`flex items-start gap-4 p-4 rounded-2xl border shadow-lg shadow-black/10 transition-all ${n.isRead
+                  ? 'bg-[#11131b]/60 border-white/[0.06] opacity-60 cursor-default'
+                  : 'bg-[#11131b] border-purple-500/30 hover:border-purple-500/50 cursor-pointer'
                 }`}
               >
                 {/* Type Icon */}

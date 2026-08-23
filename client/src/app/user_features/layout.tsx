@@ -164,7 +164,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   /* ────────────────────────────────────────── */
   return (
-    <div className="fixed inset-0 bg-[#0a0a0a] text-white flex overflow-hidden">
+    <div className="fixed inset-0 bg-[#08090d] text-white flex overflow-hidden">
 
       {/* ══════════════════════════════════════
           MOBILE TOP BAR
@@ -223,7 +223,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className={`
         fixed md:static inset-y-0 left-0 z-50 md:z-auto
         w-60 flex flex-col flex-shrink-0
-        bg-[#0d0d0d] border-r border-white/[0.07]
+        bg-[#0d0f16] border-r border-white/[0.08]
         transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
@@ -347,7 +347,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* ── desktop header ── */}
         <header className="hidden md:flex h-[60px] flex-shrink-0 items-center gap-4 px-6
-                           bg-[#0d0d0d]/80 backdrop-blur-md border-b border-white/[0.07] z-30">
+                           bg-[#0d0f16]/85 backdrop-blur-md border-b border-white/[0.08] z-30">
 
           {/* breadcrumb */}
           <div className="flex items-center gap-1.5 text-sm whitespace-nowrap">

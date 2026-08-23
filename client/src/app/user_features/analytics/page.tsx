@@ -103,7 +103,7 @@ export default function Analytics() {
               { label: 'Overdue', value: overdue, color: overdue > 0 ? 'text-red-400' : 'text-gray-400' },
               { label: 'Productivity', value: `${productivity}%`, color: 'text-purple-400' },
             ].map((s, i) => (
-              <div key={i} className="p-5 rounded-2xl bg-white/5 border border-white/5">
+              <div key={i} className="p-5 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
                 <p className="text-gray-400 text-xs mb-1">{s.label}</p>
                 <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
               </div>
@@ -112,7 +112,7 @@ export default function Analytics() {
 
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="p-6 rounded-2xl bg-white/5 border border-white/5">
+            <div className="p-6 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
               <h3 className="text-base font-semibold mb-6">Task Status Breakdown</h3>
               {pieData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={240}>
@@ -129,7 +129,7 @@ export default function Analytics() {
               )}
             </div>
 
-            <div className="p-6 rounded-2xl bg-white/5 border border-white/5">
+            <div className="p-6 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
               <h3 className="text-base font-semibold mb-6">Priority Distribution</h3>
               {priorityBarData.some(d => d.value > 0) ? (
                 <ResponsiveContainer width="100%" height={240}>
@@ -150,7 +150,7 @@ export default function Analytics() {
           </div>
 
           {/* Weekly Data */}
-          <div className="p-6 rounded-2xl bg-white/5 border border-white/5">
+          <div className="p-6 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
             <h3 className="text-base font-semibold mb-6">Weekly Task Activity</h3>
             {weeklyData.length > 0 && weeklyData.some((d: any) => d.tasks > 0) ? (
               <ResponsiveContainer width="100%" height={200}>

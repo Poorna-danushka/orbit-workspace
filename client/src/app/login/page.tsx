@@ -74,7 +74,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))] p-4 sm:p-6 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-[#08090d] p-4 py-12 text-white sm:p-6">
 
       {/* Back Button — floating top-left */}
       <Link
@@ -85,11 +85,11 @@ export default function Login() {
         <span className="hidden sm:inline">Back</span>
       </Link>
 
-      <div className="w-full max-w-md p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_0_40px_rgba(120,119,198,0.15)] relative overflow-hidden">
+      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#11131b] p-6 shadow-2xl shadow-[#3d35a0]/20 sm:p-8 relative overflow-hidden">
 
         {/* Glow Effects */}
-        <div className="absolute -top-20 -left-20 w-40 h-40 bg-purple-500/20 rounded-full blur-[50px]"></div>
-        <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-[50px]"></div>
+        <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-purple-400/70 to-transparent" aria-hidden="true" />
+        <div className="absolute -right-24 -top-24 size-48 rounded-full bg-purple-500/10 blur-3xl" aria-hidden="true" />
 
         <div className="relative z-10">
           <div className="text-center mb-6 sm:mb-8">
@@ -121,7 +121,7 @@ export default function Login() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300 ease-in-out placeholder-gray-500"
+                  className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/10 rounded-xl text-white focus:outline-none focus:border-purple-400/70 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200 placeholder-gray-500"
                   placeholder="you@example.com"
                   required
                 />
@@ -139,7 +139,7 @@ export default function Login() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300 ease-in-out placeholder-gray-500"
+                  className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/10 rounded-xl text-white focus:outline-none focus:border-purple-400/70 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200 placeholder-gray-500"
                   placeholder="••••••••"
                   required
                 />
@@ -149,7 +149,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="group w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-xl font-medium transition-all duration-300 shadow-[0_0_20px_rgba(120,119,198,0.3)] hover:shadow-[0_0_30px_rgba(120,119,198,0.5)] flex items-center justify-center gap-2 relative overflow-hidden"
+              className="group w-full py-3 px-4 bg-purple-500 hover:bg-purple-400 text-white rounded-xl font-medium transition-all duration-300 shadow-[0_0_20px_rgba(120,119,198,0.3)] hover:shadow-[0_0_30px_rgba(120,119,198,0.5)] flex items-center justify-center gap-2 relative overflow-hidden"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />

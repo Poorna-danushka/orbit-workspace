@@ -152,7 +152,7 @@ function ResetPasswordForm() {
 
 export default function ResetPassword() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))] p-4 sm:p-6">
+    <div className="min-h-screen flex items-center justify-center bg-[#08090d] p-4 py-12 text-white sm:p-6">
       {/* Floating Back Button */}
       <Link
         href="/login"

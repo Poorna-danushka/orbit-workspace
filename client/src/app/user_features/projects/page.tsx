@@ -353,7 +353,7 @@ export default function Projects() {
               <Link
                 key={project.id}
                 href={`/user_features/projects/${project.id}`}
-                className="group relative flex flex-col rounded-2xl bg-[#0d0d14] border border-white/[0.07] hover:border-purple-500/30 transition-all duration-300 overflow-hidden shadow-md hover:shadow-purple-500/10 hover:shadow-xl"
+                className="group relative flex flex-col rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10 hover:border-purple-500/30 transition-all duration-300 overflow-hidden hover:shadow-purple-500/10 hover:shadow-xl"
               >
                 {/* Gradient accent bar on hover */}
                 <div className="h-[2px] w-full bg-gradient-to-r from-purple-600 via-blue-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

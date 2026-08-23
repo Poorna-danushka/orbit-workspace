@@ -88,7 +88,7 @@ export default function AdminDashboard() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* User Growth Chart */}
-        <div className="lg:col-span-2 p-6 rounded-2xl bg-white/[0.03] border border-white/5">
+        <div className="lg:col-span-2 p-6 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
           <h3 className="text-base font-semibold mb-1">User Growth — Last 7 Days</h3>
           <p className="text-xs text-gray-600 mb-6">New registrations per day</p>
           {userGrowthData.some((d: any) => d.users > 0) ? (
@@ -112,7 +112,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* System Health */}
-        <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/5">
+        <div className="p-6 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
           <h3 className="text-base font-semibold mb-6">System Health</h3>
           <div className="space-y-5">
             {[
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Recent Activity Feed */}
-      <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/5">
+      <div className="p-6 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-base font-semibold">Recent Activity</h3>
           <span className="text-xs text-gray-600">{activity.length} events</span>

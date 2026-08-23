@@ -198,7 +198,7 @@ export default function Dashboard() {
             <Link
               key={i}
               href={s.href}
-              className="p-3 sm:p-4 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:border-white/10 transition-all flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 group active:scale-[0.98]"
+              className="p-3 sm:p-4 rounded-xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10 hover:bg-white/[0.06] hover:border-white/10 transition-all flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 group active:scale-[0.98]"
             >
               <Icon className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-500 transition-colors ${s.accent}`} />
               <div>
@@ -214,14 +214,14 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
 
         {/* Weekly Activity Chart */}
-        <div className="xl:col-span-2 p-4 sm:p-6 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-xl">
+        <div className="xl:col-span-2 p-4 sm:p-6 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10 backdrop-blur-xl">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
             <div>
               <h3 className="text-base sm:text-lg font-semibold text-white">Weekly Activity</h3>
               <p className="text-xs text-gray-500 mt-0.5">Tasks due & completed per day</p>
             </div>
             {/* Productivity Ring */}
-            <div className="flex items-center gap-3 self-start sm:self-auto bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2">
+            <div className="flex items-center gap-3 self-start sm:self-auto bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10 rounded-xl px-3 py-2">
               <div className="relative w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 56 56">
                   <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" />
@@ -300,7 +300,7 @@ export default function Dashboard() {
         </div>
 
         {/* Upcoming Deadlines */}
-        <div className="p-4 sm:p-6 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-xl flex flex-col">
+        <div className="p-4 sm:p-6 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10 backdrop-blur-xl flex flex-col">
           <div className="flex items-center justify-between mb-4 sm:mb-5 flex-shrink-0">
             <h3 className="text-base sm:text-lg font-semibold text-white">Upcoming</h3>
             {(stats?.urgentTasks ?? 0) > 0 && (

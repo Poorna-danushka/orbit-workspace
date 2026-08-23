@@ -121,7 +121,7 @@ export default function Tasks() {
       )}
 
       {/* Filters + Sort Bar */}
-      <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+      <div className="p-4 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10 flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
         {/* Search */}
         <div className="relative w-full lg:w-64">
           <input
@@ -232,9 +232,9 @@ export default function Tasks() {
             return (
               <div
                 key={task.id}
-                className={`flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border hover:bg-white/[0.05] transition-all group ${
-                  overdue ? 'border-red-500/30 bg-red-500/[0.02]' :
-                  task.status === 'Completed' ? 'opacity-60 border-white/[0.04]' : 'border-white/[0.06]'
+                className={`flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-2xl bg-[#11131b] border shadow-lg shadow-black/10 hover:bg-white/[0.05] transition-all group ${
+                  overdue ? 'border-red-500/30' :
+                  task.status === 'Completed' ? 'opacity-60 border-white/[0.06]' : 'border-white/[0.08]'
                 }`}
               >
                 {/* Status + Title */}

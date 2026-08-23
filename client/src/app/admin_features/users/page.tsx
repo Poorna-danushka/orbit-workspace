@@ -150,7 +150,7 @@ export default function AdminUsers() {
         ].map((s, i) => {
           const Icon = s.icon;
           return (
-            <div key={i} className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-between">
+            <div key={i} className="p-4 sm:p-5 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10 flex items-center justify-between">
               <div>
                 <p className={`text-2xl sm:text-3xl font-bold ${s.color}`}>{s.value}</p>
                 <p className="text-xs text-gray-500 mt-1">{s.label}</p>
@@ -205,7 +205,7 @@ export default function AdminUsers() {
           <p className="text-gray-500">No users found</p>
         </div>
       ) : (
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+        <div className="rounded-2xl border border-white/[0.08] bg-[#11131b] shadow-lg shadow-black/10 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
