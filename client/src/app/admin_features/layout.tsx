@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import Link from 'next/link';
 import {
   LayoutDashboard, Users, FolderKanban, Activity, BarChart2,
-  LogOut, Shield, ChevronRight, Menu, X
+  LogOut, Shield, ChevronRight, Menu, X, User
 } from 'lucide-react';
 import { RootState } from '@/store';
 import { adminLogout, rehydrateAdmin } from '@/store/slices/adminAuthSlice';
@@ -18,6 +18,7 @@ const navItems = [
   { name: 'Projects', href: '/admin_features/projects', icon: FolderKanban },
   { name: 'Activity', href: '/admin_features/activity', icon: Activity },
   { name: 'Analytics', href: '/admin_features/analytics', icon: BarChart2 },
+  { name: 'Profile', href: '/admin_features/profile', icon: User },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -87,7 +88,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <div>
             <p className="text-sm font-bold text-white leading-none">Admin Panel</p>
-            <p className="text-[10px] text-gray-600 mt-0.5">SmartTask AI</p>
+            <p className="text-[10px] text-gray-600 mt-0.5">Orbit</p>
           </div>
         </div>
 
@@ -117,25 +118,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Admin User */}
         <div className="p-4 border-t border-white/[0.06]">
-          <div className="flex items-center gap-3 px-2 mb-4">
+          <Link
+            href="/admin_features/profile"
+            className="flex items-center gap-3 px-2 py-2 mb-3 rounded-xl hover:bg-white/[0.04] transition-colors group cursor-pointer"
+            title="View Admin Profile"
+          >
             {admin?.avatar ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={getAvatarUrl(admin.avatar)}
                 alt={admin.username}
-                className="w-9 h-9 rounded-full object-cover flex-shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+                className="w-9 h-9 rounded-full object-cover flex-shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.3)] group-hover:scale-105 transition-transform"
               />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-red-500 to-orange-400 flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-red-500 to-orange-400 flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.3)] group-hover:scale-105 transition-transform">
                 {admin?.username?.[0]?.toUpperCase()}
               </div>
             )}
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-semibold truncate leading-none">{admin?.username}</p>
+              <p className="text-sm font-semibold truncate leading-none text-white group-hover:text-red-400 transition-colors">{admin?.username}</p>
               <p className="text-[11px] text-gray-600 truncate mt-0.5">{admin?.email}</p>
             </div>
             <span className="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded-full font-semibold flex-shrink-0">ADMIN</span>
-          </div>
+          </Link>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-gray-600 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm group"

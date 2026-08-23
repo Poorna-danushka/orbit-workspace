@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Users, Search, Trash2, Loader2, RefreshCw, Shield, User, Calendar, ShieldAlert, X } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { Users, Search, Trash2, Loader2, RefreshCw, Shield, User, Calendar, ShieldAlert, X, AlertTriangle } from 'lucide-react';
 import adminApi from '@/lib/adminAxios';
 import { getAvatarUrl } from '@/lib/config';
+import { RootState } from '@/store';
 
 interface UserType {
   id: string;
@@ -22,6 +24,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function AdminUsers() {
+  const { admin } = useSelector((state: RootState) => state.adminAuth);
   const [users, setUsers] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -29,14 +32,17 @@ export default function AdminUsers() {
   const [confirmDelete, setConfirmDelete] = useState<UserType | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
+    setActionError(null);
     try {
       const res = await adminApi.get('/admin/users');
       setUsers(res.data);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch users', err);
+      setActionError(err?.response?.data?.message || 'Failed to fetch users');
     } finally {
       setLoading(false);
     }
@@ -48,12 +54,14 @@ export default function AdminUsers() {
 
   const handleDelete = async (user: UserType) => {
     setDeleteId(user.id);
+    setActionError(null);
     try {
       await adminApi.delete(`/admin/users/${user.id}`);
       setUsers(prev => prev.filter(u => u.id !== user.id));
       setConfirmDelete(null);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Delete failed', err);
+      setActionError(err?.response?.data?.message || 'Failed to delete user');
     } finally {
       setDeleteId(null);
     }
@@ -61,14 +69,16 @@ export default function AdminUsers() {
 
   const handleToggleRole = async (user: UserType) => {
     setUpdatingId(user.id);
+    setActionError(null);
     const newRole = user.role === 'admin' ? 'user' : 'admin';
     try {
       await adminApi.patch(`/admin/users/${user.id}/role`, { role: newRole });
       setUsers(prev =>
         prev.map(u => (u.id === user.id ? { ...u, role: newRole } : u))
       );
-    } catch (err) {
+    } catch (err: any) {
       console.error('Role update failed', err);
+      setActionError(err?.response?.data?.message || 'Failed to update user role');
     } finally {
       setUpdatingId(null);
     }
@@ -116,6 +126,19 @@ export default function AdminUsers() {
           <RefreshCw className="w-4 h-4" /> Refresh
         </button>
       </div>
+
+      {/* Action Error Alert */}
+      {actionError && (
+        <div className="flex items-center justify-between gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+            <span>{actionError}</span>
+          </div>
+          <button onClick={() => setActionError(null)} className="p-1 hover:bg-white/5 rounded-lg text-gray-400 hover:text-white">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Stats Dashboard */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -194,77 +217,88 @@ export default function AdminUsers() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04] text-sm">
-                {filtered.map(user => (
-                  <tr key={user.id} className="hover:bg-white/[0.02] transition-colors">
-                    {/* User profile details */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        {user.avatar ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={getAvatarUrl(user.avatar)}
-                            alt={user.username}
-                            className="w-9 h-9 rounded-full object-cover flex-shrink-0"
-                          />
-                        ) : (
-                          <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-inner flex-shrink-0 ${
-                            user.role === 'admin' ? 'bg-gradient-to-tr from-red-500 to-orange-400' : 'bg-gradient-to-tr from-purple-500 to-blue-500'
-                          }`}>
-                            {user.username[0]?.toUpperCase()}
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-semibold text-white leading-none">{user.username}</p>
-                          <p className="text-xs text-gray-500 mt-1">{user.email}</p>
-                        </div>
-                      </div>
-                    </td>
+                {filtered.map(user => {
+                  const isSelf = Boolean(admin && (user.id === admin.id || user.email === admin.email));
 
-                    {/* Role badge */}
-                    <td className="px-6 py-4">
-                      <span className={`text-xs px-2.5 py-0.5 rounded-full border font-semibold capitalize ${ROLE_COLORS[user.role] || ROLE_COLORS.user}`}>
-                        {user.role}
-                      </span>
-                    </td>
-
-                    {/* Join Date */}
-                    <td className="px-6 py-4 text-gray-400">
-                      {new Date(user.createdAt).toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </td>
-
-                    {/* Action buttons */}
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {/* Change role action */}
-                        <button
-                          onClick={() => handleToggleRole(user)}
-                          disabled={updatingId === user.id}
-                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center gap-1 disabled:opacity-50"
-                        >
-                          {updatingId === user.id ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
+                  return (
+                    <tr key={user.id} className="hover:bg-white/[0.02] transition-colors">
+                      {/* User profile details */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          {user.avatar ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={getAvatarUrl(user.avatar)}
+                              alt={user.username}
+                              className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                            />
                           ) : (
-                            <Shield className="w-3 h-3" />
+                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-inner flex-shrink-0 ${
+                              user.role === 'admin' ? 'bg-gradient-to-tr from-red-500 to-orange-400' : 'bg-gradient-to-tr from-purple-500 to-blue-500'
+                            }`}>
+                              {user.username[0]?.toUpperCase()}
+                            </div>
                           )}
-                          {user.role === 'admin' ? 'Demote' : 'Promote'}
-                        </button>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-white leading-none">{user.username}</p>
+                              {isSelf && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-gray-300 font-medium">You</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">{user.email}</p>
+                          </div>
+                        </div>
+                      </td>
 
-                        {/* Delete action */}
-                        <button
-                          onClick={() => setConfirmDelete(user)}
-                          className="p-2 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                          title="Delete User"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      {/* Role badge */}
+                      <td className="px-6 py-4">
+                        <span className={`text-xs px-2.5 py-0.5 rounded-full border font-semibold capitalize ${ROLE_COLORS[user.role] || ROLE_COLORS.user}`}>
+                          {user.role}
+                        </span>
+                      </td>
+
+                      {/* Join Date */}
+                      <td className="px-6 py-4 text-gray-400">
+                        {new Date(user.createdAt).toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </td>
+
+                      {/* Action buttons */}
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {/* Change role action */}
+                          <button
+                            onClick={() => handleToggleRole(user)}
+                            disabled={updatingId === user.id || isSelf}
+                            title={isSelf ? 'Cannot change your own role' : undefined}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            {updatingId === user.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Shield className="w-3 h-3" />
+                            )}
+                            {user.role === 'admin' ? 'Demote' : 'Promote'}
+                          </button>
+
+                          {/* Delete action */}
+                          <button
+                            onClick={() => setConfirmDelete(user)}
+                            disabled={isSelf}
+                            title={isSelf ? 'Cannot delete your own account' : 'Delete User'}
+                            className="p-2 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-500"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -291,7 +325,7 @@ export default function AdminUsers() {
               <strong className="text-white">"{confirmDelete.username}"</strong> ({confirmDelete.email})?
               <br />
               <span className="text-red-400/80 text-xs mt-2 block font-medium">
-                ⚠️ Warning: This will cascade delete all projects owned by this user and all tasks associated with those projects.
+                ⚠️ Warning: This will cascade delete all projects, tasks, attachments, and memberships associated with this user.
               </span>
             </p>
             <div className="flex gap-3">
