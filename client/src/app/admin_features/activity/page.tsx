@@ -57,7 +57,7 @@ export default function AdminActivity() {
     setLoading(true);
     try {
       const res = await api.get('/admin/activity');
-      setActivities(res.data);
+      setActivities(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error('Failed to fetch activity', err);
     } finally {

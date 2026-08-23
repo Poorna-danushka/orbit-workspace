@@ -9,27 +9,33 @@ const {
   verifyRefreshToken,
 } = require('../utils/token.util');
 
-/** Shared cookie option factory */
-const cookieOptions = (days) => {
-  const isProduction = process.env.NODE_ENV === 'production';
-  return {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-    maxAge: days * 24 * 60 * 60 * 1000,
-    path: '/',
-  };
+/**
+ * Cookies must be Secure when SameSite=None is used. Keep localhost HTTP
+ * development compatible while using cross-site cookies for HTTPS deployments.
+ */
+const secureCookies =
+  process.env.NODE_ENV === 'production' ||
+  (process.env.CLIENT_URL || '')
+    .split(',')
+    .some((origin) => origin.trim().startsWith('https://'));
+
+const authCookieAttributes = {
+  httpOnly: true,
+  secure: secureCookies,
+  sameSite: secureCookies ? 'none' : 'lax',
+  path: '/',
 };
+
+/** Shared cookie option factory */
+const cookieOptions = (days) => ({
+  ...authCookieAttributes,
+  maxAge: days * 24 * 60 * 60 * 1000,
+});
 
 /** Clear all auth cookies */
 const clearAllAuthCookies = (res) => {
-  const isProduction = process.env.NODE_ENV === 'production';
-  const opts = {
-    path: '/',
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-  };
+  const opts = { ...authCookieAttributes };
+
   res.clearCookie('accessToken', opts);
   res.clearCookie('refreshToken', opts);
 };

@@ -8,10 +8,15 @@ const csrfTokenSetter = (req, res, next) => {
   const cookies = req.cookies || {};
   if (!cookies.csrfToken) {
     const csrfToken = crypto.randomBytes(24).toString('hex');
-    const isProduction = process.env.NODE_ENV === 'production';
+    const secureCookies =
+      process.env.NODE_ENV === 'production' ||
+      (process.env.CLIENT_URL || '')
+        .split(',')
+        .some((origin) => origin.trim().startsWith('https://'));
+
     res.cookie('csrfToken', csrfToken, {
-      secure: isProduction,
-      sameSite: isProduction ? 'none' : 'lax',
+      secure: secureCookies,
+      sameSite: secureCookies ? 'none' : 'lax',
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
