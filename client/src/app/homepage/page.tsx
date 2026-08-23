@@ -9,8 +9,7 @@ export default function Home() {
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-purple-600/20 rounded-full blur-[120px] mix-blend-screen"></div>
         <div className="absolute top-[15%] right-[-10%] w-[50%] h-[60%] bg-blue-600/20 rounded-full blur-[120px] mix-blend-screen"></div>
-        <div className="absolute bottom-[-20%] left-[10%] w-[70%] h-[60%] bg-indigo-600/20 rounded-full blur-[120px] mix-blend-screen"></div>
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
       </div>
 
       {/* Navbar — sticky, full-width, glass effect */}

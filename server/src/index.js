@@ -30,14 +30,21 @@ const server = http.createServer(app);
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
-const allowedOrigins = env.CLIENT_URL.split(',').map((origin) => origin.trim());
+const allowedOrigins = (env.CLIENT_URL || '').split(',').map((origin) => origin.trim()).filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) return callback(null, true);
+    const cleanOrigin = origin.replace(/\/$/, '');
+    const isAllowed = allowedOrigins.some(o => o.replace(/\/$/, '') === cleanOrigin) ||
+                      cleanOrigin.endsWith('.vercel.app') ||
+                      cleanOrigin.includes('localhost') ||
+                      cleanOrigin.includes('127.0.0.1') ||
+                      env.NODE_ENV !== 'production';
+    if (isAllowed) {
       return callback(null, true);
     }
-    callback(new Error('CORS policy violation: Origin not allowed'));
+    callback(new Error(`CORS policy violation: Origin ${origin} not allowed`));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
