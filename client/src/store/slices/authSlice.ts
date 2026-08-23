@@ -120,8 +120,7 @@ const authSlice = createSlice({
     rehydrateAuth: (state) => {
       if (typeof window !== 'undefined') {
         const user = getStoredUser();
-        // Only hydrate if stored user is a regular user (not admin)
-        if (user && user.role !== 'admin') {
+        if (user) {
           state.user = user;
           state.isAuthenticated = true;
         }

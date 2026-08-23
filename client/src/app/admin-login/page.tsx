@@ -63,7 +63,7 @@ export default function AdminLogin() {
             <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-1">Admin Portal</h1>
-          <p className="text-gray-500 text-xs sm:text-sm">SmartTask AI — Restricted Access</p>
+          <p className="text-gray-500 text-xs sm:text-sm">Orbit — Restricted Access</p>
         </div>
 
         <div className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.5)]">
@@ -85,7 +85,7 @@ export default function AdminLogin() {
                   onChange={e => setEmail(e.target.value)}
                   required
                   className="w-full pl-10 pr-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-red-500/40 placeholder-gray-600 transition-all"
-                  placeholder="admin@smarttask.ai"
+                  placeholder="admin@orbit.app"
                 />
               </div>
             </div>

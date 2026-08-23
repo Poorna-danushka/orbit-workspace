@@ -8,7 +8,9 @@ import { Mail, Lock, Loader2, ArrowRight, ArrowLeft, BrainCircuit } from 'lucide
 import api from '@/lib/axios';
 import { AxiosError } from 'axios';
 import { setCredentials } from '@/store/slices/authSlice';
+import { setAdminCredentials } from '@/store/slices/adminAuthSlice';
 import { saveAuthTokens } from '@/lib/tokenStorage';
+import { signInWithGoogle } from '@/lib/firebase';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -27,15 +29,50 @@ export default function Login() {
       const response = await api.post('/auth/login', { email, password });
       const { user } = response.data;
 
-      saveAuthTokens(user, false);
-      dispatch(setCredentials({ user }));
-
-      router.push('/user_features/dashboard');
+      if (user.role === 'admin') {
+        saveAuthTokens(user, true);
+        dispatch(setAdminCredentials({ admin: user }));
+        dispatch(setCredentials({ user }));
+        router.push('/admin_features/dashboard');
+      } else {
+        saveAuthTokens(user, false);
+        dispatch(setCredentials({ user }));
+        router.push('/user_features/dashboard');
+      }
     } catch (error: unknown) {
       const message = error instanceof Error
         ? error.message
         : 'Failed to login';
       setError((error as any)?.response?.data?.message || message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const { user: gUser } = await signInWithGoogle();
+      const response = await api.post('/auth/google', {
+        email: gUser.email,
+        displayName: gUser.displayName,
+        photoURL: gUser.photoURL,
+      });
+      const { user } = response.data;
+      if (user.role === 'admin') {
+        saveAuthTokens(user, true);
+        dispatch(setAdminCredentials({ admin: user }));
+        dispatch(setCredentials({ user }));
+        router.push('/admin_features/dashboard');
+      } else {
+        saveAuthTokens(user, false);
+        dispatch(setCredentials({ user }));
+        router.push('/user_features/dashboard');
+      }
+    } catch (err: any) {
+      console.error('Google login failed:', err);
+      setError(err?.response?.data?.message || err?.message || 'Google authentication failed');
     } finally {
       setLoading(false);
     }
@@ -68,7 +105,7 @@ export default function Login() {
             >
               <BrainCircuit className="w-6 h-6 text-purple-400 group-hover:text-purple-300 transition-colors" />
               <h1 className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 group-hover:from-purple-300 group-hover:to-blue-300 transition-all">
-                SmartTask AI
+                Orbit
               </h1>
             </Link>
             <p className="text-gray-400 text-xs sm:text-sm">Welcome back! Sign in to continue your journey.</p>
@@ -143,7 +180,12 @@ export default function Login() {
             <div className="h-px bg-white/10 flex-1"></div>
           </div>
 
-          <button className="mt-6 w-full py-3 px-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-3">
+          <button
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            type="button"
+            className="mt-6 w-full py-3 px-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50"
+          >
             <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
