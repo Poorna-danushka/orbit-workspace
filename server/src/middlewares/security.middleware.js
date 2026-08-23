@@ -52,6 +52,19 @@ const csrfProtection = (req, res, next) => {
     return next();
   }
 
+  // Public unauthenticated auth routes do not require CSRF validation
+  const url = req.originalUrl || req.url || '';
+  const isPublicAuthRoute = url.includes('/auth/login') ||
+                            url.includes('/auth/register') ||
+                            url.includes('/auth/google') ||
+                            url.includes('/auth/forgot-password') ||
+                            url.includes('/auth/reset-password') ||
+                            url.includes('/auth/refresh');
+
+  if (isPublicAuthRoute) {
+    return next();
+  }
+
   const cookies = req.cookies || {};
   const csrfCookie = cookies.csrfToken;
   const csrfHeader = req.headers['x-csrf-token'];
