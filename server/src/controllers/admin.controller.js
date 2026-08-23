@@ -63,15 +63,49 @@ exports.getAllUsers = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const projects = await prisma.project.findMany({ where: { ownerId: id }, select: { id: true } });
-    const projectIds = projects.map(p => p.id);
-    await prisma.task.deleteMany({ where: { projectId: { in: projectIds } } });
-    await prisma.project.deleteMany({ where: { ownerId: id } });
+
+    if (req.user?.userId === id) {
+      return res.status(400).json({ message: 'You cannot delete your own admin account' });
+    }
+
+    const ownedProjects = await prisma.project.findMany({ where: { ownerId: id }, select: { id: true } });
+    const ownedProjectIds = ownedProjects.map(p => p.id);
+
+    const ownedTasks = await prisma.task.findMany({ where: { projectId: { in: ownedProjectIds } }, select: { id: true } });
+    const ownedTaskIds = ownedTasks.map(t => t.id);
+
+    if (ownedTaskIds.length > 0 || ownedProjectIds.length > 0) {
+      await prisma.attachment.deleteMany({
+        where: {
+          OR: [
+            { taskId: { in: ownedTaskIds } },
+            { projectId: { in: ownedProjectIds } },
+          ],
+        },
+      });
+    }
+
+    if (ownedProjectIds.length > 0) {
+      await prisma.task.deleteMany({ where: { projectId: { in: ownedProjectIds } } });
+      await prisma.projectMember.deleteMany({ where: { projectId: { in: ownedProjectIds } } });
+      await prisma.project.deleteMany({ where: { ownerId: id } });
+    }
+
+    // Clean user relations in other projects
+    await prisma.projectMember.deleteMany({ where: { userId: id } });
+    await prisma.task.updateMany({ where: { assignedTo: id }, data: { assignedTo: null } });
+
+    // Clean user auth & notification records
     await prisma.notification.deleteMany({ where: { userId: id } });
+    await prisma.refreshToken.deleteMany({ where: { userId: id } });
+    await prisma.passwordResetToken.deleteMany({ where: { userId: id } });
+
+    // Delete user
     await prisma.user.delete({ where: { id } });
-    res.json({ message: 'User deleted' });
+    res.json({ message: 'User deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Delete user error:', error);
+    res.status(500).json({ message: error.message || 'Server error while deleting user' });
   }
 };
 
@@ -82,6 +116,7 @@ exports.updateUserRole = async (req, res) => {
     const user = await prisma.user.update({ where: { id }, data: { role } });
     res.json({ id: user.id, username: user.username, role: user.role });
   } catch (error) {
+    console.error('Update role error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -94,6 +129,7 @@ exports.getAllProjects = async (req, res) => {
     });
     res.json(projects);
   } catch (error) {
+    console.error('Get projects error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -101,10 +137,26 @@ exports.getAllProjects = async (req, res) => {
 exports.deleteProject = async (req, res) => {
   try {
     const { id } = req.params;
+    const tasks = await prisma.task.findMany({ where: { projectId: id }, select: { id: true } });
+    const taskIds = tasks.map(t => t.id);
+
+    if (taskIds.length > 0) {
+      await prisma.attachment.deleteMany({
+        where: {
+          OR: [
+            { taskId: { in: taskIds } },
+            { projectId: id },
+          ],
+        },
+      });
+    }
+
     await prisma.task.deleteMany({ where: { projectId: id } });
+    await prisma.projectMember.deleteMany({ where: { projectId: id } });
     await prisma.project.delete({ where: { id } });
     res.json({ message: 'Project deleted' });
   } catch (error) {
+    console.error('Delete project error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
