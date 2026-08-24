@@ -22,6 +22,7 @@ model User {
   refreshTokens        RefreshToken[]
   passwordResetTokens  PasswordResetToken[]
   projectMemberships   ProjectMember[]
+  sentMessages         Message[] @relation("SentMessages")
 }
 
 model RefreshToken {
@@ -61,6 +62,7 @@ model Project {
   tasks       Task[]
   members     ProjectMember[]
   attachments Attachment[]
+  messages    Message[]
 }
 
 model Task {
@@ -116,4 +118,18 @@ model ProjectMember {
   @@unique([projectId, userId])
   @@index([projectId])
   @@index([userId])
+}
+
+model Message {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  projectId String   @db.ObjectId
+  senderId  String   @db.ObjectId
+  content   String
+  createdAt DateTime @default(now())
+
+  project   Project  @relation(fields: [projectId], references: [id])
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+
+  @@index([projectId])
+  @@index([senderId])
 }

@@ -17,6 +17,7 @@ const dashboardRoutes = require('./routes/dashboard.routes');
 const userRoutes = require('./routes/user.routes');
 const uploadRoutes = require('./routes/upload.routes');
 const searchRoutes = require('./routes/search.routes');
+const chatRoutes = require('./routes/chat.routes');
 
 // Socket manager
 const { initSocket } = require('./sockets/socketManager');
@@ -99,6 +100,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/chats', chatRoutes);
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
   dotfiles: 'deny',
@@ -125,4 +127,5 @@ server.on('error', (err) => {
   process.exit(1);
 });
 
+initSocket(server);
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

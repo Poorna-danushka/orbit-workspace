@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -8,17 +8,17 @@ import {
   DndContext, DragEndEvent, DragOverlay, DragStartEvent,
   PointerSensor, useSensor, useSensors, closestCorners,
 } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import {
-  Plus, Loader2, ArrowLeft, Calendar, X, Trash2, Paperclip, Download, UploadCloud,
+  Plus, Loader2, ArrowLeft, X, Paperclip, Download, UploadCloud,
   FileText
 } from 'lucide-react';
 import api from '@/lib/axios';
 import { io, Socket } from 'socket.io-client';
+import { jsPDF } from 'jspdf';
 import { BACKEND_URL } from '@/lib/config';
-import TaskCard, { Task, PRIORITY_COLORS } from '@/components/kanban/TaskCard';
+import { Task, PRIORITY_COLORS } from '@/components/kanban/TaskCard';
 import KanbanColumn, { COLUMNS } from '@/components/kanban/KanbanColumn';
+import ProjectChat from '@/components/chat/ProjectChat';
 
 interface ProjectMember {
   id: string;
@@ -65,12 +65,50 @@ export default function ProjectDetail() {
 
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   /** Error message shown below the Upload button — cleared on next upload attempt */
   const [uploadError, setUploadError] = useState<string | null>(null);
 
 
   const socketRef = useRef<Socket | null>(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  const fetchUnreadNotifications = useCallback(async () => {
+    try {
+      const res = await api.get('/notifications');
+      const count = (res.data || []).filter((item: { isRead?: boolean }) => !item.isRead).length;
+      setUnreadNotifications(count);
+    } catch (error) {
+      console.error('Failed to fetch unread notifications', error);
+    }
+  }, []);
+
+  const fetchProject = useCallback(async () => {
+    try {
+      const [projRes, taskRes] = await Promise.all([
+        api.get(`/projects/${id}`),
+        api.get(`/tasks/project/${id}`),
+      ]);
+      setProject(projRes.data);
+
+      const taskList = taskRes.data as Task[];
+      const tasksWithAttachments = await Promise.all(taskList.map(async (task: Task) => {
+        try {
+          const attRes = await api.get(`/uploads/task/${task.id}`);
+          return { ...task, attachments: attRes.data };
+        } catch {
+          return { ...task, attachments: [] };
+        }
+      }));
+      setTasks(tasksWithAttachments);
+
+    } catch (error) {
+      console.error('Error fetching project', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
 
   useEffect(() => {
     // Initialize WebSockets
@@ -81,6 +119,10 @@ export default function ProjectDetail() {
       socket.emit('joinProject', id);
       socket.on('taskChanged', (data: { taskId: string, status: string }) => {
         setTasks(prev => prev.map(t => t.id === data.taskId ? { ...t, status: data.status } : t));
+      });
+
+      socket.on('notificationReceived', () => {
+        void fetchUnreadNotifications();
       });
 
       socket.on('memberAdded', (newMember: ProjectMember) => {
@@ -110,14 +152,17 @@ export default function ProjectDetail() {
           return prev;
         });
       });
-      
-      fetchProject();
+
+      /* eslint-disable react-hooks/set-state-in-effect */
+      void fetchProject();
+      void fetchUnreadNotifications();
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
 
     return () => {
       socket.disconnect();
     };
-  }, [id]);
+  }, [id, fetchProject, fetchUnreadNotifications]);
 
   // Keyboard shortcut to open New Task modal when pressing 'N'
   useEffect(() => {
@@ -145,33 +190,174 @@ export default function ProjectDetail() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const fetchProject = async () => {
-    try {
-      const [projRes, taskRes] = await Promise.all([
-        api.get(`/projects/${id}`),
-        api.get(`/tasks/project/${id}`),
-      ]);
-      setProject(projRes.data);
-      
-      // Fetch attachments for all tasks concurrently to display counts
-      const tasksWithAttachments = await Promise.all(taskRes.data.map(async (t: any) => {
-        try {
-          const attRes = await api.get(`/uploads/task/${t.id}`);
-          return { ...t, attachments: attRes.data };
-        } catch {
-          return { ...t, attachments: [] };
-        }
-      }));
-      setTasks(tasksWithAttachments);
-      
-    } catch (error) {
-      console.error('Error fetching project', error);
-    } finally {
-      setLoading(false);
+  const handleChatToggle = async () => {
+    if (!showChat) {
+      setUnreadNotifications(0);
+      try {
+        await api.patch('/notifications/mark-all-read');
+      } catch (error) {
+        console.error('Failed to clear unread notifications', error);
+        fetchUnreadNotifications();
+      }
     }
+    setShowChat((prev) => !prev);
   };
 
   const getTasksByStatus = (status: string) => tasks.filter(t => t.status === status);
+
+  const handleGenerateProjectPdf = () => {
+    if (!project) return;
+
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const marginX = 42;
+    const contentWidth = pageWidth - marginX * 2;
+    const footerY = pageHeight - 18;
+    const leftColWidth = contentWidth / 2 - 10;
+
+    const sortedTasks = [...tasks].sort((a, b) => {
+      const aTime = a.dueDate ? new Date(a.dueDate).getTime() : Number.MAX_SAFE_INTEGER;
+      const bTime = b.dueDate ? new Date(b.dueDate).getTime() : Number.MAX_SAFE_INTEGER;
+      return aTime - bTime;
+    });
+
+    const updateFooter = () => {
+      const totalPages = doc.getNumberOfPages();
+      for (let pageIndex = 1; pageIndex <= totalPages; pageIndex += 1) {
+        doc.setPage(pageIndex);
+        doc.setDrawColor(148, 163, 184);
+        doc.setLineWidth(0.4);
+        doc.line(marginX, footerY - 6, pageWidth - marginX, footerY - 6);
+        doc.setTextColor(100, 116, 139);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.text('Elderly Care Management System (ECMS)', marginX, footerY);
+        doc.text(`Page ${pageIndex} of ${totalPages}`, pageWidth - marginX - 45, footerY, { align: 'right' });
+      }
+    };
+
+    const addHeader = () => {
+      doc.setFillColor(88, 28, 135);
+      doc.rect(0, 0, pageWidth, 92, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(20);
+      doc.text('Elderly Care Management System (ECMS)', marginX, 34);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text('Project Timeline Report', marginX, 54);
+      doc.text(`Generated: ${new Date().toLocaleDateString()} | Owner: ${project.owner?.username || 'Project Owner'}`, marginX, 70);
+    };
+
+    const drawTaskCard = (task: typeof tasks[number], index: number, startY: number) => {
+      const numberWidth = 28;
+      const gap = 10;
+      const titleWidth = contentWidth - numberWidth - gap - 12;
+      const titleText = `${String(index + 1).padStart(2, '0')}  ${task.title || 'Untitled task'}`;
+
+      const titleLines = doc.splitTextToSize(titleText, titleWidth);
+      const titleHeight = titleLines.length * 12;
+      const metadataY = startY + titleHeight + 18;
+      const cardHeight = Math.max(72, metadataY - startY + 26);
+
+      doc.setFillColor(index % 2 === 0 ? 248 : 252, 250, 252);
+      doc.setDrawColor(203, 213, 225);
+      doc.setLineWidth(0.5);
+      doc.roundedRect(marginX, startY, contentWidth, cardHeight, 7, 7, 'FD');
+
+      doc.setTextColor(30, 41, 59);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(String(index + 1).padStart(2, '0'), marginX + 12, startY + 18);
+      doc.setFont('helvetica', 'normal');
+      doc.text(titleLines, marginX + numberWidth + 18, startY + 18);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(51, 65, 85);
+      doc.text('Status:', marginX + 12, metadataY);
+      doc.text('Due Date:', marginX + 12 + leftColWidth, metadataY);
+      doc.text('Priority:', marginX + 12, metadataY + 14);
+
+      doc.setFont('helvetica', 'normal');
+      doc.text(task.status || 'Todo', marginX + 52, metadataY);
+      doc.text(task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date', marginX + 12 + leftColWidth + 52, metadataY);
+      doc.text(task.priority || 'Medium', marginX + 52, metadataY + 14);
+
+      return cardHeight + 10;
+    };
+
+    let y = 110;
+    addHeader();
+
+    doc.setTextColor(30, 41, 59);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text('Overview', marginX, y);
+    y += 18;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    const descriptionLines = doc.splitTextToSize(`Description: ${project.description || 'No description provided.'}`, contentWidth);
+    doc.text(descriptionLines, marginX, y);
+    y += descriptionLines.length * 12 + 12;
+
+    const stats = [
+      { label: 'Total Tasks', value: String(tasks.length) },
+      { label: 'Completed', value: String(tasks.filter(t => t.status === 'Completed').length) },
+      { label: 'In Progress', value: String(tasks.filter(t => t.status === 'In Progress').length) },
+      { label: 'Review', value: String(tasks.filter(t => t.status === 'Review').length) },
+      { label: 'Todo', value: String(tasks.filter(t => t.status === 'Todo').length) },
+    ];
+
+    const statBoxWidth = (contentWidth - 16) / stats.length;
+    const statBoxHeight = 48;
+    const statStartY = y;
+    stats.forEach((stat, index) => {
+      const x = marginX + index * (statBoxWidth + 4);
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(226, 232, 240);
+      doc.roundedRect(x, statStartY, statBoxWidth, statBoxHeight, 6, 6, 'FD');
+      doc.setTextColor(30, 41, 59);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text(stat.value, x + statBoxWidth / 2, statStartY + 20, { align: 'center' });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(71, 85, 105);
+      doc.text(stat.label, x + statBoxWidth / 2, statStartY + 33, { align: 'center' });
+    });
+
+    y = statStartY + statBoxHeight + 22;
+
+    doc.setTextColor(30, 41, 59);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text('Task List', marginX, y);
+    y += 18;
+
+    sortedTasks.forEach((task, index) => {
+      const cardHeight = drawTaskCard(task, index, y);
+      if (y + cardHeight > pageHeight - 36) {
+        doc.addPage();
+        addHeader();
+        y = 112;
+        doc.setTextColor(30, 41, 59);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.text('Task List', marginX, y);
+        y += 18;
+        drawTaskCard(task, index, y);
+        y += cardHeight;
+      } else {
+        y += cardHeight;
+      }
+    });
+
+    updateFooter();
+    doc.save(`${project.title.replace(/\s+/g, '-').toLowerCase()}-project-report.pdf`);
+  };
 
   const handleDragStart = (event: DragStartEvent) => {
     const task = tasks.find(t => t.id === event.active.id);
@@ -228,8 +414,9 @@ export default function ProjectDetail() {
       
       // Persist
       await api.patch(`/tasks/${viewingTask.id}/status`, { status: newStatus });
-    } catch (err: any) {
-      console.error('Failed to update task status', err?.response?.data || err);
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: unknown } };
+      console.error('Failed to update task status', err.response?.data ?? error);
     }
   };
 
@@ -271,8 +458,9 @@ export default function ProjectDetail() {
       // Update state
       setTasks(prev => prev.map(t => t.id === viewingTask.id ? { ...t, assignee: updatedTask.assignee, assignedTo: updatedTask.assignedTo } : t));
       setViewingTask(prev => prev ? { ...prev, assignee: updatedTask.assignee, assignedTo: updatedTask.assignedTo } : null);
-    } catch (err: any) {
-      console.error('Failed to update task assignee', err?.response?.data || err);
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: unknown } };
+      console.error('Failed to update task assignee', err.response?.data ?? error);
     }
   };
 
@@ -327,9 +515,9 @@ export default function ProjectDetail() {
         }
         return t;
       }));
-    } catch (err: any) {
-      // Surface the server's message (e.g. invalid file type, size limit)
-      const serverMsg = err?.response?.data?.message;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      const serverMsg = err.response?.data?.message;
       setUploadError(serverMsg || 'Upload failed. Please try again.');
     } finally {
       setUploading(false);
@@ -369,19 +557,45 @@ export default function ProjectDetail() {
           </div>
         </div>
         
-        <button
-          onClick={() => { setDefaultStatus('Todo'); setNewTask(p => ({ ...p, status: 'Todo', assignedTo: '' })); setIsModalOpen(true); }}
-          className="group relative flex items-center gap-2 px-4.5 py-2.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-500 hover:via-indigo-500 hover:to-blue-500 text-white rounded-xl font-semibold shadow-[0_0_15px_rgba(120,119,198,0.25)] hover:shadow-[0_0_22px_rgba(120,119,198,0.45)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 overflow-hidden"
-          title="Create a new task (HotKey: N)"
-        >
-          {/* Sheen effect overlay */}
-          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-          <Plus className="w-4.5 h-4.5 text-white/90 group-hover:rotate-90 transition-transform duration-300 ease-out" />
-          <span className="text-sm tracking-wide">New Task</span>
-          <kbd className="hidden sm:inline-flex items-center justify-center px-1.5 py-0.5 ml-1.5 text-[9px] font-bold text-white/50 bg-white/10 border border-white/10 rounded-md">
-            N
-          </kbd>
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <ProjectChat
+              projectId={String(id)}
+              currentUserId={user?.id || ''}
+              currentUserName={user?.username || 'You'}
+              open={showChat}
+                onToggle={handleChatToggle}
+            />
+            {unreadNotifications > 0 && (
+              <span className="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full border border-white/10 bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-lg shadow-red-500/30">
+                {unreadNotifications > 9 ? '9+' : unreadNotifications}
+              </span>
+            )}
+          </div>
+          {isOwner && (
+            <button
+                type="button"
+                onClick={handleGenerateProjectPdf}
+                className="group relative flex items-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20 transition-all shadow-[0_0_20px_rgba(16,185,129,0.15)]"
+                title="Create project PDF"
+            >
+                <span className="text-sm font-medium">Create PDF</span>
+            </button>
+          )}
+          <button
+            onClick={() => { setDefaultStatus('Todo'); setNewTask(p => ({ ...p, status: 'Todo', assignedTo: '' })); setIsModalOpen(true); }}
+            className="group relative flex items-center gap-2 px-4.5 py-2.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-500 hover:via-indigo-500 hover:to-blue-500 text-white rounded-xl font-semibold shadow-[0_0_15px_rgba(120,119,198,0.25)] hover:shadow-[0_0_22px_rgba(120,119,198,0.45)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 overflow-hidden"
+            title="Create a new task (HotKey: N)"
+          >
+            {/* Sheen effect overlay */}
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            <Plus className="w-4.5 h-4.5 text-white/90 group-hover:rotate-90 transition-transform duration-300 ease-out" />
+            <span className="text-sm tracking-wide">New Task</span>
+            <kbd className="hidden sm:inline-flex items-center justify-center px-1.5 py-0.5 ml-1.5 text-[9px] font-bold text-white/50 bg-white/10 border border-white/10 rounded-md">
+                N
+            </kbd>
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-x-auto pb-4">
@@ -577,6 +791,7 @@ export default function ProjectDetail() {
                         <div key={att.id} className="flex flex-col gap-2 p-3 rounded-xl bg-white/5 border border-white/5 overflow-hidden hover:bg-white/10 transition-colors group">
                           {image && (
                             <div className="relative aspect-video rounded-lg overflow-hidden bg-black/40 border border-white/5">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={`${BACKEND_URL}${att.fileUrl}`} alt={att.fileName} className="w-full h-full object-cover" />
                             </div>
                           )}
