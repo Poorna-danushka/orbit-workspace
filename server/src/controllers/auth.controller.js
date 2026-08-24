@@ -60,6 +60,30 @@ exports.register = async (req, res) => {
       data: { username, email, password: hashedPassword },
     });
 
+    const pendingInvitations = await prisma.projectInvitation.findMany({
+      where: {
+        invitedEmail: email.toLowerCase(),
+        status: 'pending',
+        expiresAt: { gt: new Date() },
+      },
+      include: {
+        project: { select: { id: true, title: true } },
+      },
+    });
+
+    for (const invitation of pendingInvitations) {
+      await prisma.projectInvitation.update({
+        where: { id: invitation.id },
+        data: { invitedUserId: user.id },
+      });
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          message: `You have a pending invitation to join "${invitation.project.title}".`,
+        },
+      });
+    }
+
     const refreshPayload = generateRefreshToken(user);
     await prisma.refreshToken.create({
       data: {
@@ -134,6 +158,30 @@ exports.googleAuth = async (req, res) => {
           role: 'user',
         },
       });
+
+      const pendingInvitations = await prisma.projectInvitation.findMany({
+        where: {
+          invitedEmail: email.toLowerCase(),
+          status: 'pending',
+          expiresAt: { gt: new Date() },
+        },
+        include: {
+          project: { select: { id: true, title: true } },
+        },
+      });
+
+      for (const invitation of pendingInvitations) {
+        await prisma.projectInvitation.update({
+          where: { id: invitation.id },
+          data: { invitedUserId: user.id },
+        });
+        await prisma.notification.create({
+          data: {
+            userId: user.id,
+            message: `You have a pending invitation to join "${invitation.project.title}".`,
+          },
+        });
+      }
     }
 
     const refreshPayload = generateRefreshToken(user);

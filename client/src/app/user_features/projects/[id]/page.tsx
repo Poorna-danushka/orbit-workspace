@@ -243,23 +243,23 @@ export default function ProjectDetail() {
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(20);
-      doc.text('Elderly Care Management System (ECMS)', marginX, 34);
+      doc.text(String('Elderly Care Management System (ECMS)'), marginX, 34);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
-      doc.text('Project Timeline Report', marginX, 54);
-      doc.text(`Generated: ${new Date().toLocaleDateString()} | Owner: ${project.owner?.username || 'Project Owner'}`, marginX, 70);
+      doc.text(String('Project Report'), marginX, 54);
+      doc.text(String(`Generated: ${new Date().toLocaleDateString()} | Owner: ${project.owner?.username || 'Project Owner'}`), marginX, 70);
     };
 
     const drawTaskCard = (task: typeof tasks[number], index: number, startY: number) => {
       const numberWidth = 28;
       const gap = 10;
       const titleWidth = contentWidth - numberWidth - gap - 12;
-      const titleText = `${String(index + 1).padStart(2, '0')}  ${task.title || 'Untitled task'}`;
+      const titleText = `${String(index + 1).padStart(2, '0')}  ${String(task.title || 'Untitled task')}`;
 
       const titleLines = doc.splitTextToSize(titleText, titleWidth);
       const titleHeight = titleLines.length * 12;
       const metadataY = startY + titleHeight + 18;
-      const cardHeight = Math.max(72, metadataY - startY + 26);
+      const cardHeight = Math.max(76, metadataY - startY + 28);
 
       doc.setFillColor(index % 2 === 0 ? 248 : 252, 250, 252);
       doc.setDrawColor(203, 213, 225);
@@ -276,14 +276,14 @@ export default function ProjectDetail() {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
       doc.setTextColor(51, 65, 85);
-      doc.text('Status:', marginX + 12, metadataY);
-      doc.text('Due Date:', marginX + 12 + leftColWidth, metadataY);
-      doc.text('Priority:', marginX + 12, metadataY + 14);
+      doc.text(String('Status:'), marginX + 12, metadataY);
+      doc.text(String('Due Date:'), marginX + 12 + leftColWidth, metadataY);
+      doc.text(String('Priority:'), marginX + 12, metadataY + 14);
 
       doc.setFont('helvetica', 'normal');
-      doc.text(task.status || 'Todo', marginX + 52, metadataY);
-      doc.text(task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date', marginX + 12 + leftColWidth + 52, metadataY);
-      doc.text(task.priority || 'Medium', marginX + 52, metadataY + 14);
+      doc.text(String(task.status || 'Todo'), marginX + 52, metadataY);
+      doc.text(String(task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'), marginX + 12 + leftColWidth + 52, metadataY);
+      doc.text(String(task.priority || 'Medium'), marginX + 52, metadataY + 14);
 
       return cardHeight + 10;
     };
@@ -294,12 +294,13 @@ export default function ProjectDetail() {
     doc.setTextColor(30, 41, 59);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
-    doc.text('Overview', marginX, y);
+    doc.text(String('Overview'), marginX, y);
     y += 18;
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    const descriptionLines = doc.splitTextToSize(`Description: ${project.description || 'No description provided.'}`, contentWidth);
+    const descriptionText = `Description: ${project.description || 'No description provided.'}`;
+    const descriptionLines = doc.splitTextToSize(descriptionText, contentWidth);
     doc.text(descriptionLines, marginX, y);
     y += descriptionLines.length * 12 + 12;
 
@@ -322,11 +323,11 @@ export default function ProjectDetail() {
       doc.setTextColor(30, 41, 59);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(16);
-      doc.text(stat.value, x + statBoxWidth / 2, statStartY + 20, { align: 'center' });
+      doc.text(String(stat.value), x + statBoxWidth / 2, statStartY + 20, { align: 'center' });
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       doc.setTextColor(71, 85, 105);
-      doc.text(stat.label, x + statBoxWidth / 2, statStartY + 33, { align: 'center' });
+      doc.text(String(stat.label), x + statBoxWidth / 2, statStartY + 33, { align: 'center' });
     });
 
     y = statStartY + statBoxHeight + 22;
@@ -334,7 +335,7 @@ export default function ProjectDetail() {
     doc.setTextColor(30, 41, 59);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
-    doc.text('Task List', marginX, y);
+    doc.text(String('Task List'), marginX, y);
     y += 18;
 
     sortedTasks.forEach((task, index) => {
@@ -346,7 +347,7 @@ export default function ProjectDetail() {
         doc.setTextColor(30, 41, 59);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(13);
-        doc.text('Task List', marginX, y);
+        doc.text(String('Task List'), marginX, y);
         y += 18;
         drawTaskCard(task, index, y);
         y += cardHeight;
@@ -356,7 +357,7 @@ export default function ProjectDetail() {
     });
 
     updateFooter();
-    doc.save(`${project.title.replace(/\s+/g, '-').toLowerCase()}-project-report.pdf`);
+    doc.save(String(`${project.title.replace(/\s+/g, '-').toLowerCase()}-project-report.pdf`));
   };
 
   const handleDragStart = (event: DragStartEvent) => {

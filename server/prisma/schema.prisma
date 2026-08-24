@@ -22,6 +22,8 @@ model User {
   refreshTokens        RefreshToken[]
   passwordResetTokens  PasswordResetToken[]
   projectMemberships   ProjectMember[]
+  sentInvitations      ProjectInvitation[] @relation("SentInvitations")
+  receivedInvitations  ProjectInvitation[] @relation("ReceivedInvitations")
   sentMessages         Message[] @relation("SentMessages")
 }
 
@@ -58,11 +60,12 @@ model Project {
   status      String   @default("active")
   createdAt   DateTime @default(now())
 
-  owner       User     @relation(fields: [ownerId], references: [id])
-  tasks       Task[]
-  members     ProjectMember[]
-  attachments Attachment[]
-  messages    Message[]
+  owner        User                 @relation(fields: [ownerId], references: [id])
+  tasks        Task[]
+  members      ProjectMember[]
+  attachments  Attachment[]
+  invitations  ProjectInvitation[]
+  messages     Message[]
 }
 
 model Task {
@@ -118,6 +121,27 @@ model ProjectMember {
   @@unique([projectId, userId])
   @@index([projectId])
   @@index([userId])
+}
+
+model ProjectInvitation {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  projectId     String   @db.ObjectId
+  inviterId     String   @db.ObjectId
+  invitedUserId String?  @db.ObjectId
+  invitedEmail  String
+  token         String   @unique
+  status        String   @default("pending")
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  project       Project  @relation(fields: [projectId], references: [id])
+  inviter       User     @relation("SentInvitations", fields: [inviterId], references: [id])
+  invitedUser   User?    @relation("ReceivedInvitations", fields: [invitedUserId], references: [id])
+
+  @@index([projectId])
+  @@index([invitedEmail])
+  @@index([status])
 }
 
 model Message {

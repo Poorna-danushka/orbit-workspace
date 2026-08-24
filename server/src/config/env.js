@@ -25,6 +25,12 @@ module.exports = {
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
   JWT_ISSUER: process.env.JWT_ISSUER,
   JWT_AUDIENCE: process.env.JWT_AUDIENCE,
-  CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:3000',
+  CLIENT_URL: process.env.CLIENT_URL || process.env.FRONTEND_URL || process.env.WEB_URL || process.env.APP_URL || 'http://localhost:3000',
   PORT: process.env.PORT || 5000,
+  SMTP_HOST: process.env.SMTP_HOST,
+  SMTP_PORT: Number(process.env.SMTP_PORT || 587),
+  SMTP_SECURE: String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true',
+  SMTP_USER: process.env.SMTP_USER,
+  SMTP_PASS: process.env.SMTP_PASS,
+  MAIL_FROM: process.env.MAIL_FROM || process.env.SMTP_USER,
 };

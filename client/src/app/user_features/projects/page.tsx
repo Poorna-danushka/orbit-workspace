@@ -145,8 +145,13 @@ export default function Projects() {
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [selectedTeamProject, setSelectedTeamProject] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [pendingInvitations, setPendingInvitations] = useState<any[]>([]);
+  const [inviteMessage, setInviteMessage] = useState<string | null>(null);
+  const [inviteError, setInviteError] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
+  const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
     if (!user) return;

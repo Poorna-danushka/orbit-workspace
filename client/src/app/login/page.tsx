@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import Link from 'next/link';
 import { Mail, Lock, Loader2, ArrowRight, ArrowLeft, Layers } from 'lucide-react';
@@ -17,7 +17,9 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useDispatch();
+  const nextPath = searchParams.get('next') || '';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,11 +33,8 @@ export default function Login() {
       saveAuthTokens(user);
       dispatch(setCredentials({ user }));
 
-      if (user.role === 'admin') {
-        router.push('/admin_features/dashboard');
-      } else {
-        router.push('/user_features/dashboard');
-      }
+      const destination = nextPath && nextPath.startsWith('/') ? nextPath : user.role === 'admin' ? '/admin_features/dashboard' : '/user_features/dashboard';
+      router.push(destination);
     } catch (error: unknown) {
       const message = error instanceof Error
         ? error.message
@@ -60,11 +59,8 @@ export default function Login() {
       saveAuthTokens(user);
       dispatch(setCredentials({ user }));
 
-      if (user.role === 'admin') {
-        router.push('/admin_features/dashboard');
-      } else {
-        router.push('/user_features/dashboard');
-      }
+      const destination = nextPath && nextPath.startsWith('/') ? nextPath : user.role === 'admin' ? '/admin_features/dashboard' : '/user_features/dashboard';
+      router.push(destination);
     } catch (err: any) {
       console.error('Google login failed:', err);
       setError(err?.response?.data?.message || err?.message || 'Google authentication failed');
