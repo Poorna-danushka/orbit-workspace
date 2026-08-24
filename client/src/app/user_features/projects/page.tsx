@@ -214,6 +214,39 @@ export default function Projects() {
     }
   };
 
+  const handleInviteEmail = async (email: string) => {
+    if (!selectedTeamProject) return;
+    const trimmed = (email || '').trim();
+    // basic email validation
+    if (!/^\S+@\S+\.\S+$/.test(trimmed)) {
+      setInviteError('Please provide a valid email address.');
+      return;
+    }
+
+    try {
+      setInviting(true);
+      setInviteError(null);
+      setInviteMessage(null);
+
+      const res = await api.post(`/projects/${selectedTeamProject.id}/invite`, { email: trimmed });
+      setInviteMessage(res.data?.message || 'Invitation sent.');
+
+      // Refresh projects and selected project state
+      const projectsRes = await api.get('/projects?page=1&limit=50');
+      const updatedProjects = projectsRes.data.data || projectsRes.data;
+      setProjects(updatedProjects);
+      const updatedProj = updatedProjects.find((p: Project) => p.id === selectedTeamProject.id);
+      if (updatedProj) setSelectedTeamProject(updatedProj);
+
+      setInviteEmail('');
+      setSearchQuery('');
+    } catch (err: any) {
+      setInviteError(err.response?.data?.message || 'Failed to send invitation');
+    } finally {
+      setInviting(false);
+    }
+  };
+
   const handleRemoveMember = async (memberUserId: string) => {
     if (!selectedTeamProject) return;
     try {
@@ -596,7 +629,29 @@ export default function Projects() {
                       <Loader2 className="w-4 h-4 animate-spin text-purple-500" /> Searching...
                     </div>
                   ) : searchResults.length === 0 ? (
-                    <div className="text-center py-4 text-xs text-gray-500">No users found.</div>
+                    <div className="p-2">
+                      <div className="text-center py-2 text-xs text-gray-500">No users found.</div>
+
+                      {/* Invite by email when no users found */}
+                      <div className="flex gap-2 items-center mt-2">
+                        <input
+                          value={inviteEmail || searchQuery}
+                          onChange={e => setInviteEmail(e.target.value)}
+                          className="flex-1 px-3 py-2 bg-black/30 border border-white/10 rounded-xl text-white text-sm"
+                          placeholder="Enter email to invite"
+                        />
+                        <button
+                          onClick={() => handleInviteEmail(inviteEmail || searchQuery)}
+                          disabled={inviting}
+                          className="px-3 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm font-semibold"
+                        >
+                          {inviting ? 'Inviting...' : `Invite`}
+                        </button>
+                      </div>
+
+                      {inviteMessage && <p className="text-xs text-green-400 mt-2">{inviteMessage}</p>}
+                      {inviteError && <p className="text-xs text-red-400 mt-2">{inviteError}</p>}
+                    </div>
                   ) : (
                     searchResults.map(u => {
                       const isAlreadyMember = selectedTeamProject.members?.some(m => m.userId === u.id) || selectedTeamProject.owner?.id === u.id;
