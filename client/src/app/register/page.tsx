@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import Link from 'next/link';
@@ -11,7 +11,7 @@ import { setCredentials } from '@/store/slices/authSlice';
 import { saveAuthTokens } from '@/lib/tokenStorage';
 import { signInWithGoogle } from '@/lib/firebase';
 
-export default function Register() {
+function RegisterForm() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -203,5 +203,19 @@ export default function Register() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Register() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#08090d]">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        </div>
+      }
+    >
+      <RegisterForm />
+    </Suspense>
   );
 }
