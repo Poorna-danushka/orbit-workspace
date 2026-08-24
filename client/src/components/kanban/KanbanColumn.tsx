@@ -31,8 +31,8 @@ export default function KanbanColumn({ status, tasks, onDelete, onAddTask, onTas
   const taskIds = tasks.map(t => t.id);
   
   return (
-    <div className={`flex flex-col min-w-[280px] max-w-[280px] bg-white/3 border rounded-2xl p-4 ${COLUMN_COLORS[status]}`}>
-      <div className="flex items-center justify-between mb-4">
+    <section aria-label={`${status} tasks`} className={`flex flex-col min-w-[280px] max-w-[320px] flex-1 bg-white/[0.025] border rounded-2xl p-3.5 ${COLUMN_COLORS[status]}`}>
+      <div className="flex items-center justify-between mb-3 px-1">
         <div className="flex items-center gap-2">
           <span className={`text-sm font-semibold ${COLUMN_HEADER_COLORS[status]}`}>{status}</span>
           <span className="text-xs bg-white/10 text-gray-400 rounded-full px-2 py-0.5">{tasks.length}</span>
@@ -56,6 +56,6 @@ export default function KanbanColumn({ status, tasks, onDelete, onAddTask, onTas
           )}
         </div>
       </SortableContext>
-    </div>
+    </section>
   );
 }

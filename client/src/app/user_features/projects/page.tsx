@@ -131,6 +131,23 @@ export default function Projects() {
   const [deleteId, setDeleteId]           = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Project | null>(null);
 
+  const fetchProjects = useCallback(async () => {
+    try {
+      const res = await api.get('/projects?page=1&limit=50');
+      setProjects(res.data.data || res.data);
+    } catch (err) {
+      console.error('Failed to fetch projects', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [selectedTeamProject, setSelectedTeamProject] = useState<Project | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
+
   useEffect(() => {
     if (!user) return;
     const socket = io(BACKEND_URL);
@@ -154,14 +171,7 @@ export default function Projects() {
     return () => {
       socket.disconnect();
     };
-  }, [user]);
-
-  // Team management states
-  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
-  const [selectedTeamProject, setSelectedTeamProject] = useState<Project | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [searching, setSearching] = useState(false);
+  }, [user, fetchProjects]);
 
   // Handle user search debounce
   useEffect(() => {
@@ -212,17 +222,6 @@ export default function Projects() {
       alert(err.response?.data?.message || 'Failed to remove member');
     }
   };
-
-  const fetchProjects = useCallback(async () => {
-    try {
-      const res = await api.get('/projects?page=1&limit=50');
-      setProjects(res.data.data || res.data);
-    } catch (err) {
-      console.error('Failed to fetch projects', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => { fetchProjects(); }, [fetchProjects]);
 
@@ -281,6 +280,8 @@ export default function Projects() {
     p.title.toLowerCase().includes(search.toLowerCase()) ||
     p.description?.toLowerCase().includes(search.toLowerCase())
   );
+  const activeCount = projects.filter(p => p.status === 'active').length;
+  const totalTasks = projects.reduce((sum, project) => sum + (project._count?.tasks || 0), 0);
 
   if (loading) return (
     <div className="h-full flex items-center justify-center">
@@ -294,31 +295,27 @@ export default function Projects() {
       {/* ── Page header ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Projects</h2>
-          <p className="text-gray-500 text-sm mt-1">
-            {projects.length} project{projects.length !== 1 ? 's' : ''} · Click any card to open its Kanban board
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-purple-400 mb-2">Workspace overview</p>
+          <h2 className="text-3xl font-bold tracking-tight text-white">Projects</h2>
+          <p className="text-gray-500 text-sm mt-1">Plan, collaborate, and move work forward.</p>
         </div>
-        <button
-          onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-xl font-medium shadow-[0_0_15px_rgba(120,119,198,0.3)] transition-all"
-        >
-          <Plus className="w-5 h-5" />
-          <span className="hidden sm:inline">New Project</span>
-          <span className="sm:hidden">New</span>
+        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-900/30 transition-all">
+          <Plus className="w-5 h-5" /> <span>New Project</span>
         </button>
       </div>
 
-      {/* ── Search ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {[['Total projects', projects.length, 'Across your workspace'], ['Active now', activeCount, 'Currently in motion'], ['Tasks tracked', totalTasks, 'Across all projects']].map(([label, value, hint]) => (
+          <div key={String(label)} className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4">
+            <p className="text-xs text-gray-500">{label}</p><p className="mt-2 text-2xl font-bold text-white">{value}</p><p className="mt-1 text-[11px] text-gray-600">{hint}</p>
+          </div>
+        ))}
+      </div>
+
       {projects.length > 0 && (
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search projects…"
-            className="w-full pl-10 pr-4 py-2.5 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/30 text-sm"
-          />
+          <input aria-label="Search projects" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search projects by name or description…" className="w-full pl-10 pr-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/30 text-sm" />
         </div>
       )}
 
@@ -353,7 +350,7 @@ export default function Projects() {
               <Link
                 key={project.id}
                 href={`/user_features/projects/${project.id}`}
-                className="group relative flex flex-col rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10 hover:border-purple-500/30 transition-all duration-300 overflow-hidden hover:shadow-purple-500/10 hover:shadow-xl"
+                className="group relative flex flex-col rounded-2xl bg-white/[0.025] border border-white/[0.08] shadow-lg shadow-black/10 hover:border-purple-400/40 hover:bg-white/[0.045] transition-all duration-300 overflow-hidden hover:shadow-purple-500/10 hover:shadow-xl"
               >
                 {/* Gradient accent bar on hover */}
                 <div className="h-[2px] w-full bg-gradient-to-r from-purple-600 via-blue-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
