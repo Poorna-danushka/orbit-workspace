@@ -8,7 +8,7 @@
 # What this workflow does:
 #   1. Install server/ dependencies via npm ci
 #      (postinstall hook automatically runs: npx prisma generate)
-#   2. Validate the Prisma schema
+#   2. Verify Prisma Client generation (schema syntax + generator config)
 #   3. Build the server/Dockerfile
 #      (validates the image is producible — image is NOT pushed)
 #
@@ -83,15 +83,21 @@ jobs:
         run: npm ci
 
       # -----------------------------------------------------------------------
-      # 4. Validate Prisma schema
-      #    - Checks that schema.prisma is syntactically correct
-      #    - Verifies the generator and datasource blocks are valid
-      #    - Does NOT connect to MongoDB Atlas (no DATABASE_URL needed)
-      #    - Does NOT run prisma db push or any migration
+      # 4. Verify Prisma Client generation
+      #    - Re-runs prisma generate explicitly to confirm the schema and
+      #      generator config are valid as a visible CI step.
+      #    - prisma generate reads only the schema file structure — it does
+      #      NOT resolve env() datasource variables (no DATABASE_URL needed).
+      #    - prisma validate was intentionally NOT used here: it calls
+      #      getConfig which resolves env("DATABASE_URL") and exits P1012
+      #      when the variable is absent — making it unusable in secret-free CI.
+      #    - This step is idempotent: postinstall already ran prisma generate
+      #      during npm ci above. Running it again is cheap and makes the
+      #      schema check explicit in the CI log.
       # -----------------------------------------------------------------------
-      - name: Validate Prisma schema
+      - name: Verify Prisma Client generation
         working-directory: server
-        run: npx prisma validate
+        run: npx prisma generate
 
       # -----------------------------------------------------------------------
       # 5. Backend tests
