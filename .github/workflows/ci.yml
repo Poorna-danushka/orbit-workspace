@@ -1,0 +1,132 @@
+# =============================================================================
+# Orbit — Backend CI
+#
+# Runs on every push to main and on every pull request targeting main,
+# but ONLY when backend-relevant files have changed (path filtering).
+# Frontend changes handled entirely by Vercel — they do not trigger this job.
+#
+# What this workflow does:
+#   1. Install server/ dependencies via npm ci
+#      (postinstall hook automatically runs: npx prisma generate)
+#   2. Validate the Prisma schema
+#   3. Build the server/Dockerfile
+#      (validates the image is producible — image is NOT pushed)
+#
+# What this workflow deliberately does NOT do:
+#   - Run npm test  (no tests exist; the script exits 1 by design)
+#   - Run ESLint    (no ESLint config in server/)
+#   - Push Docker image to any registry  (Phase 7)
+#   - Deploy anywhere                    (Phase 8+)
+#   - Connect to MongoDB Atlas           (no DATABASE_URL required)
+#   - Use any repository secrets         (Docker build is secret-free)
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      # Run CI when backend source changes
+      - 'server/**'
+      # Run CI when Docker Compose changes
+      - 'docker-compose.yml'
+      # Always re-run CI when the workflow itself changes
+      - '.github/workflows/**'
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'server/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/**'
+
+jobs:
+  ci:
+    name: Backend CI
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------------------------------------------------------
+      # 1. Checkout
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # 2. Node.js 22
+      #    - Matches node:22-alpine used in server/Dockerfile
+      #    - cache: 'npm' + cache-dependency-path enables automatic npm cache
+      #      keyed on server/package-lock.json — avoids re-downloading packages
+      #      on every run when dependencies have not changed
+      # -----------------------------------------------------------------------
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      # -----------------------------------------------------------------------
+      # 3. Install backend dependencies
+      #    - Runs from server/ where server/package-lock.json lives
+      #    - npm ci installs exact versions from the lockfile
+      #    - postinstall hook automatically executes:
+      #        npx prisma generate
+      #      which generates the Prisma Client for the native platform
+      #      (binaryTargets includes "native" for the ubuntu-latest runner)
+      # -----------------------------------------------------------------------
+      - name: Install backend dependencies
+        working-directory: server
+        run: npm ci
+
+      # -----------------------------------------------------------------------
+      # 4. Validate Prisma schema
+      #    - Checks that schema.prisma is syntactically correct
+      #    - Verifies the generator and datasource blocks are valid
+      #    - Does NOT connect to MongoDB Atlas (no DATABASE_URL needed)
+      #    - Does NOT run prisma db push or any migration
+      # -----------------------------------------------------------------------
+      - name: Validate Prisma schema
+        working-directory: server
+        run: npx prisma validate
+
+      # -----------------------------------------------------------------------
+      # 5. Backend tests
+      #    NOTE: The Orbit backend currently has no automated tests.
+      #          The existing npm test script exits with code 1 by design.
+      #          This step is intentionally omitted to avoid false CI failures.
+      #
+      #    When backend tests are added in a future phase, restore:
+      #      - name: Run backend tests
+      #        working-directory: server
+      #        run: npm test
+      # -----------------------------------------------------------------------
+
+      # -----------------------------------------------------------------------
+      # 6. Set up Docker Buildx
+      #    Required for cache-from / cache-to (GitHub Actions cache) support
+      # -----------------------------------------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # -----------------------------------------------------------------------
+      # 7. Build Docker image
+      #    - Builds server/Dockerfile with ./server as the build context
+      #    - push: false  → image is built but NOT pushed to any registry
+      #    - GHCR / container registry push belongs to Phase 7
+      #    - cache-from/cache-to: GitHub Actions cache speeds up repeated builds
+      #      by reusing unchanged Docker layers (especially the npm ci layer)
+      #    - No secrets are required: the Dockerfile contains no ARG/ENV for
+      #      DATABASE_URL, JWT_SECRET, CLOUDINARY_*, or SMTP_* values
+      # -----------------------------------------------------------------------
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./server
+          push: false
+          tags: orbit-backend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -1,0 +1,92 @@
+# =============================================================================
+# docker-compose.yml — Orbit workspace
+#
+# Contains ONLY the backend service.
+# - MongoDB remains on MongoDB Atlas (cloud-managed — no container needed)
+# - The Next.js frontend remains deployed on Vercel (no container needed)
+#
+# Usage:
+#   docker compose up --build     # build + start
+#   docker compose up -d --build  # build + start in background
+#   docker compose logs -f        # stream logs
+#   docker compose down           # stop and remove container
+# =============================================================================
+
+services:
+  backend:
+    # -------------------------------------------------------------------------
+    # Build
+    # Build the image from ./server using server/Dockerfile.
+    # .dockerignore inside ./server controls what enters the build context.
+    # -------------------------------------------------------------------------
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+
+    # -------------------------------------------------------------------------
+    # Container identity
+    # -------------------------------------------------------------------------
+    container_name: orbit-backend
+
+    # -------------------------------------------------------------------------
+    # Port mapping
+    # HOST_PORT:CONTAINER_PORT
+    # Requests to localhost:5000 on the host are forwarded to port 5000 inside
+    # the container where Express is listening.
+    # -------------------------------------------------------------------------
+    ports:
+      - "5000:5000"
+
+    # -------------------------------------------------------------------------
+    # Environment variables / secrets
+    #
+    # Secrets are loaded from server/.env at RUNTIME — they are never baked
+    # into the Docker image. The .dockerignore ensures .env is excluded from
+    # the build context entirely.
+    #
+    # Variables loaded:
+    #   DATABASE_URL            → Prisma → MongoDB Atlas
+    #   JWT_SECRET              → Access token signing
+    #   JWT_REFRESH_SECRET      → Refresh token signing
+    #   CLIENT_URL              → CORS allowed origins
+    #   PORT                    → Express listen port (default 5000)
+    #   NODE_ENV                → Runtime mode (production in image ENV, but
+    #                             .env can override for local Compose use)
+    #   SMTP_HOST/PORT/USER/PASS/MAIL_FROM → Nodemailer
+    #   CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET → Cloudinary SDK
+    # -------------------------------------------------------------------------
+    env_file:
+      - ./server/.env
+
+    # -------------------------------------------------------------------------
+    # Restart policy
+    # "unless-stopped": automatically restart the container if it crashes,
+    # but respect an explicit `docker compose down` / `docker stop`.
+    # -------------------------------------------------------------------------
+    restart: unless-stopped
+
+    # -------------------------------------------------------------------------
+    # Healthcheck
+    #
+    # node:22-alpine does NOT include curl or wget.
+    # We use `node` itself (always available in any Node image) to make a
+    # lightweight HTTP GET to the existing /api/csrf-token endpoint.
+    # This endpoint requires no authentication and is always available when
+    # Express is running correctly.
+    #
+    # Timeline:
+    #   start_period: 15s  → grace period while Prisma connects to Atlas
+    #   interval: 30s      → check every 30 seconds after that
+    #   timeout: 10s       → fail the check if no response within 10 s
+    #   retries: 3         → mark container unhealthy after 3 consecutive fails
+    # -------------------------------------------------------------------------
+    healthcheck:
+      test:
+        - "CMD"
+        - "node"
+        - "-e"
+        - "require('http').get('http://localhost:5000/api/csrf-token', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"
+      start_period: 15s
+      interval: 30s
+      timeout: 10s
+      retries: 3

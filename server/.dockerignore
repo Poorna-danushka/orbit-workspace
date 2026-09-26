@@ -1,0 +1,78 @@
+# =============================================================================
+# server/.dockerignore
+#
+# Controls which files in the server/ directory are sent to the Docker build
+# daemon as the build context.
+#
+# Keeping the context small:
+#   - Speeds up `docker build`
+#   - Prevents secrets from entering the image
+#   - Prevents host-generated binaries from contaminating the container
+# =============================================================================
+
+# ---------- Secrets and local environment ----------
+# NEVER include .env files in the Docker image.
+# All secrets are supplied at runtime via --env-file or docker-compose env_file.
+.env
+.env.*
+# Allow the example template (it contains no real secrets)
+!.env.example
+
+# ---------- Node.js build artefacts ----------
+# The Dockerfile runs `npm ci` inside the container.
+# Copying the host's node_modules would:
+#   a) be very slow (hundreds of MB)
+#   b) include Windows-native binaries incompatible with linux/alpine
+#   c) override the linux-targeted Prisma Client generated in Stage 1
+node_modules
+
+# ---------- Prisma generated client on host ----------
+# The Prisma Client must be re-generated inside the container for linux/alpine.
+# The host-generated client targets Windows and is unusable inside Docker.
+node_modules/.prisma
+node_modules/@prisma
+
+# ---------- Git ----------
+# Version control history is not needed inside the image.
+.git
+.gitignore
+
+# ---------- Editor / IDE ----------
+.vscode
+.idea
+*.swp
+*.swo
+.editorconfig
+
+# ---------- OS artefacts ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- Logs ----------
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ---------- Test coverage ----------
+coverage
+.nyc_output
+
+# ---------- Docker files themselves ----------
+# (Docker automatically ignores the Dockerfile and .dockerignore, but being
+# explicit prevents confusion if files are renamed)
+Dockerfile
+Dockerfile.*
+.dockerignore
+docker-compose*.yml
+
+# ---------- Development utilities ----------
+# debug-prisma.js is a local dev debugging helper — not needed in production
+debug-prisma.js
+
+# ---------- Uploads directory ----------
+# Files are stored on Cloudinary. Any local uploads/ directory that might
+# exist from local development should not be included in the image.
+uploads/
