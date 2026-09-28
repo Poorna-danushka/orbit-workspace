@@ -112,14 +112,14 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Initialise MongoDB replica set
         run: |
-          mongosh --host 127.0.0.1:27017 --eval "
-            rs.initiate({
-              _id: 'rs0',
-              members: [{ _id: 0, host: '127.0.0.1:27017' }]
-            })
-          "
+          # mongosh lives inside the container, not on the runner.
+          # Use docker exec to reach it via the running mongo:7.0 container.
+          MONGO_CONTAINER=$(docker ps -q --filter ancestor=mongo:7.0)
+          docker exec "$MONGO_CONTAINER" mongosh --eval \
+            "rs.initiate({_id:'rs0',members:[{_id:0,host:'127.0.0.1:27017'}]})"
+          # Wait for primary election before the test suite connects.
           sleep 5
-          mongosh --host 127.0.0.1:27017 --eval "rs.status().ok"
+          docker exec "$MONGO_CONTAINER" mongosh --eval "rs.status().ok"
 
       # -----------------------------------------------------------------------
       # 3. Node.js 22
