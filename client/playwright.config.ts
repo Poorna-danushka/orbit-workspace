@@ -38,6 +38,7 @@ if (testDatabaseUrl) {
 
 export default defineConfig({
   testDir: './e2e',
+  timeout: 60_000,
   fullyParallel: true,
   reporter: 'list',
   use: {

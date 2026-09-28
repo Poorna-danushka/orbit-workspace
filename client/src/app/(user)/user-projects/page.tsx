@@ -542,8 +542,9 @@ export default function Projects() {
             )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-1.5">Project Name *</label>
+                <label htmlFor="project-name" className="block text-sm text-gray-400 mb-1.5">Project Name *</label>
                 <input
+                  id="project-name"
                   required
                   value={form.title}
                   onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
