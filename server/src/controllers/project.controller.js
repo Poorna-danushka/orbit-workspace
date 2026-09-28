@@ -2,13 +2,15 @@ const prisma = require('../config/prisma');
 const { CLIENT_URL } = require('../config/env');
 const { generatePasswordResetToken } = require('../utils/token.util');
 const { sendProjectInvitationEmail } = require('../services/email.service');
-const { getIo } = require('../sockets/socketManager');
+const {
+  getIo,
+  getProjectRoom,
+  getUserRoom,
+  revokeProjectRoomAccess,
+} = require('../sockets/socketManager');
 
 const normalizeEmail = (email) => (typeof email === 'string' ? email.trim().toLowerCase() : '');
-const buildInvitationUrl = (token) => {
-  const baseUrl = (CLIENT_URL || 'http://localhost:3000').split(',')[0].trim().replace(/\/$/, '');
-  return `${baseUrl}/project-invitations/${token}`;
-};
+const buildInvitationUrl = (token) => `${CLIENT_URL}/project-invitations/${token}`;
 
 exports.createProject = async (req, res) => {
   try {
@@ -109,7 +111,15 @@ exports.deleteProject = async (req, res) => {
     if (!project) return res.status(404).json({ message: 'Project not found' });
     if (project.ownerId !== userId) return res.status(403).json({ message: 'Only the project owner can delete it' });
 
+    const tasks = await prisma.task.findMany({ where: { projectId: id }, select: { id: true } });
+    const taskIds = tasks.map(({ id: taskId }) => taskId);
     await prisma.$transaction([
+      prisma.attachment.deleteMany({
+        where: { OR: [{ projectId: id }, { taskId: { in: taskIds } }] },
+      }),
+      prisma.projectInvitation.deleteMany({ where: { projectId: id } }),
+      prisma.message.deleteMany({ where: { projectId: id } }),
+      prisma.projectMember.deleteMany({ where: { projectId: id } }),
       prisma.task.deleteMany({ where: { projectId: id } }),
       prisma.project.delete({ where: { id } }),
     ]);
@@ -162,9 +172,9 @@ exports.addMember = async (req, res) => {
     // Emit socket event to project room and the newly added user room
     try {
       const io = getIo();
-      io.to(id).emit('memberAdded', member);
-      io.to(newMemberId).emit('projectAdded', { projectId: id });
-      io.to(newMemberId).emit('notificationReceived');
+      io.to(getProjectRoom(id)).emit('memberAdded', member);
+      io.to(getUserRoom(newMemberId)).emit('projectAdded', { projectId: id });
+      io.to(getUserRoom(newMemberId)).emit('notificationReceived');
     } catch (socketErr) {
       console.error('Socket emission failed in addMember:', socketErr);
     }
@@ -259,7 +269,7 @@ exports.inviteMember = async (req, res) => {
 
       if (invitedUser) {
         const io = getIo();
-        io.to(invitedUser.id).emit('notificationReceived');
+        io.to(getUserRoom(invitedUser.id)).emit('notificationReceived');
       }
 
       res.status(201).json({
@@ -422,10 +432,10 @@ exports.acceptInvitation = async (req, res) => {
 
     try {
       const io = getIo();
-      io.to(invitation.projectId).emit('memberAdded', { projectId: invitation.projectId, userId: currentUserId });
-      io.to(currentUserId).emit('projectAdded', { projectId: invitation.projectId });
-      io.to(currentUserId).emit('notificationReceived');
-      io.to(invitation.inviterId).emit('notificationReceived');
+      io.to(getProjectRoom(invitation.projectId)).emit('memberAdded', { projectId: invitation.projectId, userId: currentUserId });
+      io.to(getUserRoom(currentUserId)).emit('projectAdded', { projectId: invitation.projectId });
+      io.to(getUserRoom(currentUserId)).emit('notificationReceived');
+      io.to(getUserRoom(invitation.inviterId)).emit('notificationReceived');
     } catch (socketErr) {
       console.error('Socket emission failed on invitation acceptance:', socketErr);
     }
@@ -525,9 +535,10 @@ exports.removeMember = async (req, res) => {
     // Emit socket event to project room and the removed user room
     try {
       const io = getIo();
-      io.to(id).emit('memberRemoved', { projectId: id, userId: memberId });
-      io.to(memberId).emit('projectRemoved', { projectId: id });
-      io.to(memberId).emit('notificationReceived');
+      io.to(getProjectRoom(id)).emit('memberRemoved', { projectId: id, userId: memberId });
+      await revokeProjectRoomAccess(id, memberId);
+      io.to(getUserRoom(memberId)).emit('projectRemoved', { projectId: id });
+      io.to(getUserRoom(memberId)).emit('notificationReceived');
     } catch (socketErr) {
       console.error('Socket emission failed in removeMember:', socketErr);
     }

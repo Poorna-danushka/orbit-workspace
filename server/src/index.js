@@ -30,10 +30,7 @@ const server = http.createServer(app);
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
-const allowedOrigins = env.CORS_ORIGINS
-  .split(',')
-  .map((origin) => origin.trim().replace(/\/$/, ''))
-  .filter(Boolean);
+const allowedOrigins = env.CORS_ORIGINS;
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -81,7 +78,7 @@ const apiLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200, // Increased to prevent lockouts during testing/development
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
 });

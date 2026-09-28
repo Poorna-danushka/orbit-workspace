@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Calendar, CheckSquare, FolderKanban, Loader2, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { FolderKanban, Loader2, RefreshCw, Search, Trash2 } from 'lucide-react';
 import api from '@/lib/axios';
 
 interface AdminProject {
@@ -22,9 +22,8 @@ export default function AdminProjectsPage() {
   const [confirmDelete, setConfirmDelete] = useState<AdminProject | null>(null);
 
   const fetchProjects = useCallback(async () => {
-    setLoading(true);
     try {
-      const res = await api.get('/admin/projects');
+      const res = await api.get<AdminProject[]>('/admin/projects');
       setProjects(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
       console.error('Failed to fetch projects', error);
@@ -34,8 +33,13 @@ export default function AdminProjectsPage() {
   }, []);
 
   useEffect(() => {
-    fetchProjects();
+    queueMicrotask(() => void fetchProjects());
   }, [fetchProjects]);
+
+  const refreshProjects = () => {
+    setLoading(true);
+    void fetchProjects();
+  };
 
   const handleDelete = async (project: AdminProject) => {
     try {
@@ -63,7 +67,7 @@ export default function AdminProjectsPage() {
           <h1 className="text-2xl font-bold text-white">Project Management</h1>
           <p className="mt-1 text-sm text-gray-500">{projects.length} projects · {totalTasks} total tasks</p>
         </div>
-        <button onClick={fetchProjects} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-gray-300">
+        <button onClick={refreshProjects} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-gray-300">
           <RefreshCw className="h-4 w-4" /> Refresh
         </button>
       </div>

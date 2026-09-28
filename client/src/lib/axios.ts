@@ -13,13 +13,11 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { store } from '../store';
 import { logout, setCredentials } from '../store/slices/authSlice';
 import { saveAuthTokens, clearAuthTokens, getCookie } from './tokenStorage';
+import { API_BASE_URL } from './config';
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
-const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL?.trim();
-const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
-const baseURL = configuredApiUrl ||
-  (serverUrl ? `${serverUrl.replace(/\/$/, '')}/api` : '');
+const baseURL = API_BASE_URL;
 
 /**
  * Main API client.
@@ -100,6 +98,10 @@ const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS', 'TRACE']);
 
 api.interceptors.request.use(
   async (config) => {
+    if (!baseURL) {
+      throw new Error('API configuration is missing. Set NEXT_PUBLIC_SERVER_URL before building the frontend.');
+    }
+
     // ── Content-Type ──────────────────────────────────────────────────────
     if (config.data instanceof FormData) {
       // Let the browser set multipart/form-data with the correct boundary.
@@ -135,7 +137,6 @@ let refreshPromise: Promise<unknown> | null = null;
 const AUTH_ROUTES = new Set([
   '/auth/login',
   '/auth/register',
-  '/auth/google',
   '/auth/refresh',
   '/auth/forgot-password',
   '/auth/reset-password',

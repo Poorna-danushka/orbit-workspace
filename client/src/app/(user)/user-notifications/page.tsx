@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import api from '@/lib/axios';
 import {
   Bell, Check, CheckCheck, Loader2, RefreshCw,
@@ -42,19 +42,23 @@ export default function Notifications() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>('all');
 
-  const fetchNotifications = async () => {
-    setLoading(true);
+  const fetchNotifications = useCallback(async () => {
     try {
-      const res = await api.get('/notifications');
+      const res = await api.get<Notification[]>('/notifications');
       setNotifications(res.data);
     } catch (err) {
       console.error('Failed to load notifications', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchNotifications(); }, []);
+  useEffect(() => { queueMicrotask(() => void fetchNotifications()); }, [fetchNotifications]);
+
+  const refreshNotifications = () => {
+    setLoading(true);
+    void fetchNotifications();
+  };
 
   const markRead = async (id: string) => {
     try {
@@ -99,7 +103,7 @@ export default function Notifications() {
           </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <button onClick={fetchNotifications} className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-colors flex-shrink-0">
+          <button onClick={refreshNotifications} className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-colors flex-shrink-0">
             <RefreshCw className="w-4 h-4" />
           </button>
           {unread > 0 && (

@@ -12,11 +12,11 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
 [![Socket.io](https://img.shields.io/badge/Socket.io-4.8.3-010101?style=for-the-badge&logo=socket.io)](https://socket.io/)
 [![Cloudinary](https://img.shields.io/badge/Cloudinary-Media_CDN-3448C5?style=for-the-badge&logo=cloudinary)](https://cloudinary.com/)
-[![Firebase](https://img.shields.io/badge/Firebase-Auth_OAuth-FFCA28?style=for-the-badge&logo=firebase)](https://firebase.google.com/)
+[![Google OAuth](https://img.shields.io/badge/Google-OAuth_2.0%2FOIDC-4285F4?style=for-the-badge&logo=google)](https://developers.google.com/identity/openid-connect/openid-connect)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 <p align="center">
-  <b>Orbit</b> is an enterprise-ready, real-time project management and team collaboration workspace. Designed with a high-performance dark aesthetic, Orbit brings together interactive Kanban boards, live project team chat, tokenized email invitations, automated PDF report generation, granular role-based governance, and rock-solid enterprise security.
+  <b>Orbit</b> is a real-time project management and team collaboration workspace. Designed with a high-performance dark aesthetic, Orbit brings together interactive Kanban boards, live project team chat, tokenized email invitations, automated PDF report generation, role-based administration, and security controls.
 </p>
 
 </div>
@@ -78,9 +78,10 @@ Orbit streamlines team productivity by eliminating communication silos and provi
   - Invite external and registered users via email with secure expiry tokens powered by **Nodemailer**.
   - Dedicated invitation response portal (`/project-invitations/[token]`) with accept/reject handlers.
 - 📎 **Task & Project File Attachments**:
-  - Direct file uploads for documents, spreadsheets, images, and PDFs (up to 15MB) backed by **Multer** and **Cloudinary CDN**.
+  - Direct file uploads for documents, spreadsheets, images, and PDFs (up to 15MB) backed by **Multer** and **Cloudinary**, with MIME and file-signature checks.
+  - New project attachments use Cloudinary's authenticated delivery type and are streamed through an authenticated, project-membership-checked API endpoint. Existing uploads remain publicly accessible at their original Cloudinary URLs until migrated. Before production cutover, migrate those Cloudinary assets to authenticated delivery, update their attachment metadata, invalidate the old public URLs, and verify the old URLs no longer serve content.
 - 🔔 **Live Notification Hub (`/user_features/notifications`)**:
-  - Real-time updates for task assignments, project invites, status changes, and global admin broadcasts.
+  - Persistent notifications for task assignments, project invitations, and admin broadcasts; relevant project membership changes also trigger live refresh events.
   - Quick actions: Mark individual notifications as read or batch mark all as read.
 - 👤 **User Profile & Custom Avatar (`/user_features/profile`)**:
   - Update username and personal details.
@@ -109,7 +110,7 @@ Orbit streamlines team productivity by eliminating communication silos and provi
 - 📜 **System Activity & Audit Log (`/admin_features/activity`)**:
   - Live chronological audit trail tracking system events, user registrations, and administrative changes.
 - 📢 **System-Wide Broadcast System**:
-  - Broadcast notifications dispatched in real-time to all connected users via WebSockets and persisted to database.
+  - Admin announcements are persisted as notifications for all registered users.
 - 👤 **Dedicated Admin Profile (`/admin_features/profile`)**:
   - Administrative avatar management, password rotation, and security status verification.
 
@@ -121,16 +122,18 @@ Powered by **Socket.io** with dedicated rooms and optimized payloads:
 - `joinProject`: Subscribes clients to specific project channels for instant Kanban task state synchronization.
 - `joinChat`: Connects team members to live project chat rooms.
 - `joinUser`: Binds authenticated user sockets to their private notification stream.
-- `taskUpdated` / `taskChanged`: Broadcasts live drag-and-drop card movements and task edits across team members without page reloads.
+- `taskChanged`: The server broadcasts a task status change only after its authorized REST update succeeds.
 - `sendMessage` / `messageReceived`: Handles instant per-project chat messaging with sender metadata and persistence.
+
+Socket authentication uses the HttpOnly access cookie, looks up the current user, and checks project membership before joining or sending. WebSocket origins are checked against `CORS_ORIGINS`, sockets disconnect when their access token expires, and authenticated users are limited to 30 messages per minute across project rooms. Project and private-user rooms use separate namespaces. Message senders are derived from the authenticated socket, never trusted from the client payload.
 
 ---
 
 ### 🔐 Authentication & Enterprise Security
 
-- 🌐 **Firebase Google OAuth 2.0**: One-click Google authentication with automatic profile creation and avatar synchronization.
+- 🌐 **Google OAuth 2.0 / OpenID Connect**: Backend authorization-code flow with PKCE, state/nonce checks, and Orbit's existing HttpOnly JWT session.
 - 🔒 **Dual-Token HttpOnly Cookie Architecture**:
-  - Short-lived Access Tokens (15 min) + Long-lived Refresh Tokens (7 days) stored exclusively in `HttpOnly`, `SameSite: strict/lax`, `Secure` cookies.
+  - Short-lived Access Tokens + Long-lived Refresh Tokens stored exclusively in `HttpOnly`, `Secure` cookies (`SameSite=None` for cross-site HTTPS deployments; `Lax` for local development).
   - Resistant to XSS credential extraction and client-side token leakage.
 - 🔄 **Refresh Token Rotation & Revocation**:
   - Refresh tokens are hashed (`SHA-256`) and tracked in MongoDB with expiration and revocation timestamps.
@@ -188,7 +191,7 @@ Powered by **Socket.io** with dedicated rooms and optimized payloads:
 | **Document Generation**| [jsPDF](https://github.com/parallax/jsPDF) | `^4.2.1` | Client-side dynamic PDF project report exports |
 | **Iconography** | [Lucide React](https://lucide.dev/) | `^1.17.0` | Clean, modern UI iconography |
 | **HTTP Client** | [Axios](https://axios-http.com/) | `^1.16.1` | Configured with interceptors & CSRF header syncing |
-| **Auth Provider** | [Firebase Auth](https://firebase.google.com/) | `^12.18.0` | Google OAuth 2.0 federated authentication |
+| **Google OAuth / OIDC** | [google-auth-library](https://github.com/googleapis/google-auth-library-nodejs) | server dependency | Authorization-code exchange and server-side OIDC identity verification |
 | **Backend Runtime** | [Node.js](https://nodejs.org/) | `v18+ / v20+` | Asynchronous JavaScript runtime |
 | **Server Framework** | [Express](https://expressjs.com/) | `^5.2.1` | Next-generation Express 5 REST API |
 | **Database & ORM** | [Prisma](https://www.prisma.io/) + [MongoDB](https://www.mongodb.com/) | `^5.22.0` | Type-safe database queries and document mapping |
@@ -226,7 +229,7 @@ erDiagram
 ```
 
 ### Models Summary:
-- **`User`**: Account identity (`username`, `email`, `password`, `avatar`, `role: "user" | "admin"`, `createdAt`).
+- **`User`**: Account identity (`username`, `email`, `password`, optional unique Google `sub` in `googleId`, `avatar`, `role: "user" | "admin"`, `createdAt`).
 - **`RefreshToken`**: Secure refresh token storage with SHA-256 `tokenHash`, `expiresAt`, and `revokedAt`.
 - **`PasswordResetToken`**: Recovery token with `tokenHash`, `expiresAt`, and `used` boolean flag.
 - **`Project`**: Workspace (`title`, `description`, `ownerId`, `status: "active" | "archived"`, `createdAt`).
@@ -298,7 +301,7 @@ Orbit-workspace/
 │       │   ├── api/                     # Modular API endpoints (auth, user, admin)
 │       │   ├── axios.ts                 # Axios instance with CSRF headers & auto-refresh
 │       │   ├── config.ts                # Client environment configuration
-│       │   ├── firebase.ts              # Firebase client SDK initialization (OAuth)
+│       │   ├── api/auth.ts               # Existing Orbit auth API and backend OAuth URL
 │       │   └── tokenStorage.ts          # Client token helpers
 │       │
 │       └── store/                       # State Management (Redux Toolkit)
@@ -347,7 +350,9 @@ Orbit-workspace/
         │   ├── upload.routes.js
         │   └── user.routes.js
         ├── services/
-        │   └── email.service.js         # Nodemailer SMTP transport for project invites
+        │   ├── email.service.js         # Nodemailer SMTP transport for project invites
+        │   ├── google-account.service.js # Verified Google identity account linking
+        │   └── google-oauth.service.js  # Authorization-code, PKCE, and OIDC verification
         ├── sockets/
         │   └── socketManager.js         # Socket.io connection, room join & event logic
         └── utils/
@@ -363,44 +368,60 @@ Orbit-workspace/
 
 | Variable | Required | Description | Example |
 |---|:---:|---|---|
-| `NEXT_PUBLIC_API_URL` | **Yes** | Full URL to the backend API | `http://localhost:5000/api` |
-| `NEXT_PUBLIC_SERVER_URL` | **Yes** | Root URL for Socket.io WebSocket connection | `http://localhost:5000` |
-| `NEXT_PUBLIC_FIREBASE_API_KEY` | **Yes** | Firebase project Web API Key | `AIzaSy...` |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | **Yes** | Firebase Authentication domain | `your-app.firebaseapp.com` |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | **Yes** | Firebase Project Identifier | `orbit-project-id` |
-| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | **Yes** | Firebase Storage Bucket URL | `orbit-project.appspot.com` |
-| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | **Yes** | Firebase Cloud Messaging Sender ID | `123456789012` |
-| `NEXT_PUBLIC_FIREBASE_APP_ID` | **Yes** | Firebase Web Application ID | `1:123456789:web:abcdef` |
+| `NEXT_PUBLIC_SERVER_URL` | **Yes** | Backend origin used for API and Socket.io connections | `http://localhost:5000` |
 
 ### 2. Server Environment (`server/.env`)
 
 | Variable | Required | Description | Example |
 |---|:---:|---|---|
 | `PORT` | No | Server HTTP port (defaults to `5000`) | `5000` |
-| `NODE_ENV` | No | Application environment (`development` / `production`) | `development` |
-| `CLIENT_URL` | **Yes** | Allowed client origin(s) for CORS & email links | `http://localhost:3000` |
+| `NODE_ENV` | **Yes** | Application environment (`development`, `test`, or `production`) | `development` |
+| `CORS_ORIGINS` | **Yes** | Comma-separated exact allowed browser origins; production origins must use HTTPS | `http://localhost:3000,http://127.0.0.1:3000` |
+| `CLIENT_URL` | **Yes** | Single frontend origin used to create invitation links | `http://localhost:3000` |
 | `DATABASE_URL` | **Yes** | MongoDB connection string for Prisma | `mongodb+srv://user:pass@cluster.mongodb.net/orbit?retryWrites=true&w=majority` |
 | `JWT_SECRET` | **Yes** | Secret key for signing Access JWT tokens | `super-secret-access-key-32-chars-min` |
 | `JWT_REFRESH_SECRET` | **Yes** | Secret key for signing Refresh JWT tokens | `super-secret-refresh-key-32-chars-min` |
 | `CLOUDINARY_CLOUD_NAME` | **Yes** | Cloudinary account cloud name | `your-cloud-name` |
 | `CLOUDINARY_API_KEY` | **Yes** | Cloudinary API Key | `123456789012345` |
 | `CLOUDINARY_API_SECRET` | **Yes** | Cloudinary API Secret | `abcdefghijklmnopqrstuvwxyz012` |
-| `SMTP_HOST` | Optional | SMTP mail server hostname for email invitations | `smtp.gmail.com` |
+| `SMTP_HOST` | Required in production | SMTP mail server hostname for invitations and password resets | `smtp.gmail.com` |
 | `SMTP_PORT` | Optional | SMTP mail server port (default: `587`) | `587` |
 | `SMTP_SECURE` | Optional | Use TLS/SSL (`true` for port 465, else `false`) | `false` |
-| `SMTP_USER` | Optional | SMTP authentication username / email | `your-email@gmail.com` |
-| `SMTP_PASS` | Optional | SMTP app password or secret | `your-app-password` |
+| `SMTP_USER` | Required in production | SMTP authentication username / email | `your-email@gmail.com` |
+| `SMTP_PASS` | Required in production | SMTP app password or secret | `your-app-password` |
 | `MAIL_FROM` | Optional | Sender email header string | `"Orbit Team" <no-reply@orbit.com>` |
+| `GOOGLE_CLIENT_ID` | Required in production | Google OAuth web application client ID | Set as a backend secret/config value |
+| `GOOGLE_CLIENT_SECRET` | Required in production | Google OAuth client secret; backend only | Set as a backend secret |
+| `GOOGLE_CALLBACK_URL` | Required in production | Exact backend callback URL registered with Google | `https://<backend-origin>/api/auth/google/callback` |
+
+Production startup requires HTTPS `CORS_ORIGINS` and `CLIENT_URL`, distinct JWT signing secrets of at least 32 characters, plus SMTP, Cloudinary, and Google OAuth settings. Google OAuth configuration is server-only; do not expose `GOOGLE_CLIENT_SECRET` to the frontend.
+
+The MongoDB schema is synchronized with `npm run db:push`. The Google account-linking change adds an optional unique `googleId` field to `User`; run `npm run db:push` against the intended database before deploying the updated backend. Existing password accounts remain valid.
+
+### Google Cloud OAuth setup
+
+Create an OAuth client with application type **Web application**. Register the exact backend URL configured by `GOOGLE_CALLBACK_URL` as an authorized redirect URI:
+
+```text
+https://<backend-origin>/api/auth/google/callback
+http://localhost:5000/api/auth/google/callback
+```
+
+Use only the local URI for local development. Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_CALLBACK_URL` in the backend environment; never add the client secret to frontend variables. Orbit requests only `openid`, `email`, and `profile` and does not retain Google access tokens.
+
+The backend starts OAuth with authorization code + PKCE, stores state/nonce/code-verifier in short-lived HttpOnly cookies, validates Google's signed ID token server-side, and links an account only after Google returns a verified email. A new account receives the existing default role; an existing account's role and password are preserved. The callback creates Orbit's existing refresh-token record and sets the existing HttpOnly access/refresh cookies.
+
+The static frontend CSP allows inline scripts/styles for Next.js hydration and existing UI styling. A nonce-based strict policy would require dynamic rendering and should be planned separately; the current CSP is not a substitute for output encoding.
 
 ---
 
 ## 🚀 Setup & Installation
 
 ### Prerequisites
-- **Node.js**: `v18.17.0` or higher (Node.js 20 LTS recommended)
+- **Node.js**: `v22` LTS (same major version used by the backend Docker image)
 - **MongoDB Atlas** cluster or a local MongoDB database instance
 - **Cloudinary** account (free tier available)
-- **Firebase Project** with Google Authentication enabled
+- **Google Cloud OAuth 2.0 Web application** credentials
 
 ---
 
@@ -444,7 +465,7 @@ cd ../client
 npm install
 
 # 2. Configure environment
-# Create .env.local with your Firebase & API parameters
+# Create .env.local with the backend API origin
 
 # 3. Start Next.js development server
 npm run dev
@@ -460,7 +481,8 @@ npm run dev
 |---|---|---|---|
 | `POST` | `/api/auth/register` | Public | Register new user account |
 | `POST` | `/api/auth/login` | Public | Authenticate user & set HttpOnly cookies |
-| `POST` | `/api/auth/google` | Public | Authenticate via Firebase Google OAuth token |
+| `GET` | `/api/auth/google` | Public | Start Google OAuth 2.0 authorization-code flow |
+| `GET` | `/api/auth/google/callback` | OAuth state/PKCE | Verify Google OIDC identity and establish the existing Orbit session |
 | `POST` | `/api/auth/refresh` | Cookie | Rotate and issue fresh Access Token |
 | `POST` | `/api/auth/forgot-password` | Public | Send password reset token email |
 | `POST` | `/api/auth/reset-password` | Public | Reset password using one-time token |
@@ -553,12 +575,11 @@ npm run dev
 
 | Event Name | Direction | Payload | Description |
 |---|---|---|---|
-| `joinProject` | Client ➔ Server | `projectId: string` | Joins client to project room for task updates |
-| `joinChat` | Client ➔ Server | `projectId: string` | Joins client to project chat room |
-| `joinUser` | Client ➔ Server | `userId: string` | Binds socket to private user notification room |
-| `taskUpdated` | Client ➔ Server | `{ projectId, taskId, status, priority, ... }` | Emitted when task position or metadata changes |
-| `taskChanged` | Server ➔ Client | `{ taskId, status, priority, ... }` | Broadcasted to other team members in project room |
-| `sendMessage` | Client ➔ Server | `{ projectId, senderId, content }` | Dispatches new chat message |
+| `joinProject` | Client ➔ Server | `projectId: string` | Joins an authorized project room; optional callback reports success or denial |
+| `joinChat` | Client ➔ Server | `projectId: string` | Joins the same authorized project room for chat; optional callback reports success or denial |
+| `joinUser` | Client ➔ Server | `userId: string` | Joins only the authenticated user's private notification room |
+| `taskChanged` | Server ➔ Client | `{ projectId, taskId, status }` | Broadcast after an authorized task status update is persisted |
+| `sendMessage` | Client ➔ Server | `{ projectId, content }` | Persists a message; sender identity comes from the authenticated socket |
 | `messageReceived` | Server ➔ Client | `{ id, content, sender: { id, username, avatar }, ... }` | Broadcasts new message to project chat room |
 
 ---

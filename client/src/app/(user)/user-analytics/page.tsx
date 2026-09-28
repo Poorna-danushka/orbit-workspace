@@ -1,35 +1,40 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, AreaChart, Area
 } from 'recharts';
 import { Loader2, RefreshCw, Activity } from 'lucide-react';
 import api from '@/lib/axios';
+import type { DashboardStats } from '@/lib/api/user';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#6b7280'];
 const PRIORITY_COLORS = ['#ef4444', '#f97316', '#eab308', '#3b82f6'];
 
 export default function Analytics() {
-  const [dashData, setDashData] = useState<any>(null);
+  const [dashData, setDashData] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchAnalytics = async () => {
-    setLoading(true);
+  const fetchAnalytics = useCallback(async () => {
     try {
-      const statsRes = await api.get('/dashboard/stats');
+      const statsRes = await api.get<DashboardStats>('/dashboard/stats');
       setDashData(statsRes.data);
     } catch (err) {
       console.error('Analytics fetch failed', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchAnalytics();
-  }, []);
+    queueMicrotask(() => void fetchAnalytics());
+  }, [fetchAnalytics]);
+
+  const refreshAnalytics = () => {
+    setLoading(true);
+    void fetchAnalytics();
+  };
 
   const total = dashData?.totalTasks || 0;
   const completed = dashData?.completedTasks || 0;
@@ -62,7 +67,7 @@ export default function Analytics() {
           <p className="text-gray-400 text-sm mt-1">Real-time productivity metrics and task performance</p>
         </div>
         <button
-          onClick={fetchAnalytics}
+          onClick={refreshAnalytics}
           disabled={loading}
           className="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-xl font-medium shadow-[0_0_15px_rgba(120,119,198,0.3)] transition-all flex items-center justify-center gap-2 disabled:opacity-60 text-sm"
         >
@@ -152,7 +157,7 @@ export default function Analytics() {
           {/* Weekly Data */}
           <div className="p-6 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
             <h3 className="text-base font-semibold mb-6">Weekly Task Activity</h3>
-            {weeklyData.length > 0 && weeklyData.some((d: any) => d.tasks > 0) ? (
+            {weeklyData.length > 0 && weeklyData.some((day) => day.tasks > 0) ? (
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={weeklyData}>
                   <defs>

@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const prisma = require('../config/prisma');
+const { isAllowedFileContent } = require('../utils/file-validation.util');
 
 exports.getMe = async (req, res) => {
   try {
@@ -101,6 +102,9 @@ exports.uploadAvatar = async (req, res) => {
   try {
     if (!req.file || !req.file.buffer) {
       return res.status(400).json({ message: 'No file uploaded' });
+    }
+    if (!isAllowedFileContent(req.file.mimetype, req.file.buffer)) {
+      return res.status(400).json({ message: 'Avatar content does not match an allowed image type' });
     }
 
     const userId = req.user.userId;

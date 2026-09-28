@@ -22,7 +22,7 @@ COPY package.json package-lock.json ./
 
 # Copy the Prisma schema so that `postinstall` (prisma generate) can run.
 # Without the schema, prisma generate fails.
-COPY prisma ./prisma
+COPY prisma/schema.prisma ./prisma/schema.prisma
 
 # Install all dependencies including devDependencies.
 # `npm ci` uses package-lock.json exactly — no version drift.
@@ -35,7 +35,7 @@ RUN npm ci
 #
 # Copy only what is needed to run the server at runtime:
 #   - node_modules (with generated Prisma Client from Stage 1)
-#   - prisma/ (schema + migrations — Prisma Client looks these up at runtime)
+# - prisma/ (MongoDB schema — Prisma Client uses this at runtime)
 #   - src/       (application source)
 #   - package.json (required by Node for the "main" field and module resolution)
 #
@@ -64,9 +64,9 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy application source.
 COPY src ./src
 
-# Copy the Prisma schema and migrations directory.
-# The generated Prisma Client in node_modules references the schema at runtime.
-COPY prisma ./prisma
+# Copy the schema only. The SQL migration in the repository is a legacy
+# PostgreSQL artifact and is not part of the MongoDB runtime image.
+COPY prisma/schema.prisma ./prisma/schema.prisma
 
 # Copy package.json (Node module resolution uses the "main" field).
 COPY package.json ./

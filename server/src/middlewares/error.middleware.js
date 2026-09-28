@@ -9,6 +9,10 @@ const errorHandler = (err, req, res, next) => {
     return res.status(400).json({ message: err.message });
   }
 
+  if (err?.message === 'CORS policy violation: origin not allowed') {
+    return res.status(403).json({ message: 'Origin not allowed' });
+  }
+
   if (err && err.message && err.message.toLowerCase().includes('invalid file type')) {
     return res.status(400).json({ message: err.message });
   }

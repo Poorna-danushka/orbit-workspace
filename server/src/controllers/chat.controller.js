@@ -1,4 +1,10 @@
 const prisma = require('../config/prisma');
+const cloudinaryUrlPattern = /https:\/\/res\.cloudinary\.com\/[^\s<>"']+/g;
+
+const sanitizeMessageContent = (content, attachmentPaths) => content.replace(
+  cloudinaryUrlPattern,
+  (url) => attachmentPaths.get(url) || '[Attachment unavailable]',
+);
 
 const getProjectMessages = async (req, res, next) => {
   try {
@@ -24,27 +30,31 @@ const getProjectMessages = async (req, res, next) => {
       return res.status(404).json({ message: 'Project not found or access denied' });
     }
 
-    try {
-      const messages = await prisma.message.findMany({
-        where: { projectId },
-        orderBy: { createdAt: 'asc' },
-        take: 100,
-        include: {
-          sender: { select: { id: true, username: true, avatar: true } },
-        },
-      });
+    const messages = await prisma.message.findMany({
+      where: { projectId },
+      orderBy: { createdAt: 'asc' },
+      take: 100,
+      include: {
+        sender: { select: { id: true, username: true, avatar: true } },
+      },
+    });
 
-      return res.json(messages);
-    } catch (dbError) {
-      if (dbError?.code === 'P2021' || dbError?.message?.includes('does not exist')) {
-        return res.json([]);
-      }
-      throw dbError;
-    }
+    const attachments = await prisma.attachment.findMany({
+      where: { projectId },
+      select: { id: true, fileUrl: true },
+    });
+    const attachmentPaths = new Map(
+      attachments.map(({ id, fileUrl }) => [fileUrl, `/api/uploads/${id}/content`]),
+    );
+
+    return res.json(messages.map((message) => ({
+      ...message,
+      content: sanitizeMessageContent(message.content, attachmentPaths),
+    })));
   } catch (error) {
     console.error('Get project messages error:', error);
     next(error);
   }
 };
 
-module.exports = { getProjectMessages };
+module.exports = { getProjectMessages, sanitizeMessageContent };

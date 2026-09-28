@@ -1,10 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Image from 'next/image';
 import { AlertTriangle, Calendar, Loader2, RefreshCw, Search, Shield, Trash2, User, Users, X } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import api from '@/lib/axios';
 import { getAvatarUrl } from '@/lib/config';
+import { getApiErrorMessage } from '@/lib/apiError';
 import { RootState } from '@/store';
 
 interface AdminUser {
@@ -26,28 +28,32 @@ export default function AdminUsersPage() {
   const [confirmDelete, setConfirmDelete] = useState<AdminUser | null>(null);
 
   const fetchUsers = useCallback(async () => {
-    setLoading(true);
     try {
-      const res = await api.get('/admin/users');
+      const res = await api.get<AdminUser[]>('/admin/users');
       setUsers(Array.isArray(res.data) ? res.data : []);
-    } catch (error: any) {
-      setActionError(error?.response?.data?.message || 'Failed to fetch users');
+    } catch (error: unknown) {
+      setActionError(getApiErrorMessage(error, 'Failed to fetch users'));
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchUsers();
+    queueMicrotask(() => void fetchUsers());
   }, [fetchUsers]);
+
+  const refreshUsers = () => {
+    setLoading(true);
+    void fetchUsers();
+  };
 
   const handleDelete = async (user: AdminUser) => {
     try {
       await api.delete(`/admin/users/${user.id}`);
       setUsers((prev) => prev.filter((item) => item.id !== user.id));
       setConfirmDelete(null);
-    } catch (error: any) {
-      setActionError(error?.response?.data?.message || 'Failed to delete user');
+    } catch (error: unknown) {
+      setActionError(getApiErrorMessage(error, 'Failed to delete user'));
     }
   };
 
@@ -56,8 +62,8 @@ export default function AdminUsersPage() {
     try {
       await api.patch(`/admin/users/${user.id}/role`, { role: nextRole });
       setUsers((prev) => prev.map((item) => item.id === user.id ? { ...item, role: nextRole } : item));
-    } catch (error: any) {
-      setActionError(error?.response?.data?.message || 'Failed to update role');
+    } catch (error: unknown) {
+      setActionError(getApiErrorMessage(error, 'Failed to update role'));
     }
   };
 
@@ -82,7 +88,7 @@ export default function AdminUsersPage() {
           <h1 className="text-2xl font-bold text-white">User Management</h1>
           <p className="mt-1 text-sm text-gray-500">Manage platform access and permissions</p>
         </div>
-        <button onClick={fetchUsers} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-gray-300">
+        <button onClick={refreshUsers} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-gray-300">
           <RefreshCw className="h-4 w-4" /> Refresh
         </button>
       </div>
@@ -148,7 +154,7 @@ export default function AdminUsersPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   {user.avatar ? (
-                    <img src={getAvatarUrl(user.avatar)} alt={user.username} className="h-12 w-12 rounded-full object-cover" />
+                    <Image src={getAvatarUrl(user.avatar)} alt={user.username} width={48} height={48} unoptimized className="h-12 w-12 rounded-full object-cover" />
                   ) : (
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-tr from-red-500 to-orange-400 text-sm font-bold text-white">
                       {user.username.slice(0, 1).toUpperCase()}

@@ -1,6 +1,7 @@
 const crypto = require('crypto');
+const env = require('../config/env');
 
-const csrfSecret = process.env.JWT_SECRET || 'orbit-csrf-secret';
+const csrfSecret = env.JWT_SECRET;
 
 const createCsrfToken = () => {
   const nonce = crypto.randomBytes(24).toString('hex');
@@ -35,15 +36,9 @@ const csrfTokenSetter = (req, res, next) => {
   const cookies = req.cookies || {};
   if (!cookies.csrfToken) {
     const csrfToken = createCsrfToken();
-    const secureCookies =
-      process.env.NODE_ENV === 'production' ||
-      (process.env.CLIENT_URL || '')
-        .split(',')
-        .some((origin) => origin.trim().startsWith('https://'));
-
     res.cookie('csrfToken', csrfToken, {
-      secure: secureCookies,
-      sameSite: secureCookies ? 'none' : 'lax',
+      secure: env.COOKIE_SECURE,
+      sameSite: env.COOKIE_SECURE ? 'none' : 'lax',
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
@@ -62,13 +57,14 @@ const csrfProtection = (req, res, next) => {
   }
 
   // Public unauthenticated auth routes do not require CSRF validation
-  const url = req.originalUrl || req.url || '';
-  const isPublicAuthRoute = url.includes('/auth/login') ||
-                            url.includes('/auth/register') ||
-                            url.includes('/auth/google') ||
-                            url.includes('/auth/forgot-password') ||
-                            url.includes('/auth/reset-password') ||
-                            url.includes('/auth/refresh');
+  const pathname = (req.originalUrl || req.url || '').split('?')[0].replace(/\/+$/, '');
+  const isPublicAuthRoute = new Set([
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/auth/forgot-password',
+    '/api/auth/reset-password',
+    '/api/auth/refresh',
+  ]).has(pathname);
 
   if (isPublicAuthRoute) {
     return next();

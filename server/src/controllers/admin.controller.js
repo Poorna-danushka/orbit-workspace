@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const { disconnectUser } = require('../sockets/socketManager');
 
 exports.getStats = async (req, res) => {
   try {
@@ -68,44 +69,46 @@ exports.deleteUser = async (req, res) => {
       return res.status(400).json({ message: 'You cannot delete your own admin account' });
     }
 
-    const ownedProjects = await prisma.project.findMany({ where: { ownerId: id }, select: { id: true } });
-    const ownedProjectIds = ownedProjects.map(p => p.id);
+    const targetUser = await prisma.user.findUnique({ where: { id }, select: { role: true } });
+    if (!targetUser) return res.status(404).json({ message: 'User not found' });
+    if (targetUser.role === 'admin' && await prisma.user.count({ where: { role: 'admin' } }) <= 1) {
+      return res.status(409).json({ message: 'At least one administrator account must remain' });
+    }
 
-    const ownedTasks = await prisma.task.findMany({ where: { projectId: { in: ownedProjectIds } }, select: { id: true } });
-    const ownedTaskIds = ownedTasks.map(t => t.id);
-
-    if (ownedTaskIds.length > 0 || ownedProjectIds.length > 0) {
-      await prisma.attachment.deleteMany({
-        where: {
-          OR: [
-            { taskId: { in: ownedTaskIds } },
-            { projectId: { in: ownedProjectIds } },
-          ],
-        },
+    await prisma.$transaction(async (tx) => {
+      const ownedProjects = await tx.project.findMany({ where: { ownerId: id }, select: { id: true } });
+      const ownedProjectIds = ownedProjects.map(({ id: projectId }) => projectId);
+      const ownedTasks = await tx.task.findMany({
+        where: { projectId: { in: ownedProjectIds } },
+        select: { id: true },
       });
-    }
+      const ownedTaskIds = ownedTasks.map(({ id: taskId }) => taskId);
 
-    if (ownedProjectIds.length > 0) {
-      await prisma.task.deleteMany({ where: { projectId: { in: ownedProjectIds } } });
-      await prisma.projectMember.deleteMany({ where: { projectId: { in: ownedProjectIds } } });
-      await prisma.project.deleteMany({ where: { ownerId: id } });
-    }
-
-    // Clean user relations in other projects
-    await prisma.projectMember.deleteMany({ where: { userId: id } });
-    await prisma.task.updateMany({ where: { assignedTo: id }, data: { assignedTo: null } });
-
-    // Clean user auth & notification records
-    await prisma.notification.deleteMany({ where: { userId: id } });
-    await prisma.refreshToken.deleteMany({ where: { userId: id } });
-    await prisma.passwordResetToken.deleteMany({ where: { userId: id } });
-
-    // Delete user
-    await prisma.user.delete({ where: { id } });
+      await tx.attachment.deleteMany({
+        where: { OR: [{ projectId: { in: ownedProjectIds } }, { taskId: { in: ownedTaskIds } }] },
+      });
+      await tx.projectInvitation.deleteMany({
+        where: { OR: [{ projectId: { in: ownedProjectIds } }, { inviterId: id }, { invitedUserId: id }] },
+      });
+      await tx.message.deleteMany({
+        where: { OR: [{ projectId: { in: ownedProjectIds } }, { senderId: id }] },
+      });
+      await tx.projectMember.deleteMany({
+        where: { OR: [{ projectId: { in: ownedProjectIds } }, { userId: id }] },
+      });
+      await tx.task.deleteMany({ where: { projectId: { in: ownedProjectIds } } });
+      await tx.project.deleteMany({ where: { ownerId: id } });
+      await tx.task.updateMany({ where: { assignedTo: id }, data: { assignedTo: null } });
+      await tx.notification.deleteMany({ where: { userId: id } });
+      await tx.refreshToken.deleteMany({ where: { userId: id } });
+      await tx.passwordResetToken.deleteMany({ where: { userId: id } });
+      await tx.user.delete({ where: { id } });
+    });
+    await disconnectUser(id);
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
     console.error('Delete user error:', error);
-    res.status(500).json({ message: error.message || 'Server error while deleting user' });
+    res.status(500).json({ message: 'Server error while deleting user' });
   }
 };
 
@@ -113,6 +116,17 @@ exports.updateUserRole = async (req, res) => {
   try {
     const { id } = req.params;
     const { role } = req.body;
+    if (!['admin', 'user'].includes(role)) {
+      return res.status(400).json({ message: 'Role must be either admin or user' });
+    }
+    if (role === 'user' && req.user?.userId === id) {
+      return res.status(400).json({ message: 'You cannot remove your own administrator role' });
+    }
+    const currentUser = await prisma.user.findUnique({ where: { id }, select: { role: true } });
+    if (!currentUser) return res.status(404).json({ message: 'User not found' });
+    if (currentUser.role === 'admin' && role === 'user' && await prisma.user.count({ where: { role: 'admin' } }) <= 1) {
+      return res.status(409).json({ message: 'At least one administrator account must remain' });
+    }
     const user = await prisma.user.update({ where: { id }, data: { role } });
     res.json({ id: user.id, username: user.username, role: user.role });
   } catch (error) {
@@ -138,22 +152,18 @@ exports.deleteProject = async (req, res) => {
   try {
     const { id } = req.params;
     const tasks = await prisma.task.findMany({ where: { projectId: id }, select: { id: true } });
-    const taskIds = tasks.map(t => t.id);
+    const taskIds = tasks.map(({ id: taskId }) => taskId);
 
-    if (taskIds.length > 0) {
-      await prisma.attachment.deleteMany({
-        where: {
-          OR: [
-            { taskId: { in: taskIds } },
-            { projectId: id },
-          ],
-        },
-      });
-    }
-
-    await prisma.task.deleteMany({ where: { projectId: id } });
-    await prisma.projectMember.deleteMany({ where: { projectId: id } });
-    await prisma.project.delete({ where: { id } });
+    await prisma.$transaction([
+      prisma.attachment.deleteMany({
+        where: { OR: [{ taskId: { in: taskIds } }, { projectId: id }] },
+      }),
+      prisma.projectInvitation.deleteMany({ where: { projectId: id } }),
+      prisma.message.deleteMany({ where: { projectId: id } }),
+      prisma.task.deleteMany({ where: { projectId: id } }),
+      prisma.projectMember.deleteMany({ where: { projectId: id } }),
+      prisma.project.delete({ where: { id } }),
+    ]);
     res.json({ message: 'Project deleted' });
   } catch (error) {
     console.error('Delete project error:', error);
@@ -187,7 +197,6 @@ exports.getActivity = async (req, res) => {
 exports.broadcastNotification = async (req, res) => {
   try {
     const { message } = req.body;
-    if (!message?.trim()) return res.status(400).json({ message: 'Message is required' });
 
     const users = await prisma.user.findMany({ select: { id: true } });
     await prisma.notification.createMany({

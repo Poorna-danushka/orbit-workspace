@@ -1,31 +1,36 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { AlertTriangle, CheckCircle2, FolderKanban, Loader2, RefreshCw, TrendingUp, Users } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, FolderKanban, Loader2, RefreshCw, Users } from 'lucide-react';
 import api from '@/lib/axios';
+import type { AdminStats } from '@/lib/api/admin';
 
 const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444'];
 
 export default function AdminAnalyticsPage() {
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchStats = async () => {
-    setLoading(true);
+  const fetchStats = useCallback(async () => {
     try {
-      const res = await api.get('/admin/stats');
+      const res = await api.get<AdminStats>('/admin/stats');
       setStats(res.data);
     } catch (error) {
       console.error('Failed to fetch stats', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchStats();
-  }, []);
+    queueMicrotask(() => void fetchStats());
+  }, [fetchStats]);
+
+  const refreshStats = () => {
+    setLoading(true);
+    void fetchStats();
+  };
 
   if (loading) {
     return (
@@ -50,7 +55,7 @@ export default function AdminAnalyticsPage() {
           <h1 className="text-2xl font-bold text-white">Platform Analytics</h1>
           <p className="mt-1 text-sm text-gray-500">Monitoring growth, tasks, and operational health</p>
         </div>
-        <button onClick={fetchStats} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-gray-300">
+        <button onClick={refreshStats} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-gray-300">
           <RefreshCw className="h-4 w-4" /> Refresh
         </button>
       </div>

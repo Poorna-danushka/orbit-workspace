@@ -3,6 +3,8 @@ const router = express.Router();
 const uploadController = require('../controllers/upload.controller');
 const { verifyToken } = require('../middlewares/auth.middleware');
 const multer = require('multer');
+const rateLimit = require('express-rate-limit');
+const { validateMongoIdParam } = require('../middlewares/mongo-id.middleware');
 
 const storage = multer.memoryStorage();
 const allowedMimeTypes = new Set([
@@ -28,11 +30,22 @@ const upload = multer({
     cb(null, true);
   },
 });
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many uploads. Please try again later.' },
+});
 
 router.use(verifyToken);
+router.param('id', validateMongoIdParam('attachment id'));
+router.param('taskId', validateMongoIdParam('task id'));
+router.param('projectId', validateMongoIdParam('project id'));
+router.get('/:id/content', uploadController.getAttachmentContent);
 
 // Task attachments
-router.post('/task/:taskId', (req, res, next) => {
+router.post('/task/:taskId', uploadLimiter, (req, res, next) => {
   upload.single('file')(req, res, (err) => {
     if (err) return res.status(400).json({ message: err.message });
     next();
@@ -41,7 +54,7 @@ router.post('/task/:taskId', (req, res, next) => {
 router.get('/task/:taskId', uploadController.getAttachments);
 
 // Project attachments
-router.post('/project/:projectId', (req, res, next) => {
+router.post('/project/:projectId', uploadLimiter, (req, res, next) => {
   upload.single('file')(req, res, (err) => {
     if (err) return res.status(400).json({ message: err.message });
     next();

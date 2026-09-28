@@ -17,7 +17,6 @@
 #   push to main → build image, push to GHCR with :latest and :<git-sha> tags
 #
 # What this workflow deliberately does NOT do:
-#   - Run npm test  (no tests exist; the script exits 1 by design)
 #   - Run ESLint    (no ESLint config in server/)
 #   - Deploy anywhere                    (Phase 8+)
 #   - Connect to MongoDB Atlas           (no DATABASE_URL required)
@@ -115,16 +114,12 @@ jobs:
         run: npx prisma generate
 
       # -----------------------------------------------------------------------
-      # 5. Backend tests
-      #    NOTE: The Orbit backend currently has no automated tests.
-      #          The existing npm test script exits with code 1 by design.
-      #          This step is intentionally omitted to avoid false CI failures.
-      #
-      #    When backend tests are added in a future phase, restore:
-      #      - name: Run backend tests
-      #        working-directory: server
-      #        run: npm test
+      # 5. Backend security/configuration unit tests
+      #    These use injected test configuration and require no database secrets.
       # -----------------------------------------------------------------------
+      - name: Run backend tests
+        working-directory: server
+        run: npm test
 
       # -----------------------------------------------------------------------
       # 6. Set up Docker Buildx

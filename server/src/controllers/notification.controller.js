@@ -10,16 +10,21 @@ exports.getNotifications = async (req, res) => {
     });
     res.json(notifications);
   } catch (error) {
+    console.error('Get notifications error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
 exports.markAsRead = async (req, res) => {
   try {
-    const { id } = req.params;
-    await prisma.notification.update({ where: { id }, data: { isRead: true } });
+    const { count } = await prisma.notification.updateMany({
+      where: { id: req.params.id, userId: req.user.userId },
+      data: { isRead: true },
+    });
+    if (count === 0) return res.status(404).json({ message: 'Notification not found' });
     res.json({ message: 'Marked as read' });
   } catch (error) {
+    console.error('Mark notification as read error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -30,6 +35,7 @@ exports.markAllRead = async (req, res) => {
     await prisma.notification.updateMany({ where: { userId }, data: { isRead: true } });
     res.json({ message: 'All marked as read' });
   } catch (error) {
+    console.error('Mark all notifications as read error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

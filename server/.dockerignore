@@ -68,10 +68,6 @@ Dockerfile.*
 .dockerignore
 docker-compose*.yml
 
-# ---------- Development utilities ----------
-# debug-prisma.js is a local dev debugging helper — not needed in production
-debug-prisma.js
-
 # ---------- Uploads directory ----------
 # Files are stored on Cloudinary. Any local uploads/ directory that might
 # exist from local development should not be included in the image.

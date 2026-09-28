@@ -1,4 +1,13 @@
 const prisma = require('../config/prisma');
+const { getIo, getProjectRoom } = require('../sockets/socketManager');
+
+const broadcastTaskStatus = (projectId, taskId, status) => {
+  try {
+    getIo().to(getProjectRoom(projectId)).emit('taskChanged', { projectId, taskId, status });
+  } catch (error) {
+    console.error('Task status broadcast failed:', error);
+  }
+};
 
 const checkProjectAccess = async (projectId, userId) => {
   const project = await prisma.project.findFirst({
@@ -190,6 +199,7 @@ exports.updateTask = async (req, res) => {
       data,
       include: { assignee: { select: { id: true, username: true, email: true, avatar: true } } },
     });
+    if (status !== undefined) broadcastTaskStatus(oldTask.projectId, id, task.status);
 
     if (assignedTo && assignedTo !== req.user.userId && oldTask?.assignedTo !== assignedTo) {
       await prisma.notification.create({
@@ -217,6 +227,7 @@ exports.updateTaskStatus = async (req, res) => {
     if (!hasAccess) return res.status(403).json({ message: 'Access denied to this project' });
 
     const task = await prisma.task.update({ where: { id }, data: { status } });
+    broadcastTaskStatus(oldTask.projectId, id, task.status);
     res.json(task);
   } catch (error) {
     console.error('Update task status error:', error);
@@ -235,7 +246,10 @@ exports.deleteTask = async (req, res) => {
     const hasAccess = await checkProjectAccess(oldTask.projectId, userId);
     if (!hasAccess) return res.status(403).json({ message: 'Access denied to this project' });
 
-    await prisma.task.delete({ where: { id } });
+    await prisma.$transaction([
+      prisma.attachment.deleteMany({ where: { taskId: id } }),
+      prisma.task.delete({ where: { id } }),
+    ]);
     res.json({ message: 'Task deleted successfully' });
   } catch (error) {
     console.error('Delete task error:', error);

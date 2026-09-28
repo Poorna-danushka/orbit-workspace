@@ -48,7 +48,8 @@ services:
     #   DATABASE_URL            → Prisma → MongoDB Atlas
     #   JWT_SECRET              → Access token signing
     #   JWT_REFRESH_SECRET      → Refresh token signing
-    #   CLIENT_URL              → CORS allowed origins
+    #   CORS_ORIGINS            → Exact allowed browser origins (comma-separated)
+    #   CLIENT_URL              → Frontend origin used in email links
     #   PORT                    → Express listen port (default 5000)
     #   NODE_ENV                → Runtime mode (production in image ENV, but
     #                             .env can override for local Compose use)

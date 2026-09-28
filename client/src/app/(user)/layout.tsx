@@ -79,7 +79,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
   /* Real-time notifications socket */
   useEffect(() => {
     if (!isAuthenticated || !user) return;
-    const socket = io(BACKEND_URL);
+    const socket = io(BACKEND_URL, { withCredentials: true });
     socket.emit('joinUser', user.id);
     socket.on('notificationReceived', () => { fetchUnreadCount(); });
     return () => { socket.disconnect(); };

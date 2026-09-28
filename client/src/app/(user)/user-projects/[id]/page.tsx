@@ -112,7 +112,7 @@ export default function ProjectDetail() {
 
   useEffect(() => {
     // Initialize WebSockets
-    const socket = io(BACKEND_URL);
+    const socket = io(BACKEND_URL, { withCredentials: true });
     socketRef.current = socket;
 
     if (id) {
@@ -379,9 +379,6 @@ export default function ProjectDetail() {
         // Optimistic UI update
         setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
         
-        // Notify others via socket
-        socketRef.current?.emit('taskUpdated', { projectId: id, taskId, status: newStatus });
-        
         // Persist
         await api.patch(`/tasks/${taskId}/status`, { status: newStatus });
       }
@@ -391,9 +388,6 @@ export default function ProjectDetail() {
   const handleMoveTaskStatus = async (taskId: string, nextStatus: string) => {
     // Optimistic UI update
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: nextStatus } : t));
-    
-    // Notify others via socket
-    socketRef.current?.emit('taskUpdated', { projectId: id, taskId, status: nextStatus });
     
     try {
       // Persist
@@ -409,9 +403,6 @@ export default function ProjectDetail() {
       // Optimistic UI update
       setTasks(prev => prev.map(t => t.id === viewingTask.id ? { ...t, status: newStatus } : t));
       setViewingTask(prev => prev ? { ...prev, status: newStatus } : null);
-      
-      // Notify others via socket
-      socketRef.current?.emit('taskUpdated', { projectId: id, taskId: viewingTask.id, status: newStatus });
       
       // Persist
       await api.patch(`/tasks/${viewingTask.id}/status`, { status: newStatus });

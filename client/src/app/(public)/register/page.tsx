@@ -13,7 +13,7 @@ import { getAuthErrorMessage } from '@/lib/authError';
 import { setCredentials } from '@/store/slices/authSlice';
 import { saveAuthTokens } from '@/lib/tokenStorage';
 import { getPostAuthPath } from '@/lib/authNavigation';
-import { signInWithGoogle } from '@/lib/firebase';
+import { getGoogleOAuthUrl } from '@/lib/api/auth';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import OrbitIcon from '@/components/auth/OrbitIcon';
 
@@ -226,19 +226,13 @@ function RegisterForm() {
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
     setLoading(true);
     setError('');
     try {
-      const { idToken } = await signInWithGoogle();
-      const response = await api.post('/auth/google', { idToken });
-      const { user } = response.data;
-      saveAuthTokens(user);
-      dispatch(setCredentials({ user }));
-      router.replace(getPostAuthPath(user.role, nextPath));
-    } catch (err: unknown) {
-      setError(getAuthErrorMessage(err, 'Google authentication failed'));
-    } finally {
+      window.location.assign(getGoogleOAuthUrl(nextPath));
+    } catch {
+      setError('Google sign-in is temporarily unavailable. Please try again later.');
       setLoading(false);
     }
   };

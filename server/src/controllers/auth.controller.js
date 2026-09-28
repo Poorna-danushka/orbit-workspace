@@ -1,5 +1,5 @@
-const crypto = require('crypto');
 const bcrypt = require('bcrypt');
+const crypto = require('node:crypto');
 const prisma = require('../config/prisma');
 const {
   hashToken,
@@ -8,23 +8,37 @@ const {
   generatePasswordResetToken,
   verifyRefreshToken,
 } = require('../utils/token.util');
-const { getFirebaseAuth } = require('../config/firebase-admin');
 const { sendPasswordResetEmail } = require('../services/email.service');
+const {
+  createGoogleAuthorizationRequest,
+  verifyGoogleAuthorizationCode,
+} = require('../services/google-oauth.service');
+const { resolveGoogleAccount } = require('../services/google-account.service');
+const { getSafeNextPath, hasMatchingOAuthState } = require('../utils/google-oauth-security.util');
+const env = require('../config/env');
+
+const GOOGLE_OAUTH_COOKIE_NAMES = [
+  'googleOAuthState',
+  'googleOAuthNonce',
+  'googleOAuthCodeVerifier',
+  'googleOAuthNext',
+];
+const googleOAuthCookieOptions = {
+  httpOnly: true,
+  secure: env.COOKIE_SECURE,
+  sameSite: 'lax',
+  path: '/api/auth',
+  maxAge: 10 * 60 * 1000,
+};
 
 /**
  * Cookies must be Secure when SameSite=None is used. Keep localhost HTTP
  * development compatible while using cross-site cookies for HTTPS deployments.
  */
-const secureCookies =
-  process.env.NODE_ENV === 'production' ||
-  (process.env.CLIENT_URL || '')
-    .split(',')
-    .some((origin) => origin.trim().startsWith('https://'));
-
 const authCookieAttributes = {
   httpOnly: true,
-  secure: secureCookies,
-  sameSite: secureCookies ? 'none' : 'lax',
+  secure: env.COOKIE_SECURE,
+  sameSite: env.COOKIE_SECURE ? 'none' : 'lax',
   path: '/',
 };
 
@@ -40,6 +54,23 @@ const clearAllAuthCookies = (res) => {
 
   res.clearCookie('accessToken', opts);
   res.clearCookie('refreshToken', opts);
+};
+
+const clearGoogleOAuthCookies = (res) => {
+  const options = { ...googleOAuthCookieOptions };
+  delete options.maxAge;
+  for (const name of GOOGLE_OAUTH_COOKIE_NAMES) {
+    res.clearCookie(name, options);
+  }
+};
+
+const redirectGoogleAuthError = (res) => {
+  clearGoogleOAuthCookies(res);
+  const redirectUrl = new URL('/login', env.CLIENT_URL);
+  redirectUrl.searchParams.set('google', 'error');
+  res.set('Cache-Control', 'no-store');
+  res.set('Referrer-Policy', 'no-referrer');
+  return res.redirect(303, redirectUrl.toString());
 };
 
 /** Set auth cookies using unified names */
@@ -140,38 +171,73 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.googleAuth = async (req, res) => {
+exports.startGoogleOAuth = async (req, res) => {
   try {
-    const { idToken } = req.body;
-    if (!idToken) {
-      return res.status(400).json({ message: 'A Google identity token is required' });
+    if (!env.GOOGLE_OAUTH_CONFIGURED) {
+      return res.status(503).json({ message: 'Google sign-in is not configured' });
     }
 
-    const decodedToken = await getFirebaseAuth().verifyIdToken(idToken);
-    if (!decodedToken.email || decodedToken.email_verified !== true) {
-      return res.status(401).json({ message: 'Google account email is not verified' });
+    const state = crypto.randomBytes(32).toString('base64url');
+    const nonce = crypto.randomBytes(32).toString('base64url');
+    const { authorizationUrl, codeVerifier } = await createGoogleAuthorizationRequest({ state, nonce });
+
+    res.cookie('googleOAuthState', state, googleOAuthCookieOptions);
+    res.cookie('googleOAuthNonce', nonce, googleOAuthCookieOptions);
+    res.cookie('googleOAuthCodeVerifier', codeVerifier, googleOAuthCookieOptions);
+
+    const nextPath = getSafeNextPath(req.query.next);
+    if (nextPath) {
+      res.cookie('googleOAuthNext', nextPath, googleOAuthCookieOptions);
+    } else {
+      const clearOptions = { ...googleOAuthCookieOptions };
+      delete clearOptions.maxAge;
+      res.clearCookie('googleOAuthNext', clearOptions);
     }
 
-    const email = decodedToken.email.toLowerCase();
-    const displayName = decodedToken.name || email.split('@')[0];
-    const photoURL = decodedToken.picture || null;
-    let user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      const randomPassword = crypto.randomBytes(32).toString('hex');
-      const hashedPassword = await bcrypt.hash(randomPassword, 12);
-      user = await prisma.user.create({
-        data: {
-          email,
-          username: displayName || email.split('@')[0],
-          password: hashedPassword,
-          avatar: photoURL || null,
-          role: 'user',
-        },
-      });
+    res.set('Cache-Control', 'no-store');
+    res.set('Referrer-Policy', 'no-referrer');
+    return res.redirect(302, authorizationUrl);
+  } catch (error) {
+    console.error('Google OAuth initiation failed:', error?.name || 'Error');
+    return res.status(503).json({ message: 'Unable to start Google sign-in' });
+  }
+};
 
+exports.googleCallback = async (req, res) => {
+  const state = req.query.state;
+  const storedState = req.cookies?.googleOAuthState;
+  const nonce = req.cookies?.googleOAuthNonce;
+  const codeVerifier = req.cookies?.googleOAuthCodeVerifier;
+  const nextPath = getSafeNextPath(req.cookies?.googleOAuthNext);
+
+  if (
+    req.query.error ||
+    !hasMatchingOAuthState(state, storedState) ||
+    typeof nonce !== 'string' ||
+    typeof codeVerifier !== 'string' ||
+    typeof req.query.code !== 'string' ||
+    req.query.code.length === 0 ||
+    req.query.code.length > 4096
+  ) {
+    return redirectGoogleAuthError(res);
+  }
+
+  clearGoogleOAuthCookies(res);
+  res.set('Cache-Control', 'no-store');
+  res.set('Referrer-Policy', 'no-referrer');
+
+  try {
+    const identity = await verifyGoogleAuthorizationCode({
+      code: req.query.code,
+      codeVerifier,
+      nonce,
+    });
+    const { user, created } = await resolveGoogleAccount(identity);
+
+    if (created) {
       const pendingInvitations = await prisma.projectInvitation.findMany({
         where: {
-          invitedEmail: email.toLowerCase(),
+          invitedEmail: identity.email,
           status: 'pending',
           expiresAt: { gt: new Date() },
         },
@@ -206,13 +272,13 @@ exports.googleAuth = async (req, res) => {
     const accessToken = generateAccessToken(user);
     setAuthCookies(res, accessToken, refreshPayload.token);
 
-    res.json({
-      message: 'Google login successful',
-      user: { id: user.id, username: user.username, email: user.email, role: user.role, avatar: user.avatar ?? null },
-    });
+    const redirectUrl = new URL('/login', env.CLIENT_URL);
+    redirectUrl.searchParams.set('google', 'success');
+    if (nextPath) redirectUrl.searchParams.set('next', nextPath);
+    return res.redirect(303, redirectUrl.toString());
   } catch (error) {
-    console.error('Google auth error:', error);
-    res.status(500).json({ message: 'Server error during Google authentication' });
+    console.error('Google OAuth callback failed:', error?.name || 'Error');
+    return redirectGoogleAuthError(res);
   }
 };
 

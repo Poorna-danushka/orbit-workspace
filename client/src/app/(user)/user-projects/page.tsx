@@ -12,6 +12,7 @@ import api from '@/lib/axios';
 import Link from 'next/link';
 import { io } from 'socket.io-client';
 import { BACKEND_URL, getAvatarUrl } from '@/lib/config';
+import { getApiErrorMessage } from '@/lib/apiError';
 
 interface ProjectMember {
   id: string;
@@ -40,6 +41,15 @@ interface Project {
   };
   members?: ProjectMember[];
 }
+
+interface UserSearchResult {
+  id: string;
+  username: string;
+  email: string;
+  avatar: string | null;
+}
+
+type ProjectListResponse = Project[] | { data: Project[] };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
   active:    { label: 'Active',    color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', dot: 'bg-emerald-400' },
@@ -123,6 +133,7 @@ export default function Projects() {
 
   const [projects, setProjects]           = useState<Project[]>([]);
   const [loading, setLoading]             = useState(true);
+  const [loadError, setLoadError]         = useState<string | null>(null);
   const [search, setSearch]               = useState('');
   const [isModalOpen, setIsModalOpen]     = useState(false);
   const [editProject, setEditProject]     = useState<Project | null>(null);
@@ -133,10 +144,11 @@ export default function Projects() {
 
   const fetchProjects = useCallback(async () => {
     try {
-      const res = await api.get('/projects?page=1&limit=50');
-      setProjects(res.data.data || res.data);
+      const res = await api.get<ProjectListResponse>('/projects?page=1&limit=50');
+      setProjects(Array.isArray(res.data) ? res.data : res.data.data);
+      setLoadError(null);
     } catch (err) {
-      console.error('Failed to fetch projects', err);
+      setLoadError(getApiErrorMessage(err, 'Unable to load your projects.'));
     } finally {
       setLoading(false);
     }
@@ -146,16 +158,15 @@ export default function Projects() {
   const [selectedTeamProject, setSelectedTeamProject] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
-  const [pendingInvitations, setPendingInvitations] = useState<any[]>([]);
   const [inviteMessage, setInviteMessage] = useState<string | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    const socket = io(BACKEND_URL);
+    const socket = io(BACKEND_URL, { withCredentials: true });
     socket.emit('joinUser', user.id);
 
     socket.on('projectAdded', () => {
@@ -181,13 +192,12 @@ export default function Projects() {
   // Handle user search debounce
   useEffect(() => {
     if (!searchQuery.trim()) {
-      setSearchResults([]);
       return;
     }
     const delayDebounce = setTimeout(async () => {
       setSearching(true);
       try {
-        const res = await api.get(`/user/search?q=${searchQuery}`);
+        const res = await api.get<UserSearchResult[]>(`/user/search?q=${encodeURIComponent(searchQuery)}`);
         setSearchResults(res.data);
       } catch (err) {
         console.error('Failed to search users', err);
@@ -203,14 +213,14 @@ export default function Projects() {
     if (!selectedTeamProject) return;
     try {
       await api.post(`/projects/${selectedTeamProject.id}/members`, { userId: targetUserId, role: 'member' });
-      const res = await api.get('/projects?page=1&limit=50');
-      const updatedProjects = res.data.data || res.data;
+      const res = await api.get<ProjectListResponse>('/projects?page=1&limit=50');
+      const updatedProjects = Array.isArray(res.data) ? res.data : res.data.data;
       setProjects(updatedProjects);
-      const updatedProj = updatedProjects.find((p: Project) => p.id === selectedTeamProject.id);
+      const updatedProj = updatedProjects.find((p) => p.id === selectedTeamProject.id);
       if (updatedProj) setSelectedTeamProject(updatedProj);
       setSearchQuery('');
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to add member');
+    } catch (err) {
+      setInviteError(getApiErrorMessage(err, 'Failed to add member.'));
     }
   };
 
@@ -232,16 +242,16 @@ export default function Projects() {
       setInviteMessage(res.data?.message || 'Invitation sent.');
 
       // Refresh projects and selected project state
-      const projectsRes = await api.get('/projects?page=1&limit=50');
-      const updatedProjects = projectsRes.data.data || projectsRes.data;
+      const projectsRes = await api.get<ProjectListResponse>('/projects?page=1&limit=50');
+      const updatedProjects = Array.isArray(projectsRes.data) ? projectsRes.data : projectsRes.data.data;
       setProjects(updatedProjects);
-      const updatedProj = updatedProjects.find((p: Project) => p.id === selectedTeamProject.id);
+      const updatedProj = updatedProjects.find((p) => p.id === selectedTeamProject.id);
       if (updatedProj) setSelectedTeamProject(updatedProj);
 
       setInviteEmail('');
       setSearchQuery('');
-    } catch (err: any) {
-      setInviteError(err.response?.data?.message || 'Failed to send invitation');
+    } catch (err) {
+      setInviteError(getApiErrorMessage(err, 'Failed to send invitation.'));
     } finally {
       setInviting(false);
     }
@@ -251,17 +261,22 @@ export default function Projects() {
     if (!selectedTeamProject) return;
     try {
       await api.delete(`/projects/${selectedTeamProject.id}/members/${memberUserId}`);
-      const res = await api.get('/projects?page=1&limit=50');
-      const updatedProjects = res.data.data || res.data;
+      const res = await api.get<ProjectListResponse>('/projects?page=1&limit=50');
+      const updatedProjects = Array.isArray(res.data) ? res.data : res.data.data;
       setProjects(updatedProjects);
-      const updatedProj = updatedProjects.find((p: Project) => p.id === selectedTeamProject.id);
+      const updatedProj = updatedProjects.find((p) => p.id === selectedTeamProject.id);
       if (updatedProj) setSelectedTeamProject(updatedProj);
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to remove member');
+    } catch (err) {
+      setInviteError(getApiErrorMessage(err, 'Failed to remove member.'));
     }
   };
 
-  useEffect(() => { fetchProjects(); }, [fetchProjects]);
+  useEffect(() => {
+    const loadTimer = window.setTimeout(() => {
+      void fetchProjects();
+    }, 0);
+    return () => window.clearTimeout(loadTimer);
+  }, [fetchProjects]);
 
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -289,13 +304,12 @@ export default function Projects() {
         await api.put(`/projects/${editProject.id}`, form);
         setProjects(prev => prev.map(p => p.id === editProject.id ? { ...p, ...form } : p));
       } else {
-        const res = await api.post('/projects', form);
+        const res = await api.post<Project>('/projects', form);
         setProjects(prev => [res.data, ...prev]);
       }
       setIsModalOpen(false);
-    } catch (err: any) {
-      console.error('Submit failed', err);
-      setFormError(err.response?.data?.message || 'Failed to save project');
+    } catch (err) {
+      setFormError(getApiErrorMessage(err, 'Failed to save project.'));
     } finally {
       setSubmitting(false);
     }
@@ -321,7 +335,7 @@ export default function Projects() {
   const activeCount = projects.filter(p => p.status === 'active').length;
   const totalTasks = projects.reduce((sum, project) => sum + (project._count?.tasks || 0), 0);
 
-  if (loading) return (
+  if (loading && projects.length === 0) return (
     <div className="h-full flex items-center justify-center">
       <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
     </div>
@@ -342,6 +356,22 @@ export default function Projects() {
         </button>
       </div>
 
+      {loadError && (
+        <div role="alert" className="flex flex-col gap-3 rounded-2xl border border-amber-400/20 bg-amber-400/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-amber-100">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setLoading(true);
+              void fetchProjects();
+            }}
+            className="shrink-0 rounded-xl border border-amber-300/20 px-3 py-2 text-sm font-medium text-amber-100 transition hover:bg-amber-300/10"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[['Total projects', projects.length, 'Across your workspace'], ['Active now', activeCount, 'Currently in motion'], ['Tasks tracked', totalTasks, 'Across all projects']].map(([label, value, hint]) => (
           <div key={String(label)} className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4">
@@ -358,7 +388,7 @@ export default function Projects() {
       )}
 
       {/* ── Grid ── */}
-      {filtered.length === 0 && !loading ? (
+      {loadError && projects.length === 0 ? null : filtered.length === 0 && !loading ? (
         <div className="flex flex-col items-center justify-center py-24 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
           <div className="w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-5">
             <FolderKanban className="w-8 h-8 text-purple-400" />
@@ -410,7 +440,7 @@ export default function Projects() {
                     </div>
 
                     {/* Edit / Delete / Manage Team – reveal on hover */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                       {project.owner?.id === user?.id && (
                         <button
                           onClick={e => {
