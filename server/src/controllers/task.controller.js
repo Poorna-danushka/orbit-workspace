@@ -13,6 +13,21 @@ const checkProjectAccess = async (projectId, userId) => {
   return !!project;
 };
 
+const checkAssigneeAccess = async (projectId, userId) => {
+  if (!userId) return false;
+  const project = await prisma.project.findFirst({
+    where: {
+      id: projectId,
+      OR: [
+        { ownerId: userId },
+        { members: { some: { userId } } },
+      ],
+    },
+    select: { id: true },
+  });
+  return Boolean(project);
+};
+
 exports.createTask = async (req, res) => {
   try {
     const { projectId, title, description, status, priority, dueDate, assignedTo } = req.body;
@@ -25,6 +40,9 @@ exports.createTask = async (req, res) => {
 
     const hasAccess = await checkProjectAccess(projectId, userId);
     if (!hasAccess) return res.status(403).json({ message: 'Access denied to this project' });
+    if (assignedTo && !(await checkAssigneeAccess(projectId, assignedTo))) {
+      return res.status(400).json({ message: 'Task assignee must belong to the project' });
+    }
 
     const task = await prisma.task.create({
       data: {
@@ -79,7 +97,15 @@ exports.getMyTasks = async (req, res) => {
   try {
     const userId = req.user.userId;
     const tasks = await prisma.task.findMany({
-      where: { assignedTo: userId },
+      where: {
+        assignedTo: userId,
+        project: {
+          OR: [
+            { ownerId: userId },
+            { members: { some: { userId } } },
+          ],
+        },
+      },
       include: { project: { select: { title: true } } },
       orderBy: { dueDate: 'asc' },
     });
@@ -146,6 +172,9 @@ exports.updateTask = async (req, res) => {
 
     const hasAccess = await checkProjectAccess(oldTask.projectId, userId);
     if (!hasAccess) return res.status(403).json({ message: 'Access denied to this project' });
+    if (assignedTo && !(await checkAssigneeAccess(oldTask.projectId, assignedTo))) {
+      return res.status(400).json({ message: 'Task assignee must belong to the project' });
+    }
 
     // Build update data with only the fields that were actually sent
     const data = {};

@@ -20,7 +20,7 @@ const navItems = [
   { name: 'Analytics',     href: '/analytics',       exact: true  },
   { name: 'Notifications', href: '/notifications',   exact: true  },
   { name: 'Profile',       href: '/profile',         exact: true  },
-  { name: 'Admin Console', href: '/admin',            exact: false },
+  { name: 'Admin Console', href: '/admin-dashboard', exact: false },
 ];
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
@@ -37,7 +37,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const initAuth = async () => {
       const storedUser = getStoredUser();
-      if (storedUser && !isAuthenticated) {
+      if (storedUser) {
         dispatch(setCredentials({ user: storedUser }));
       }
       try {
@@ -45,10 +45,11 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
         const currentUser = res.data?.user || res.data;
         if (currentUser) dispatch(setCredentials({ user: currentUser }));
       } catch {
-        if (!storedUser) {
-          dispatch(logout());
-          router.replace('/login');
-        }
+        // /user/me failed — session is invalid or API is unreachable
+        // If we had a stored user, clear it and force re-login
+        clearAuthTokens();
+        dispatch(logout());
+        router.replace('/login');
       } finally {
         setHydrated(true);
       }
@@ -84,9 +85,6 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
     return () => { socket.disconnect(); };
   }, [isAuthenticated, user, fetchUnreadCount]);
 
-  /* Close sidebar on route change */
-  useEffect(() => { setSidebarOpen(false); }, [pathname]);
-
   if (!hydrated || !isAuthenticated) {
     return <LoadingSpinner variant="workspace" message="Loading workspace…" />;
   }
@@ -106,7 +104,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
     (pathname.includes('/projects/') ? 'Kanban Board' : 'Dashboard');
 
   return (
-    <div className="fixed inset-0 bg-[#08090d] text-white flex overflow-hidden">
+    <div className="workspace-shell fixed inset-0 flex overflow-hidden">
       {/* Sidebar backdrop (mobile) */}
       {sidebarOpen && (
         <div

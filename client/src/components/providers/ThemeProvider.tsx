@@ -1,8 +1,55 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useSyncExternalStore, type ReactNode } from 'react';
 
 type Theme = 'dark' | 'light';
+const THEME_EVENT = 'orbit-theme-change';
+
+function readPreferredTheme(): Theme {
+  try {
+    const stored = window.localStorage.getItem('orbit-theme');
+    if (stored === 'light' || stored === 'dark') return stored;
+  } catch {
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+function getThemeSnapshot(): Theme {
+  return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+}
+
+function subscribeToTheme(listener: () => void): () => void {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key !== 'orbit-theme') return;
+    document.documentElement.setAttribute('data-theme', readPreferredTheme());
+    listener();
+  };
+
+  window.addEventListener(THEME_EVENT, listener);
+  window.addEventListener('storage', handleStorage);
+  return () => {
+    window.removeEventListener(THEME_EVENT, listener);
+    window.removeEventListener('storage', handleStorage);
+  };
+}
+
+function getServerThemeSnapshot(): Theme {
+  return 'dark';
+}
+
+function setDocumentTheme(theme: Theme, persist: boolean): void {
+  document.documentElement.setAttribute('data-theme', theme);
+  if (persist) {
+    try {
+      window.localStorage.setItem('orbit-theme', theme);
+    } catch {
+      // The theme still applies to this page when browser storage is unavailable.
+    }
+  }
+  window.dispatchEvent(new Event(THEME_EVENT));
+}
 
 const ThemeContext = createContext<{
   theme: Theme;
@@ -10,20 +57,14 @@ const ThemeContext = createContext<{
 }>({ theme: 'dark', toggle: () => {} });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const theme = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getServerThemeSnapshot);
 
   useEffect(() => {
-    const stored = localStorage.getItem('orbit-theme') as Theme | null;
-    const preferred = stored ?? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-    setTheme(preferred);
-    document.documentElement.setAttribute('data-theme', preferred);
+    setDocumentTheme(readPreferredTheme(), false);
   }, []);
 
   const toggle = () => {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
-    localStorage.setItem('orbit-theme', next);
-    document.documentElement.setAttribute('data-theme', next);
+    setDocumentTheme(theme === 'dark' ? 'light' : 'dark', true);
   };
 
   return (

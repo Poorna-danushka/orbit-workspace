@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Search, Bell, ChevronRight, Menu } from 'lucide-react';
 import api from '@/lib/axios';
 import Avatar from '@/components/common/Avatar';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 interface SearchResult {
   projects: { id: string; title: string; description: string | null }[];
@@ -106,7 +107,14 @@ export default function WorkspaceHeader({ user, unreadCount, onMenuOpen, pageNam
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Theme toggle (light / dark) */}
+          <div className="hidden md:block">
+            {/* lazy client-only toggle component */}
+            {/* ThemeToggle renders a button */}
+            <ThemeToggle compact />
+          </div>
+
           <Link href="/notifications"
             className="relative p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
             <Bell className="w-5 h-5" />

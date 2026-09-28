@@ -2,19 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard, Users, FolderKanban, Activity, BarChart2,
-  LogOut, Shield, User, X
-} from 'lucide-react';
+import { LayoutDashboard, Users, FolderKanban, Activity, BarChart2, LogOut, Shield, User, X } from 'lucide-react';
 import Avatar from '@/components/common/Avatar';
 
 const navItems = [
-  { name: 'Overview',  href: '/admin',           icon: LayoutDashboard },
-  { name: 'Users',     href: '/admin/users',      icon: Users },
-  { name: 'Projects',  href: '/admin/projects',   icon: FolderKanban },
-  { name: 'Activity',  href: '/admin/activity',   icon: Activity },
-  { name: 'Analytics', href: '/admin/analytics',  icon: BarChart2 },
-  { name: 'Profile',   href: '/admin/profile',    icon: User },
+  { name: 'Overview',  href: '/admin-dashboard', icon: LayoutDashboard },
+  { name: 'Users',     href: '/admin-users',     icon: Users },
+  { name: 'Projects',  href: '/admin-projects',  icon: FolderKanban },
+  { name: 'Activity',  href: '/admin-activity',  icon: Activity },
+  { name: 'Analytics', href: '/admin-analytics', icon: BarChart2 },
+  { name: 'Profile',   href: '/admin-profile',   icon: User },
 ];
 
 interface AdminSidebarUser {
@@ -36,67 +33,70 @@ export default function AdminSidebar({ user, isOpen, onClose, onLogout }: AdminS
   const pathname = usePathname();
 
   return (
-    <aside className={`absolute md:static inset-y-0 left-0 z-40 w-64 bg-[#101218] border-r border-white/[0.08] flex flex-col transition-transform duration-300 ${
-      isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-    } h-full flex-shrink-0`}>
+    <aside
+      aria-label="Admin navigation"
+      style={{ display: isOpen ? 'flex' : 'none' }}
+      className="admin-sidebar absolute inset-y-0 left-0 z-40 flex h-full w-[min(18rem,85vw)] flex-shrink-0 flex-col border-r transition-transform duration-300 md:static md:w-64"
+    >
       {/* Logo */}
-      <div className="h-16 flex items-center gap-3 px-5 border-b border-white/[0.06]">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-red-600 to-orange-500 flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.35)]">
-          <Shield className="w-4 h-4 text-white" />
+      <div className="flex h-16 flex-shrink-0 items-center gap-3 border-b px-5">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500 text-white">
+          <Shield className="h-4 w-4" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-bold text-white leading-none">Admin Panel</p>
-          <p className="text-[10px] text-gray-600 mt-0.5">Orbit</p>
+          <p className="text-sm font-bold leading-none">Orbit Admin</p>
+          <p className="mt-1 text-[10px] text-[var(--ob-text-muted)]">Workspace control</p>
         </div>
-        <button className="md:hidden p-1 text-gray-500 hover:text-white" onClick={onClose}>
+        <button className="rounded-md p-1 text-[var(--ob-text-muted)] hover:bg-black/5 hover:text-[var(--ob-text)] md:hidden" onClick={onClose} aria-label="Close admin menu">
           <X className="w-4 h-4" />
         </button>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-5 space-y-0.5">
-        <p className="text-[10px] font-semibold text-gray-700 uppercase tracking-widest px-3 mb-3">Management</p>
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
+        <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-widest text-[var(--ob-text-faint)]">Management</p>
         {navItems.map(item => {
-          const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (
             <Link key={item.href} href={item.href}
               onClick={onClose}
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-150 group ${
+              aria-current={isActive ? 'page' : undefined}
+              className={`group flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors ${
                 isActive
-                  ? 'bg-gradient-to-r from-red-500/15 to-orange-500/5 text-white border border-red-500/20'
-                  : 'text-gray-500 hover:bg-white/[0.04] hover:text-gray-200'
+                  ? 'admin-nav-active'
+                  : 'admin-nav-link'
               }`}
             >
               <div className="flex items-center gap-3">
-                <Icon className={`w-4 h-4 ${isActive ? 'text-red-400' : 'text-gray-600 group-hover:text-gray-400'}`} />
+                <Icon className={`h-4 w-4 ${isActive ? 'text-red-500' : 'text-[var(--ob-text-muted)]'}`} />
                 <span className="text-sm font-medium">{item.name}</span>
               </div>
-              {isActive && <div className="w-1.5 h-1.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />}
+              {isActive && <div className="h-1.5 w-1.5 rounded-full bg-red-500" />}
             </Link>
           );
         })}
       </nav>
 
       {/* User */}
-      <div className="p-4 border-t border-white/[0.06]">
+      <div className="border-t p-4">
         <Link
-          href="/admin/profile"
+          href="/admin-profile"
           onClick={onClose}
-          className="flex items-center gap-3 px-2 py-2 mb-3 rounded-xl hover:bg-white/[0.04] transition-colors group cursor-pointer"
+          className="group mb-3 flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-black/5"
         >
-          <Avatar user={user} size="sm" className="shadow-[0_0_15px_rgba(239,68,68,0.3)] group-hover:scale-105 transition-transform" />
+          <Avatar user={user} size="sm" />
           <div className="flex-1 overflow-hidden">
-            <p className="text-sm font-semibold truncate leading-none text-white group-hover:text-red-400 transition-colors">{user?.username}</p>
-            <p className="text-[11px] text-gray-600 truncate mt-0.5">{user?.email}</p>
+            <p className="truncate text-sm font-semibold leading-none">{user?.username}</p>
+            <p className="mt-1 truncate text-[11px] text-[var(--ob-text-muted)]">{user?.email}</p>
           </div>
-          <span className="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded-full font-semibold flex-shrink-0">ADMIN</span>
+          <span className="flex-shrink-0 rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-500">ADMIN</span>
         </Link>
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-gray-600 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm group"
+          className="admin-logout-button group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors"
         >
-          <LogOut className="w-4 h-4 group-hover:text-red-400" />
+          <LogOut className="h-4 w-4" />
           Sign Out
         </button>
       </div>

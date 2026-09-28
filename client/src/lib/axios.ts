@@ -16,8 +16,10 @@ import { saveAuthTokens, clearAuthTokens, getCookie } from './tokenStorage';
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
-const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:5000';
-const baseURL   = process.env.NEXT_PUBLIC_API_URL   || `${serverUrl}/api`;
+const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL?.trim();
+const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+const baseURL = configuredApiUrl ||
+  (serverUrl ? `${serverUrl.replace(/\/$/, '')}/api` : '');
 
 /**
  * Main API client.
@@ -43,6 +45,7 @@ interface OrbitRequestConfig extends InternalAxiosRequestConfig {
 const CSRF_TIMEOUT_MS = 8_000;
 
 let csrfPromise: Promise<string> | null = null;
+let csrfTokenMemory: string | null = null;
 
 /**
  * Fetches a fresh CSRF token from the server.
@@ -54,8 +57,12 @@ let csrfPromise: Promise<string> | null = null;
  *    requests do not hammer the CSRF endpoint.
  */
 const getCsrfToken = (): Promise<string> => {
+  if (csrfTokenMemory) return Promise.resolve(csrfTokenMemory);
   const cached = getCookie('csrfToken');
-  if (cached) return Promise.resolve(cached);
+  if (cached) {
+    csrfTokenMemory = cached;
+    return Promise.resolve(cached);
+  }
 
   if (!csrfPromise) {
     const controller = new AbortController();
@@ -66,10 +73,18 @@ const getCsrfToken = (): Promise<string> => {
         withCredentials: true,
         signal: controller.signal,
       })
-      .then((response) => response.data?.csrfToken || getCookie('csrfToken') || '')
+      .then((response) => {
+        const token = response.data?.csrfToken || getCookie('csrfToken') || '';
+        csrfTokenMemory = token || null;
+        return token;
+      })
       // ↓ Never throw — a missing CSRF token should degrade gracefully,
       //   not prevent the user from making any API calls at all.
-      .catch(() => getCookie('csrfToken') || '')
+      .catch(() => {
+        const token = getCookie('csrfToken') || '';
+        csrfTokenMemory = token || null;
+        return token;
+      })
       .finally(() => {
         clearTimeout(timeoutId);
         csrfPromise = null;
@@ -166,7 +181,11 @@ api.interceptors.response.use(
           withCredentials: true,
           signal: controller.signal,
         })
-        .then((r) => r.data?.csrfToken || getCookie('csrfToken') || '')
+        .then((r) => {
+          const token = r.data?.csrfToken || getCookie('csrfToken') || '';
+          csrfTokenMemory = token || null;
+          return token;
+        })
         .catch(() => '')
         .finally(() => clearTimeout(timeoutId));
 

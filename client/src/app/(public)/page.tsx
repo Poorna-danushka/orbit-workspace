@@ -4,9 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight, Check, ChevronDown,
-  LayoutDashboard, Calendar, Zap, Users,
-  BarChart3, MessageSquare, Puzzle, Bell,
-  Star, Globe, Shield, Rocket, Menu, X, Sparkles,
+  LayoutDashboard, Zap, Users, BarChart3, Menu, X,
+  type LucideIcon,
 } from 'lucide-react';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import OrbitIcon from '@/components/auth/OrbitIcon';
@@ -58,7 +57,7 @@ function OrbitalAnimation() {
   ];
 
   return (
-    <div style={{ position: 'relative', width: '100%', aspectRatio: '1', maxWidth: 560, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="ob-orbital-animation" style={{ position: 'relative', width: '100%', aspectRatio: '1', maxWidth: 560, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <style>{`
         @keyframes orbit-ccw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
         @keyframes counter-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -82,21 +81,21 @@ function OrbitalAnimation() {
       `}</style>
 
       {/* Outer ambient glow */}
-      <div aria-hidden style={{ position: 'absolute', inset: -60, borderRadius: '50%', background: 'radial-gradient(circle at center, rgba(124,110,255,0.18) 0%, rgba(6,214,247,0.08) 40%, transparent 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
+      <div aria-hidden className="ob-orbital-decoration" style={{ position: 'absolute', inset: -60, borderRadius: '50%', background: 'radial-gradient(circle at center, rgba(124,110,255,0.18) 0%, rgba(6,214,247,0.08) 40%, transparent 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
 
       {/* Ring 3 — outermost */}
-      <div style={{ position: 'absolute', width: 480, height: 480, borderRadius: '50%', border: '1px solid rgba(124,110,255,0.15)', animation: 'ring-shimmer 6s ease-in-out infinite', animationDelay: '0s' }} />
-      <div style={{ position: 'absolute', width: 476, height: 476, borderRadius: '50%', border: '1px dashed rgba(124,110,255,0.06)' }} />
+      <div className="ob-orbital-decoration" style={{ position: 'absolute', width: 480, height: 480, borderRadius: '50%', border: '1px solid rgba(124,110,255,0.15)', animation: 'ring-shimmer 6s ease-in-out infinite', animationDelay: '0s' }} />
+      <div className="ob-orbital-decoration" style={{ position: 'absolute', width: 476, height: 476, borderRadius: '50%', border: '1px dashed rgba(124,110,255,0.06)' }} />
 
       {/* Ring 2 */}
-      <div style={{ position: 'absolute', width: 350, height: 350, borderRadius: '50%', border: '1px solid rgba(6,214,247,0.14)', animation: 'ring-shimmer 5s ease-in-out infinite', animationDelay: '1s' }} />
+      <div className="ob-orbital-decoration" style={{ position: 'absolute', width: 350, height: 350, borderRadius: '50%', border: '1px solid rgba(6,214,247,0.14)', animation: 'ring-shimmer 5s ease-in-out infinite', animationDelay: '1s' }} />
 
       {/* Ring 1 — innermost */}
-      <div style={{ position: 'absolute', width: 220, height: 220, borderRadius: '50%', border: '1px solid rgba(168,85,247,0.18)', animation: 'ring-shimmer 4s ease-in-out infinite', animationDelay: '0.5s' }} />
+      <div className="ob-orbital-decoration" style={{ position: 'absolute', width: 220, height: 220, borderRadius: '50%', border: '1px solid rgba(168,85,247,0.18)', animation: 'ring-shimmer 4s ease-in-out infinite', animationDelay: '0.5s' }} />
 
       {/* Orbit paths (visual only) */}
       {[220, 350, 480].map((d, i) => (
-        <div key={d} style={{
+        <div key={d} className="ob-orbital-decoration" style={{
           position: 'absolute',
           width: d, height: d,
           borderRadius: '50%',
@@ -115,6 +114,7 @@ function OrbitalAnimation() {
         return (
           <div
             key={f.label}
+            className="ob-orbital-decoration"
             style={{
               position: 'absolute',
               width: diameter,
@@ -136,7 +136,7 @@ function OrbitalAnimation() {
                 pointerEvents: 'auto',
               }}
             >
-              <div style={{
+              <div className="ob-orbital-core" style={{
                 width: isInner ? 44 : isMid ? 52 : 60,
                 height: isInner ? 44 : isMid ? 52 : 60,
                 borderRadius: '50%',
@@ -166,7 +166,7 @@ function OrbitalAnimation() {
         width: 100,
         height: 100,
         borderRadius: '50%',
-        background: 'linear-gradient(135deg, #0e0f1c 0%, #141528 100%)',
+        background: 'var(--ob-surface)',
         border: '2px solid rgba(124,110,255,0.5)',
         display: 'flex',
         flexDirection: 'column',
@@ -181,7 +181,7 @@ function OrbitalAnimation() {
       </div>
 
       {/* Floating stat cards */}
-      <div className="ob-glass" style={{
+      <div className="ob-glass ob-orbital-stat" style={{
         position: 'absolute', bottom: -10, left: -40,
         borderRadius: 14, padding: '10px 16px',
         display: 'flex', alignItems: 'center', gap: 10,
@@ -196,7 +196,7 @@ function OrbitalAnimation() {
         </div>
       </div>
 
-      <div className="ob-glass" style={{
+      <div className="ob-glass ob-orbital-stat" style={{
         position: 'absolute', top: 20, right: -50,
         borderRadius: 14, padding: '10px 16px',
         display: 'flex', alignItems: 'center', gap: 10,
@@ -212,7 +212,7 @@ function OrbitalAnimation() {
         </div>
       </div>
 
-      <div className="ob-glass" style={{
+      <div className="ob-glass ob-orbital-stat" style={{
         position: 'absolute', top: '42%', right: -60,
         borderRadius: 14, padding: '10px 16px',
         display: 'flex', alignItems: 'center', gap: 10,
@@ -232,7 +232,7 @@ function OrbitalAnimation() {
 }
 
 function FeatureCard({ icon: Icon, title, desc, color }: {
-  icon: any; title: string; desc: string; color: string;
+  icon: LucideIcon; title: string; desc: string; color: string;
 }) {
   return (
     <div className="ob-card" style={{ padding: 28 }}>
@@ -304,18 +304,18 @@ export default function LandingPage() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 800, fontSize: '1.2rem', color: 'var(--ob-text)', letterSpacing: '-0.02em' }}>Orbit</span>
-              <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 800, fontSize: '1.2rem', color: 'var(--ob-primary)', letterSpacing: '-0.02em' }}>Workspace</span>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ob-success)', display: 'inline-block', flexShrink: 0 }} title="All Systems Operational" />
+              <span className="ob-brand-secondary" style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 800, fontSize: '1.2rem', color: 'var(--ob-primary)', letterSpacing: '-0.02em' }}>Workspace</span>
+              <span className="ob-brand-status" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ob-success)', display: 'inline-block', flexShrink: 0 }} title="All Systems Operational" />
             </div>
           </Link>
 
           {/* Navigation Links — Desktop */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} className="hidden md:flex">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} className="ob-desktop-nav">
             <nav style={{ display: 'flex', alignItems: 'center', gap: 4, marginRight: 12 }}>
               <a href="#features" className="ob-nav-link">Features</a>
               <a href="#solutions" className="ob-nav-link">Solutions</a>
             </nav>
-            <ThemeToggle />
+            <ThemeToggle compact />
             <Link href="/login" className="ob-nav-link" style={{ fontWeight: 600, padding: '8px 18px' }}>
               Log in
             </Link>
@@ -325,8 +325,8 @@ export default function LandingPage() {
           </div>
 
           {/* Mobile Menu Controls */}
-          <div className="flex md:hidden items-center gap-2">
-            <ThemeToggle />
+          <div className="ob-mobile-controls">
+            <ThemeToggle compact />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               style={{
@@ -342,6 +342,8 @@ export default function LandingPage() {
                 cursor: 'pointer',
               }}
               aria-label="Toggle Navigation Menu"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="landing-mobile-menu"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -352,13 +354,14 @@ export default function LandingPage() {
       {/* Mobile Glass Menu Drawer */}
       {mobileMenuOpen && (
         <div
+          id="landing-mobile-menu"
           style={{
             position: 'fixed',
             top: 86,
             left: 16,
             right: 16,
             zIndex: 99,
-            background: 'var(--ob-glass-strong)',
+            background: 'var(--ob-surface)',
             border: '1px solid var(--ob-border-2)',
             borderRadius: 20,
             padding: 20,
@@ -384,20 +387,20 @@ export default function LandingPage() {
       )}
 
       {/* HERO SECTION */}
-      <section style={{ position: 'relative', minHeight: '100dvh', display: 'flex', alignItems: 'center', paddingTop: 95, paddingBottom: 40, boxSizing: 'border-box', overflow: 'hidden' }}>
+      <section className="ob-hero-section" style={{ position: 'relative', minHeight: '100dvh', display: 'flex', alignItems: 'center', paddingTop: 95, paddingBottom: 40, boxSizing: 'border-box', overflow: 'hidden' }}>
         <StarField />
-        <div aria-hidden style={{ position: 'absolute', top: '10%', left: '-5%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,110,255,0.14) 0%, transparent 70%)', filter: 'blur(70px)', pointerEvents: 'none' }} />
-        <div aria-hidden style={{ position: 'absolute', bottom: '5%', right: '-5%', width: 550, height: 550, borderRadius: '50%', background: 'radial-gradient(circle, rgba(6,214,247,0.12) 0%, transparent 70%)', filter: 'blur(70px)', pointerEvents: 'none' }} />
+        <div aria-hidden className="ob-hero-glow" style={{ position: 'absolute', top: '10%', left: '-5%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,110,255,0.14) 0%, transparent 70%)', filter: 'blur(70px)', pointerEvents: 'none' }} />
+        <div aria-hidden className="ob-hero-glow" style={{ position: 'absolute', bottom: '5%', right: '-5%', width: 550, height: 550, borderRadius: '50%', background: 'radial-gradient(circle, rgba(6,214,247,0.12) 0%, transparent 70%)', filter: 'blur(70px)', pointerEvents: 'none' }} />
 
         <div className="ob-container" style={{ width: '100%', position: 'relative', zIndex: 5 }}>
-          <div style={{
+          <div className="ob-hero-grid" style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: '40px 60px',
+            gridTemplateColumns: 'var(--ob-hero-columns, repeat(auto-fit, minmax(320px, 1fr)))',
+            gap: 'var(--ob-hero-gap, 40px 60px)',
             alignItems: 'center',
           }}>
             {/* LEFT COLUMN: HERO ACTION & CONTENT */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <div className="ob-hero-copy" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
               {/* Hero badge */}
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -412,8 +415,8 @@ export default function LandingPage() {
               </div>
 
               {/* Hero Headline */}
-              <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(2.6rem, 4.5vw, 4.2rem)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-0.04em', marginBottom: 20 }}>
-                Your team's work,{' '}
+              <h1 className="ob-hero-heading" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'var(--ob-hero-heading-size, clamp(2.6rem, 4.5vw, 4.2rem))', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-0.04em', marginBottom: 20 }}>
+                Your team&apos;s work,{' '}
                 <span className="ob-gradient-text">in one orbit</span>
               </h1>
 
@@ -423,7 +426,7 @@ export default function LandingPage() {
               </p>
 
               {/* CTA Action Bar */}
-              <div style={{ width: '100%', maxWidth: 500, marginBottom: 24 }}>
+              <div className="ob-hero-cta" style={{ width: '100%', maxWidth: 500, marginBottom: 24 }}>
                 <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
                   <Link href="/register" className="ob-btn-primary" style={{ height: 52, fontSize: '1rem', borderRadius: 99, padding: '0 32px', boxShadow: '0 8px 30px rgba(124,110,255,0.35)' }}>
                     Start for free <ArrowRight size={17} />
@@ -455,13 +458,13 @@ export default function LandingPage() {
             </div>
 
             {/* RIGHT COLUMN: EYE-CATCHING ORBITAL ANIMATION */}
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+            <div className="ob-hero-visual" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
               <OrbitalAnimation />
             </div>
           </div>
         </div>
 
-        <div style={{ position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', animation: 'orbit-float 2s ease-in-out infinite', color: 'var(--ob-text-faint)' }}>
+        <div className="ob-hero-scroll-hint" style={{ position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', animation: 'orbit-float 2s ease-in-out infinite', color: 'var(--ob-text-faint)' }}>
           <ChevronDown size={22} />
         </div>
       </section>

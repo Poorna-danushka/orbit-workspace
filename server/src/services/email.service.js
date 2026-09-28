@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const { CLIENT_URL } = require('../config/env');
 const {
   SMTP_HOST,
   SMTP_PORT,
@@ -62,6 +63,22 @@ const sendProjectInvitationEmail = async ({ to, projectName, inviterName, invite
   });
 };
 
+const sendPasswordResetEmail = async ({ to, resetToken }) => {
+  if (!transporter) {
+    throw new Error('SMTP email configuration is missing');
+  }
+
+  const resetLink = `${CLIENT_URL.split(',')[0].trim().replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(resetToken)}`;
+  return transporter.sendMail({
+    from: MAIL_FROM || SMTP_USER,
+    to,
+    subject: 'Reset your Orbit password',
+    text: `A password reset was requested for your Orbit account. Open this link within 15 minutes: ${resetLink}`,
+    html: `<p>A password reset was requested for your Orbit account.</p><p><a href="${resetLink}">Reset your password</a></p><p>This link expires in 15 minutes.</p>`,
+  });
+};
+
 module.exports = {
   sendProjectInvitationEmail,
+  sendPasswordResetEmail,
 };

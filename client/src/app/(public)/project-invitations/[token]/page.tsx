@@ -4,35 +4,53 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
+import { AxiosError } from 'axios';
 import { CheckCircle2, Loader2, ShieldCheck, XCircle } from 'lucide-react';
 import api from '@/lib/axios';
 import { RootState } from '@/store';
+
+interface Invitation {
+  status: string;
+  invitedEmail: string;
+  project?: { title?: string; description?: string | null };
+  inviter?: { username?: string };
+}
+
+interface ApiErrorResponse {
+  message?: string;
+}
 
 export default function ProjectInvitationPage() {
   const params = useParams<{ token: string }>();
   const router = useRouter();
   const { user } = useSelector((state: RootState) => state.auth);
-  const [invitation, setInvitation] = useState<any>(null);
+  const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
   const token = params?.token as string;
 
-  const fetchInvitation = async () => {
-    try {
-      const response = await api.get(`/projects/invitations/${token}`);
-      setInvitation(response.data.invitation);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'This invitation is invalid or no longer available.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (!token) return;
-    fetchInvitation();
+    let cancelled = false;
+    const loadInvitation = async () => {
+      try {
+        const response = await api.get(`/projects/invitations/${token}`);
+        if (!cancelled) setInvitation(response.data.invitation);
+      } catch (err) {
+        if (!cancelled) {
+          const message = (err as AxiosError<ApiErrorResponse>).response?.data?.message;
+          setError(message || 'This invitation is invalid or no longer available.');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    loadInvitation();
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   const handleAccept = async () => {
@@ -41,8 +59,9 @@ export default function ProjectInvitationPage() {
     try {
       await api.post(`/projects/invitations/${token}/accept`);
       router.push('/projects');
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Unable to accept the invitation.');
+    } catch (err) {
+      const message = (err as AxiosError<ApiErrorResponse>).response?.data?.message;
+      setError(message || 'Unable to accept the invitation.');
     } finally {
       setActionLoading(false);
     }
@@ -53,9 +72,10 @@ export default function ProjectInvitationPage() {
     setError('');
     try {
       await api.post(`/projects/invitations/${token}/reject`);
-      setInvitation((prev: any) => ({ ...prev, status: 'rejected' }));
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Unable to reject the invitation.');
+      setInvitation((prev) => (prev ? { ...prev, status: 'rejected' } : prev));
+    } catch (err) {
+      const message = (err as AxiosError<ApiErrorResponse>).response?.data?.message;
+      setError(message || 'Unable to reject the invitation.');
     } finally {
       setActionLoading(false);
     }

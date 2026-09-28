@@ -8,6 +8,8 @@ const {
   generatePasswordResetToken,
   verifyRefreshToken,
 } = require('../utils/token.util');
+const { getFirebaseAuth } = require('../config/firebase-admin');
+const { sendPasswordResetEmail } = require('../services/email.service');
 
 /**
  * Cookies must be Secure when SameSite=None is used. Keep localhost HTTP
@@ -140,11 +142,19 @@ exports.login = async (req, res) => {
 
 exports.googleAuth = async (req, res) => {
   try {
-    const { email, displayName, photoURL } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required from Google authentication' });
+    const { idToken } = req.body;
+    if (!idToken) {
+      return res.status(400).json({ message: 'A Google identity token is required' });
     }
 
+    const decodedToken = await getFirebaseAuth().verifyIdToken(idToken);
+    if (!decodedToken.email || decodedToken.email_verified !== true) {
+      return res.status(401).json({ message: 'Google account email is not verified' });
+    }
+
+    const email = decodedToken.email.toLowerCase();
+    const displayName = decodedToken.name || email.split('@')[0];
+    const photoURL = decodedToken.picture || null;
     let user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       const randomPassword = crypto.randomBytes(32).toString('hex');
@@ -304,8 +314,7 @@ exports.forgotPassword = async (req, res) => {
       },
     });
 
-    const resetLink = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
-    console.log(`[MOCK EMAIL] Password reset link for ${user.email}: ${resetLink}`);
+    await sendPasswordResetEmail({ to: user.email, resetToken });
 
     res.json({ message: 'If an account with that email exists, a reset link has been sent.' });
   } catch (error) {

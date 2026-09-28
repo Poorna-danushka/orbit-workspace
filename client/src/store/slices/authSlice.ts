@@ -15,6 +15,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { clearAuthTokens, getStoredUser } from '@/lib/tokenStorage';
+import { clearVerifiedAdminUser } from '@/lib/adminSessionCache';
 
 /**
  * User information stored in Redux and cookies
@@ -63,6 +64,7 @@ const authSlice = createSlice({
       state.loading = action.payload;
     },
     logout: (state) => {
+      clearVerifiedAdminUser();
       state.user = null;
       state.isAuthenticated = false;
       state.loading = false;
@@ -85,4 +87,3 @@ const authSlice = createSlice({
 
 export const { setCredentials, updateUser, setLoading, logout, rehydrateAuth } = authSlice.actions;
 export default authSlice.reducer;
-

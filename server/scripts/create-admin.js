@@ -4,9 +4,13 @@ require('dotenv').config();
 
 const prisma = new PrismaClient();
 
-const ADMIN_EMAIL = 'poornadanushka2@gmail.com';
-const ADMIN_PASSWORD = 'ilikeit';
-const ADMIN_USERNAME = 'admin';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD must be provided through the environment');
+}
 
 async function createAdminOnce() {
   try {

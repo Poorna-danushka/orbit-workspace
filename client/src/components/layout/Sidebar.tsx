@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, FolderKanban, CheckSquare, LogOut,
-  Layers, Bell, X, BarChart2, User, ChevronRight, Shield
+  Bell, X, BarChart2, User, ChevronRight, Shield
 } from 'lucide-react';
 import Avatar from '@/components/common/Avatar';
 
@@ -39,7 +39,7 @@ export default function Sidebar({ user, isOpen, onClose, unreadCount, onLogout }
   const pathname = usePathname();
 
   const adminLink = user?.role === 'admin'
-    ? [{ name: 'Admin Console', href: '/admin', icon: Shield, exact: false }]
+    ? [{ name: 'Admin Console', href: '/admin-dashboard', icon: Shield, exact: false }]
     : [];
   const allNavItems = [...navItems, ...adminLink];
 

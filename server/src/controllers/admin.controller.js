@@ -171,10 +171,10 @@ exports.getActivity = async (req, res) => {
     ]);
 
     const activities = [
-      ...recentUsers.map(u => ({ type: u.role === 'admin' ? 'role_change' : 'register', label: u.role === 'admin' ? `Admin account: ${u.username}` : `New user registered: ${u.username}`, user: u.username, time: u.createdAt })),
-      ...recentProjects.map(p => ({ type: 'project_create', label: `Project created: "${p.title}"`, user: p.owner?.username || 'unknown', time: p.createdAt })),
-      ...recentTasks.map(t => ({ type: 'task_complete', label: `Task completed: "${t.title}" in ${t.project?.title}`, user: t.assignee?.username || 'a user', time: t.dueDate || new Date() })),
-      ...recentNotifications.map(n => ({ type: 'notification', label: n.message, user: n.user?.username || 'system', time: n.createdAt })),
+      ...recentUsers.map(u => ({ id: `user:${u.id}`, type: u.role === 'admin' ? 'role_change' : 'register', label: u.role === 'admin' ? `Admin account: ${u.username}` : `New user registered: ${u.username}`, user: u.username, time: u.createdAt })),
+      ...recentProjects.map(p => ({ id: `project:${p.id}`, type: 'project_create', label: `Project created: "${p.title}"`, user: p.owner?.username || 'unknown', time: p.createdAt })),
+      ...recentTasks.map(t => ({ id: `task:${t.id}`, type: 'task_complete', label: `Task completed: "${t.title}" in ${t.project?.title}`, user: t.assignee?.username || 'a user', time: t.dueDate || new Date() })),
+      ...recentNotifications.map(n => ({ id: `notification:${n.id}`, type: 'notification', label: n.message, user: n.user?.username || 'system', time: n.createdAt })),
     ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 30);
 
     res.json(activities);

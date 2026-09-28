@@ -19,13 +19,21 @@ if (missing.length > 0) {
   throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
 }
 
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const configuredOrigins = process.env.CORS_ORIGINS || process.env.CLIENT_URL;
+if (NODE_ENV === 'production' && !configuredOrigins) {
+  throw new Error('CORS_ORIGINS is required when NODE_ENV=production');
+}
+
 module.exports = {
   DATABASE_URL: process.env.DATABASE_URL,
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
   JWT_ISSUER: process.env.JWT_ISSUER,
   JWT_AUDIENCE: process.env.JWT_AUDIENCE,
-  CLIENT_URL: process.env.CLIENT_URL || process.env.FRONTEND_URL || process.env.WEB_URL || process.env.APP_URL || 'http://localhost:3000',
+  NODE_ENV,
+  CORS_ORIGINS: configuredOrigins || 'http://localhost:3000,http://127.0.0.1:3000',
+  CLIENT_URL: process.env.CLIENT_URL || configuredOrigins || 'http://localhost:3000',
   PORT: process.env.PORT || 5000,
   SMTP_HOST: process.env.SMTP_HOST,
   SMTP_PORT: Number(process.env.SMTP_PORT || 587),

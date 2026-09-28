@@ -1,17 +1,17 @@
 'use client';
 
 import { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Lock, Loader2, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import api from '@/lib/axios';
+import { getAuthErrorMessage } from '@/lib/authError';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import OrbitIcon from '@/components/auth/OrbitIcon';
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-  const router = useRouter();
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -31,8 +31,8 @@ function ResetPasswordForm() {
     try {
       await api.post('/auth/reset-password', { token, newPassword: password });
       setSuccess(true);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to reset password. The link may have expired.');
+    } catch (err: unknown) {
+      setError(getAuthErrorMessage(err, 'Failed to reset password. The link may have expired.'));
     } finally {
       setLoading(false);
     }
@@ -152,7 +152,7 @@ export default function ResetPassword() {
           <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '0.95rem', color: 'var(--ob-text)' }}>Orbit <span style={{ color: 'var(--ob-primary)' }}>Workspace</span></span>
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <ThemeToggle />
+          <ThemeToggle compact />
           <Link href="/login" style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px',
             borderRadius: 10, border: '1px solid var(--ob-border-2)',

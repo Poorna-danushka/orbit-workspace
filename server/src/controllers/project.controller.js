@@ -105,10 +105,14 @@ exports.deleteProject = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.userId;
-    // Cascade delete: tasks first, then project
-    await prisma.task.deleteMany({ where: { projectId: id } });
-    const result = await prisma.project.deleteMany({ where: { id, ownerId: userId } });
-    if (result.count === 0) return res.status(404).json({ message: 'Project not found or unauthorized' });
+    const project = await prisma.project.findUnique({ where: { id }, select: { ownerId: true } });
+    if (!project) return res.status(404).json({ message: 'Project not found' });
+    if (project.ownerId !== userId) return res.status(403).json({ message: 'Only the project owner can delete it' });
+
+    await prisma.$transaction([
+      prisma.task.deleteMany({ where: { projectId: id } }),
+      prisma.project.delete({ where: { id } }),
+    ]);
     res.json({ message: 'Project deleted successfully' });
   } catch (error) {
     console.error('Delete project error:', error);

@@ -6,12 +6,13 @@ import { useDispatch } from 'react-redux';
 import Link from 'next/link';
 import {
   User, Mail, Lock, Loader2, ArrowRight, ArrowLeft, Eye, EyeOff, Check,
-  Rocket, Users, BarChart3, ShieldCheck, Sparkles, Star
+  Rocket, Users, ShieldCheck, Sparkles, Star
 } from 'lucide-react';
 import api from '@/lib/axios';
-import { AxiosError } from 'axios';
+import { getAuthErrorMessage } from '@/lib/authError';
 import { setCredentials } from '@/store/slices/authSlice';
 import { saveAuthTokens } from '@/lib/tokenStorage';
+import { getPostAuthPath } from '@/lib/authNavigation';
 import { signInWithGoogle } from '@/lib/firebase';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import OrbitIcon from '@/components/auth/OrbitIcon';
@@ -217,14 +218,9 @@ function RegisterForm() {
       const { user } = response.data;
       saveAuthTokens(user);
       dispatch(setCredentials({ user }));
-      const destination = nextPath && nextPath.startsWith('/') ? nextPath : user.role === 'admin' ? '/admin' : '/dashboard';
-      router.push(destination);
+      router.replace(getPostAuthPath(user.role, nextPath));
     } catch (err: unknown) {
-      const axiosError = err as AxiosError;
-      const response = axiosError.response?.data as any;
-      const validationMessage = response?.errors?.map((eItem: any) => eItem.msg).join(' ');
-      const message = validationMessage || response?.message || (err instanceof Error ? err.message : 'Failed to register');
-      setError(message);
+      setError(getAuthErrorMessage(err, 'Failed to register'));
     } finally {
       setLoading(false);
     }
@@ -234,29 +230,24 @@ function RegisterForm() {
     setLoading(true);
     setError('');
     try {
-      const { user: gUser } = await signInWithGoogle();
-      const response = await api.post('/auth/google', {
-        email: gUser.email,
-        displayName: gUser.displayName,
-        photoURL: gUser.photoURL,
-      });
+      const { idToken } = await signInWithGoogle();
+      const response = await api.post('/auth/google', { idToken });
       const { user } = response.data;
       saveAuthTokens(user);
       dispatch(setCredentials({ user }));
-      const destination = nextPath && nextPath.startsWith('/') ? nextPath : user.role === 'admin' ? '/admin' : '/dashboard';
-      router.push(destination);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || 'Google authentication failed');
+      router.replace(getPostAuthPath(user.role, nextPath));
+    } catch (err: unknown) {
+      setError(getAuthErrorMessage(err, 'Google authentication failed'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100dvh', width: '100%', overflow: 'hidden', background: 'var(--ob-bg)' }}>
+    <div className="ob-auth-screen" style={{ display: 'flex', minHeight: '100dvh', width: '100%', overflow: 'hidden', background: 'var(--ob-bg)' }}>
 
       {/* ── LEFT PANEL — BRAND SHOWCASE ───────────────────────────── */}
-      <div style={{
+      <div className="ob-auth-brand-panel" style={{
         flex: '0 0 44%',
         position: 'relative',
         overflow: 'hidden',
@@ -373,7 +364,7 @@ function RegisterForm() {
       </div>
 
       {/* ── RIGHT PANEL — AUTH FORM ───────────────────────────────── */}
-      <div style={{
+      <div className="ob-auth-content-panel" style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
@@ -387,8 +378,8 @@ function RegisterForm() {
         overflowY: 'auto',
       }}>
         {/* Top Action Bar */}
-        <div style={{ position: 'absolute', top: 24, right: 28, display: 'flex', alignItems: 'center', gap: 14, zIndex: 10 }}>
-          <ThemeToggle />
+        <div className="ob-auth-top-actions">
+          <ThemeToggle compact />
           <Link href="/" className="ob-back-btn">
             <ArrowLeft size={14} /> Back
           </Link>

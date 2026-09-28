@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Mail, Loader2, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import api from '@/lib/axios';
+import { getAuthErrorMessage } from '@/lib/authError';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import OrbitIcon from '@/components/auth/OrbitIcon';
 
@@ -20,8 +21,8 @@ export default function ForgotPassword() {
     try {
       await api.post('/auth/forgot-password', { email });
       setSuccess(true);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to submit request');
+    } catch (err: unknown) {
+      setError(getAuthErrorMessage(err, 'Failed to submit request'));
     } finally {
       setLoading(false);
     }
@@ -38,7 +39,7 @@ export default function ForgotPassword() {
           <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '0.95rem', color: 'var(--ob-text)' }}>Orbit <span style={{ color: 'var(--ob-primary)' }}>Workspace</span></span>
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <ThemeToggle />
+          <ThemeToggle compact />
           <Link href="/login" style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px',
             borderRadius: 10, border: '1px solid var(--ob-border-2)',
