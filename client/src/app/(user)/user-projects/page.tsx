@@ -399,7 +399,7 @@ export default function Projects() {
           </p>
           {!search && (
             <button onClick={openCreate} className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-medium transition-colors">
-              <Plus className="w-4 h-4" /> New Project
+              <Plus className="w-4 h-4" /> Get started
             </button>
           )}
         </div>
