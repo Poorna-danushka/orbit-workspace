@@ -32,7 +32,7 @@ test('a registered user signs in, creates a project and task, and starts the tas
 
     await page.goto('/login');
     await page.getByLabel('Work Email').fill(email);
-    await page.getByLabel('Password').fill(password);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
     await page.getByRole('button', { name: 'Sign In to Workspace' }).click();
 
     await expect(page).toHaveURL(/\/dashboard$/);
