@@ -1,9 +1,8 @@
 const assert = require('node:assert/strict');
-const test = require('node:test');
 const { OAuth2Client } = require('google-auth-library');
-const prisma = require('../src/config/prisma');
-const env = require('../src/config/env');
-const authController = require('../src/controllers/auth.controller');
+const prisma = require('../../src/config/prisma');
+const env = require('../../src/config/env');
+const authController = require('../../src/controllers/auth.controller');
 
 const createResponse = () => ({
   cookies: new Map(),

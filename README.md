@@ -40,6 +40,7 @@
 - [🔌 Socket.io Real-Time Events](#-socketio-real-time-events)
 - [🗺️ Frontend Route Matrix](#️-frontend-route-matrix)
 - [📜 NPM Scripts Reference](#-npm-scripts-reference)
+- [Testing](./TESTING.md)
 - [🤝 Contributing & License](#-contributing--license)
 
 ---

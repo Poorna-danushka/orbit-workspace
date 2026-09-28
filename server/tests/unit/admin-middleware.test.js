@@ -1,8 +1,7 @@
 const assert = require('node:assert/strict');
-const test = require('node:test');
-const prisma = require('../src/config/prisma');
-const { verifyAdmin } = require('../src/middlewares/admin.middleware');
-const { generateAccessToken } = require('../src/utils/token.util');
+const prisma = require('../../src/config/prisma');
+const { verifyAdmin } = require('../../src/middlewares/admin.middleware');
+const { generateAccessToken } = require('../../src/utils/token.util');
 
 const createResponse = () => ({
   statusCode: 200,

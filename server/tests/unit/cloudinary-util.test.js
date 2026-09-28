@@ -1,11 +1,10 @@
 const assert = require('node:assert/strict');
-const test = require('node:test');
-const cloudinary = require('../src/config/cloudinary');
+const cloudinary = require('../../src/config/cloudinary');
 const {
   uploadBufferToCloudinary,
   createPrivateDownloadUrl,
   deleteCloudinaryAsset,
-} = require('../src/utils/cloudinary.util');
+} = require('../../src/utils/cloudinary.util');
 
 test('Cloudinary attachment operations use the supported SDK signatures and authenticated delivery', async () => {
   const originalUploadStream = cloudinary.uploader.upload_stream;

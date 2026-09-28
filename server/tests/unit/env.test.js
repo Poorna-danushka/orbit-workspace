@@ -1,9 +1,9 @@
 const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
-const test = require('node:test');
 
 const validEnvironment = {
   DATABASE_URL: 'mongodb://localhost:27017/orbit',
+  TEST_DATABASE_URL: 'mongodb://127.0.0.1:27017/orbit_test',
   JWT_SECRET: 'access-secret-for-tests-with-more-than-32-characters',
   JWT_REFRESH_SECRET: 'refresh-secret-for-tests-with-more-than-32-characters',
   CORS_ORIGINS: 'https://app.example.test',
@@ -84,6 +84,45 @@ test('development permits only the explicitly configured local HTTP origins', ()
     secure: false,
     googleOAuth: false,
   });
+});
+
+test('test mode accepts only the dedicated orbit_test database', () => {
+  const wrongDatabase = loadSettings({
+    NODE_ENV: 'test',
+    DATABASE_URL: 'mongodb://127.0.0.1:27017/orbit',
+    CORS_ORIGINS: 'http://localhost:3000',
+    CLIENT_URL: 'http://localhost:3000',
+    GOOGLE_CLIENT_ID: '',
+    GOOGLE_CLIENT_SECRET: '',
+    GOOGLE_CALLBACK_URL: '',
+  });
+  assert.notEqual(wrongDatabase.status, 0);
+  assert.match(wrongDatabase.stderr, /orbit_test database/);
+
+  const testDatabase = loadSettings({
+    NODE_ENV: 'test',
+    DATABASE_URL: 'mongodb://127.0.0.1:27017/orbit_test',
+    TEST_DATABASE_URL: 'mongodb://127.0.0.1:27017/orbit_test',
+    CORS_ORIGINS: 'http://localhost:3000',
+    CLIENT_URL: 'http://localhost:3000',
+    GOOGLE_CLIENT_ID: '',
+    GOOGLE_CLIENT_SECRET: '',
+    GOOGLE_CALLBACK_URL: '',
+  });
+  assert.equal(testDatabase.status, 0, testDatabase.stderr);
+
+  const remoteWithoutExplicitTestUrl = loadSettings({
+    NODE_ENV: 'test',
+    DATABASE_URL: 'mongodb+srv://cluster.example.test/orbit_test',
+    TEST_DATABASE_URL: '',
+    CORS_ORIGINS: 'http://localhost:3000',
+    CLIENT_URL: 'http://localhost:3000',
+    GOOGLE_CLIENT_ID: '',
+    GOOGLE_CLIENT_SECRET: '',
+    GOOGLE_CALLBACK_URL: '',
+  });
+  assert.notEqual(remoteWithoutExplicitTestUrl.status, 0);
+  assert.match(remoteWithoutExplicitTestUrl.stderr, /explicit TEST_DATABASE_URL/);
 });
 
 test('production refuses to infer CORS origins from CLIENT_URL', () => {

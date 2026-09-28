@@ -27,6 +27,31 @@ if (!['development', 'test', 'production'].includes(NODE_ENV)) {
   throw new Error('NODE_ENV must be development, test, or production');
 }
 
+if (NODE_ENV === 'test') {
+  let testDatabaseUrl;
+  try {
+    testDatabaseUrl = new URL(process.env.DATABASE_URL);
+  } catch {
+    throw new Error('NODE_ENV=test requires DATABASE_URL to target the dedicated orbit_test database');
+  }
+  const testDatabaseName = decodeURIComponent(testDatabaseUrl.pathname.slice(1).split('/')[0] || '');
+  if (
+    !['mongodb:', 'mongodb+srv:'].includes(testDatabaseUrl.protocol) ||
+    testDatabaseName !== 'orbit_test'
+  ) {
+    throw new Error('NODE_ENV=test requires DATABASE_URL to target the dedicated orbit_test database');
+  }
+
+  const configuredTestDatabaseUrl = process.env.TEST_DATABASE_URL?.trim();
+  if (configuredTestDatabaseUrl) {
+    if (configuredTestDatabaseUrl !== process.env.DATABASE_URL) {
+      throw new Error('In test mode, DATABASE_URL must match TEST_DATABASE_URL');
+    }
+  } else if (!['localhost', '127.0.0.1', '::1'].includes(testDatabaseUrl.hostname)) {
+    throw new Error('Remote test databases require an explicit TEST_DATABASE_URL');
+  }
+}
+
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID?.trim();
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET?.trim();
 const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL?.trim();

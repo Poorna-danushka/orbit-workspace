@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
-const test = require('node:test');
-const authController = require('../src/controllers/auth.controller');
-const env = require('../src/config/env');
+const authController = require('../../src/controllers/auth.controller');
+const env = require('../../src/config/env');
 
 const createResponse = () => ({
   cookies: new Map(),

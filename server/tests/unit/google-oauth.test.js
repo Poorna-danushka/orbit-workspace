@@ -1,10 +1,9 @@
 const assert = require('node:assert/strict');
-const test = require('node:test');
-const env = require('../src/config/env');
+const env = require('../../src/config/env');
 const {
   createGoogleAuthorizationRequest,
   verifyGoogleAuthorizationCode,
-} = require('../src/services/google-oauth.service');
+} = require('../../src/services/google-oauth.service');
 
 test('Google authorization uses OIDC, state, nonce, and PKCE S256', async () => {
   let authorizationOptions;

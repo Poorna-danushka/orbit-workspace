@@ -1,127 +1,39 @@
-const express = require('express');
-const cors = require('cors');
-const http = require('http');
-const path = require('path');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const errorHandler = require('./middlewares/error.middleware');
+const http = require('node:http');
+const app = require('./app');
+const prisma = require('./config/prisma');
 const env = require('./config/env');
-
-// Route imports
-const authRoutes = require('./routes/auth.routes');
-const projectRoutes = require('./routes/project.routes');
-const taskRoutes = require('./routes/task.routes');
-const notificationRoutes = require('./routes/notification.routes');
-const adminRoutes = require('./routes/admin.routes');
-const dashboardRoutes = require('./routes/dashboard.routes');
-const userRoutes = require('./routes/user.routes');
-const uploadRoutes = require('./routes/upload.routes');
-const searchRoutes = require('./routes/search.routes');
-const chatRoutes = require('./routes/chat.routes');
-
-// Socket manager
 const { initSocket } = require('./sockets/socketManager');
 
-const cookieParser = require('cookie-parser');
-const { csrfTokenSetter, csrfProtection } = require('./middlewares/security.middleware');
-
-const app = express();
-const server = http.createServer(app);
-app.disable('x-powered-by');
-app.set('trust proxy', 1);
-
-const allowedOrigins = env.CORS_ORIGINS;
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    const cleanOrigin = origin.replace(/\/$/, '');
-    const isAllowed = allowedOrigins.includes(cleanOrigin);
-    if (isAllowed) {
-      return callback(null, true);
-    }
-    callback(new Error('CORS policy violation: origin not allowed'));
-  },
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
-  credentials: true,
-  optionsSuccessStatus: 204,
-}));
-
-app.use(cookieParser());
-app.use(csrfTokenSetter);
-app.use(csrfProtection);
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: false, limit: '1mb' }));
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "'unsafe-inline'"],
-    styleSrc: ["'self'", "'unsafe-inline'"],
-    imgSrc: ["'self'", 'data:'],
-    connectSrc: ["'self'", ...allowedOrigins],
-    fontSrc: ["'self'", 'data:'],
-    objectSrc: ["'none'"],
-    upgradeInsecureRequests: [],
-  },
-}));
-app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
-
-// Rate limiting
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 1000,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-app.use('/api', apiLimiter);
-app.get('/api/csrf-token', (req, res) => {
-  res.json({ csrfToken: req.csrfToken || req.cookies?.csrfToken || '' });
-});
-app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/uploads', uploadRoutes);
-app.use('/api/search', searchRoutes);
-app.use('/api/chats', chatRoutes);
-
-app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
-  dotfiles: 'deny',
-  index: false,
-  maxAge: '1d',
-}));
-
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
-});
-
-app.use(errorHandler);
-
 const PORT = env.PORT;
+const server = http.createServer(app);
 
-server.on('error', (err) => {
-  if (err && err.code === 'EADDRINUSE') {
+const sanitizeDatabaseUrl = (value) => value.replace(/:\/\/[^:]+:[^@]+@/, '://user:****@');
+
+server.on('error', (error) => {
+  if (error?.code === 'EADDRINUSE') {
     console.error(`Port ${PORT} is already in use. Another process is bound to this port.`);
     console.error('If this was unexpected, find and stop the process using the port and restart the server.');
-    // Exit so process managers (nodemon) can restart cleanly
-    process.exit(1);
+  } else {
+    console.error('Server error:', error);
   }
-  console.error('Server error:', err);
   process.exit(1);
 });
 
-initSocket(server);
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const startServer = async () => {
+  try {
+    await prisma.$connect();
+    console.log('Prisma connected successfully');
+    initSocket(server);
+    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  } catch (error) {
+    const errorMessage = error?.message || String(error);
+    console.error('Prisma connection failed:', sanitizeDatabaseUrl(errorMessage));
+    process.exit(1);
+  }
+};
+
+if (require.main === module) {
+  void startServer();
+}
+
+module.exports = { app, server, startServer };

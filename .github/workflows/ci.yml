@@ -1,25 +1,24 @@
 # =============================================================================
-# Orbit — Backend CI + GHCR publish
+# Orbit — Full-stack CI + GHCR publish
 #
-# Runs on every push to main and on every pull request targeting main,
-# but ONLY when backend-relevant files have changed (path filtering).
-# Frontend changes handled entirely by Vercel — they do not trigger this job.
+# Runs on changes to the client, server, Docker configuration, or this workflow.
 #
 # What this workflow does:
 #   1. Install server/ dependencies via npm ci
 #      (postinstall hook automatically runs: npx prisma generate)
 #   2. Verify Prisma Client generation (schema syntax + generator config)
-#   3. Build the server/Dockerfile
-#   4. On push to main only: authenticate to GHCR and publish the image
+#   3. Run backend and frontend tests, lint, type checks, and the frontend build
+#   4. Build the server/Dockerfile
+#   5. On push to main only: authenticate to GHCR and publish the image
 #
 # Push behaviour:
 #   pull_request → build image, do NOT push to GHCR
 #   push to main → build image, push to GHCR with :latest and :<git-sha> tags
 #
 # What this workflow deliberately does NOT do:
-#   - Run ESLint    (no ESLint config in server/)
+#   - Lint backend files (server/ has no ESLint config)
 #   - Deploy anywhere                    (Phase 8+)
-#   - Connect to MongoDB Atlas           (no DATABASE_URL required)
+#   - Connect to production MongoDB       (tests use an ephemeral local service)
 #   - Add application secrets            (Docker build is secret-free)
 # =============================================================================
 
@@ -32,6 +31,11 @@ on:
     paths:
       # Run CI when backend source changes
       - 'server/**'
+      # Run CI when frontend source or dependencies change
+      - 'client/**'
+      # Root scripts and project documentation affect the testing commands
+      - 'package.json'
+      - 'TESTING.md'
       # Run CI when Docker Compose changes
       - 'docker-compose.yml'
       # Always re-run CI when the workflow itself changes
@@ -42,6 +46,9 @@ on:
       - main
     paths:
       - 'server/**'
+      - 'client/**'
+      - 'package.json'
+      - 'TESTING.md'
       - 'docker-compose.yml'
       - '.github/workflows/**'
 
@@ -59,8 +66,21 @@ permissions:
 
 jobs:
   ci:
-    name: Backend CI
+    name: Full-stack CI
     runs-on: ubuntu-latest
+    env:
+      TEST_DATABASE_URL: mongodb://127.0.0.1:27017/orbit_test
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand(\"ping\").ok'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
 
     steps:
       # -----------------------------------------------------------------------
@@ -81,7 +101,9 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: server/package-lock.json
+          cache-dependency-path: |
+            server/package-lock.json
+            client/package-lock.json
 
       # -----------------------------------------------------------------------
       # 3. Install backend dependencies
@@ -120,6 +142,38 @@ jobs:
       - name: Run backend tests
         working-directory: server
         run: npm test
+
+      - name: Install frontend dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Run frontend lint
+        working-directory: client
+        run: npm run lint
+
+      - name: Check frontend types
+        working-directory: client
+        run: npm run typecheck
+
+      - name: Run frontend unit and component tests
+        working-directory: client
+        run: npm run test:unit
+
+      - name: Build frontend
+        working-directory: client
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SERVER_URL: https://api.example.test
+
+      - name: Install Playwright browser
+        working-directory: client
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser tests
+        working-directory: client
+        run: npm run test:e2e
+        env:
+          CI: true
 
       # -----------------------------------------------------------------------
       # 6. Set up Docker Buildx

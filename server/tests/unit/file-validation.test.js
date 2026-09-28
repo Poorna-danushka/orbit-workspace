@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
-const test = require('node:test');
-const { isAllowedFileContent } = require('../src/utils/file-validation.util');
+const { isAllowedFileContent } = require('../../src/utils/file-validation.util');
 
 test('accepts content matching the declared file type', () => {
   assert.equal(

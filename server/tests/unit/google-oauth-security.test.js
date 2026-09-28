@@ -1,9 +1,8 @@
 const assert = require('node:assert/strict');
-const test = require('node:test');
 const {
   getSafeNextPath,
   hasMatchingOAuthState,
-} = require('../src/utils/google-oauth-security.util');
+} = require('../../src/utils/google-oauth-security.util');
 
 test('Google OAuth state comparison requires a strong matching value', () => {
   const state = 'a'.repeat(43);

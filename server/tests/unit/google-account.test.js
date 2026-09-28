@@ -1,10 +1,9 @@
 const assert = require('node:assert/strict');
 const bcrypt = require('bcrypt');
-const test = require('node:test');
 const {
   resolveGoogleAccount,
   GoogleAccountConflictError,
-} = require('../src/services/google-account.service');
+} = require('../../src/services/google-account.service');
 
 const createDatabase = (initialUsers = []) => {
   const users = [...initialUsers];

@@ -1,9 +1,8 @@
 const assert = require('node:assert/strict');
 const { Writable } = require('node:stream');
-const test = require('node:test');
-const cloudinary = require('../src/config/cloudinary');
-const prisma = require('../src/config/prisma');
-const { getAttachmentContent } = require('../src/controllers/upload.controller');
+const cloudinary = require('../../src/config/cloudinary');
+const prisma = require('../../src/config/prisma');
+const { getAttachmentContent } = require('../../src/controllers/upload.controller');
 
 const createResponse = () => {
   const response = new Writable({
