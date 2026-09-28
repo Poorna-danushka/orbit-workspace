@@ -73,10 +73,15 @@ jobs:
 
     services:
       mongodb:
+        # Run as a single-node replica set so Prisma can use transactions.
+        # Prisma with MongoDB requires a replica set even for single-node
+        # deployments because it uses MongoDB multi-document transactions
+        # internally (error P2031 is thrown otherwise).
         image: mongo:7.0
         ports:
           - 27017:27017
         options: >-
+          --replSet rs0
           --health-cmd "mongosh --quiet --eval 'db.adminCommand(\"ping\").ok'"
           --health-interval 5s
           --health-timeout 5s
@@ -90,7 +95,29 @@ jobs:
         uses: actions/checkout@v4
 
       # -----------------------------------------------------------------------
-      # 2. Node.js 22
+      # 2. Initialise the MongoDB replica set
+      #    - The mongo:7.0 service container starts with --replSet rs0 but does
+      #      NOT self-initiate. rs.initiate() must be called once before any
+      #      client connects, otherwise Prisma's first write throws P2031
+      #      ("server is not a member of a replica set").
+      #    - We call rs.initiate() using the Docker exec API via the service
+      #      container ID exposed by GitHub Actions as the mongodb service alias.
+      #    - The 30-second sleep gives the newly-initiated primary enough time
+      #      to hold its first election before the test suite connects.
+      # -----------------------------------------------------------------------
+      - name: Initialise MongoDB replica set
+        run: |
+          mongosh --host 127.0.0.1:27017 --eval "
+            rs.initiate({
+              _id: 'rs0',
+              members: [{ _id: 0, host: '127.0.0.1:27017' }]
+            })
+          "
+          sleep 5
+          mongosh --host 127.0.0.1:27017 --eval "rs.status().ok"
+
+      # -----------------------------------------------------------------------
+      # 3. Node.js 22
       #    - Matches node:22-alpine used in server/Dockerfile
       #    - cache: 'npm' + cache-dependency-path enables automatic npm cache
       #      keyed on server/package-lock.json — avoids re-downloading packages
@@ -136,8 +163,12 @@ jobs:
         run: npx prisma generate
 
       # -----------------------------------------------------------------------
-      # 5. Backend security/configuration unit tests
-      #    These use injected test configuration and require no database secrets.
+      # 5. Backend tests
+      #    Runs in three stages:
+      #      test:unit        — pure unit tests, no database required
+      #      test:integration — Express + Socket.IO integration (Prisma mocked)
+      #      test:database    — full round-trip against the local orbit_test
+      #                         replica set stood up in the service above
       # -----------------------------------------------------------------------
       - name: Run backend tests
         working-directory: server
