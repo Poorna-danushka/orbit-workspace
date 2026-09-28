@@ -38,7 +38,7 @@ test('a registered user signs in, creates a project and task, and starts the tas
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page.getByRole('heading', { name: /Welcome back, Orbit E2E User\./ })).toBeVisible();
 
-    await page.getByRole('link', { name: 'Projects' }).click();
+    await page.getByRole('link', { name: 'Projects', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Projects' })).toBeVisible();
     await page.getByRole('button', { name: 'New Project' }).click();
     await page.getByLabel('Project Name *').fill(projectTitle);
