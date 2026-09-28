@@ -77,11 +77,16 @@ jobs:
         # Prisma with MongoDB requires a replica set even for single-node
         # deployments because it uses MongoDB multi-document transactions
         # internally (error P2031 is thrown otherwise).
+        #
+        # NOTE: --replSet is a MongoDB process argument, NOT a docker create
+        # flag. It must go in `command`, not `options`. Values in `options`
+        # are passed to `docker create`; values in `command` are passed to
+        # the container entry-point (i.e. the mongod process).
         image: mongo:7.0
+        command: --replSet rs0
         ports:
           - 27017:27017
         options: >-
-          --replSet rs0
           --health-cmd "mongosh --quiet --eval 'db.adminCommand(\"ping\").ok'"
           --health-interval 5s
           --health-timeout 5s
