@@ -72,7 +72,7 @@ class AppError extends Error {
   /**
    * Factory: 429 Too Many Requests
    */
-  static tooManyRequests(message = 'Too many requests', code = 'RATE_LIMITED') {
+  static tooManyRequests(code = 'RATE_LIMITED', message = 'Too many requests') {
     return new AppError(message, 429, code);
   }
 

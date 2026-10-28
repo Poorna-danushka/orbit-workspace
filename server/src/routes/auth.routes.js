@@ -2,22 +2,19 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
 const { body } = require('express-validator');
-const rateLimit = require('express-rate-limit');
 const { verifyToken } = require('../middlewares/auth.middleware');
 const { validate } = require('../utils/validation.util');
+const { createRateLimiter } = require('../utils/rate-limit.util');
 
-const sensitiveActionLimiter = (max, message) => rateLimit({
+const sensitiveActionLimiter = (max) => createRateLimiter({
   windowMs: 15 * 60 * 1000,
-  limit: max,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message },
+  max,
 });
 
-const loginLimiter = sensitiveActionLimiter(10, 'Too many sign-in attempts. Please try again later.');
-const registrationLimiter = sensitiveActionLimiter(10, 'Too many registration attempts. Please try again later.');
-const resetRequestLimiter = sensitiveActionLimiter(5, 'Too many password-reset requests. Please try again later.');
-const googleOAuthLimiter = sensitiveActionLimiter(20, 'Too many Google sign-in attempts. Please try again later.');
+const loginLimiter = sensitiveActionLimiter(10);
+const registrationLimiter = sensitiveActionLimiter(10);
+const resetRequestLimiter = sensitiveActionLimiter(5);
+const googleOAuthLimiter = sensitiveActionLimiter(20);
 
 router.post('/register', validate([
   body('username').trim().isLength({ min: 3, max: 50 }).withMessage('Username must be 3 to 50 characters'),

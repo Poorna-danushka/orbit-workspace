@@ -6,7 +6,7 @@ const fs = require('fs');
 const userController = require('../controllers/user.controller');
 const { verifyToken } = require('../middlewares/auth.middleware');
 const { body, query } = require('express-validator');
-const rateLimit = require('express-rate-limit');
+const { createRateLimiter } = require('../utils/rate-limit.util');
 const { validate } = require('../utils/validation.util');
 
 // Ensure uploads directory exists
@@ -28,12 +28,9 @@ const avatarUpload = multer({
     cb(null, true);
   },
 });
-const avatarUploadLimiter = rateLimit({
+const avatarUploadLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
-  limit: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: 'Too many avatar uploads. Please try again later.' },
+  max: 30,
 });
 
 router.use(verifyToken);

@@ -2,9 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const errorHandler = require('./middlewares/error.middleware');
 const { requestIdMiddleware } = require('./middlewares/request-id.middleware');
+const { createRateLimiter } = require('./utils/rate-limit.util');
 const env = require('./config/env');
 const authRoutes = require('./routes/auth.routes');
 const projectRoutes = require('./routes/project.routes');
@@ -37,7 +37,7 @@ app.use(cors({
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
-  exposedHeaders: ['X-Request-Id'],
+  exposedHeaders: ['X-Request-Id', 'Retry-After'],
   credentials: true,
   optionsSuccessStatus: 204,
 }));
@@ -63,18 +63,16 @@ app.use(helmet.contentSecurityPolicy({
 }));
 app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 
-const apiLimiter = rateLimit({
+const { createRateLimiter } = require('./utils/rate-limit.util');
+
+const apiLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 1000,
-  standardHeaders: true,
-  legacyHeaders: false,
 });
 
-const authLimiter = rateLimit({
+const authLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
 });
 
 app.use('/api', apiLimiter);
