@@ -372,7 +372,15 @@ exports.forgotPassword = async (req, res) => {
     },
   });
 
-  await sendPasswordResetEmail({ to: user.email, resetToken });
+  try {
+    await sendPasswordResetEmail({ to: user.email, resetToken });
+  } catch (error) {
+    // Log email failure but return success response to prevent email enumeration
+    console.error('Failed to send password reset email:', {
+      email: user.email,
+      error: error.message,
+    });
+  }
 
   res.json({ message: 'If an account with that email exists, a reset link has been sent.' });
 };
