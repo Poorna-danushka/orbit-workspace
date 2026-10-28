@@ -1,6 +1,12 @@
 const assert = require('node:assert/strict');
-const { forgotPassword } = require('../../src/controllers/auth.controller');
 const prisma = require('../../src/config/prisma');
+
+// Mock email service before requiring the controller
+jest.mock('../../src/services/email.service', () => ({
+  sendPasswordResetEmail: jest.fn(),
+}));
+
+const { forgotPassword } = require('../../src/controllers/auth.controller');
 const { sendPasswordResetEmail } = require('../../src/services/email.service');
 
 const GENERIC_MESSAGE = 'If an account with that email exists, a reset link has been sent.';
@@ -8,12 +14,10 @@ const GENERIC_MESSAGE = 'If an account with that email exists, a reset link has 
 test('forgotPassword returns identical response for existing and non-existing emails', async () => {
   const originalFindUnique = prisma.user.findUnique;
   const originalCreate = prisma.passwordResetToken.create;
-  const originalSend = sendPasswordResetEmail;
 
   try {
     let findUniqueCalled = false;
     let createCalled = false;
-    let sendCalled = false;
 
     // Test with non-existing email
     prisma.user.findUnique = async () => {
@@ -53,9 +57,7 @@ test('forgotPassword returns identical response for existing and non-existing em
       return { id: 'token-123' };
     };
 
-    sendPasswordResetEmail = async () => {
-      sendCalled = true;
-    };
+    sendPasswordResetEmail.mockResolvedValue(undefined);
 
     const existingReq = { body: { email: 'existing@example.com' } };
     let existingStatus = 200;
@@ -75,7 +77,7 @@ test('forgotPassword returns identical response for existing and non-existing em
 
     assert.equal(findUniqueCalled, true, 'findUnique should be called for existing user');
     assert.equal(createCalled, true, 'Token should be created for existing user');
-    assert.equal(sendCalled, true, 'Email should be sent for existing user');
+    assert.equal(sendPasswordResetEmail.mock.calls.length > 0, true, 'Email should be sent for existing user');
     assert.equal(existingStatus, 200, 'Status should be 200');
     assert.equal(existingBody.message, GENERIC_MESSAGE);
 
@@ -85,23 +87,20 @@ test('forgotPassword returns identical response for existing and non-existing em
   } finally {
     prisma.user.findUnique = originalFindUnique;
     prisma.passwordResetToken.create = originalCreate;
-    require('../../src/services/email.service').sendPasswordResetEmail = originalSend;
+    sendPasswordResetEmail.mockClear();
   }
 });
 
 test('forgotPassword returns identical response even when email sending fails', async () => {
   const originalFindUnique = prisma.user.findUnique;
   const originalCreate = prisma.passwordResetToken.create;
-  const originalSend = sendPasswordResetEmail;
 
   try {
     prisma.user.findUnique = async () => ({ id: 'user-123', email: 'existing@example.com' });
     prisma.passwordResetToken.create = async () => ({ id: 'token-123' });
     
     // Mock email service to throw error
-    sendPasswordResetEmail = async () => {
-      throw new Error('SMTP connection failed');
-    };
+    sendPasswordResetEmail.mockRejectedValue(new Error('SMTP connection failed'));
 
     const req = { body: { email: 'existing@example.com' } };
     let status = 200;
@@ -125,6 +124,6 @@ test('forgotPassword returns identical response even when email sending fails', 
   } finally {
     prisma.user.findUnique = originalFindUnique;
     prisma.passwordResetToken.create = originalCreate;
-    require('../../src/services/email.service').sendPasswordResetEmail = originalSend;
+    sendPasswordResetEmail.mockClear();
   }
 });
