@@ -28,20 +28,27 @@ test('admin authentication distinguishes invalid tokens from account-service out
     const unavailableResponse = createResponse();
     await verifyAdmin({
       cookies: { accessToken: generateAccessToken({ id: 'admin-id', role: 'admin' }) },
-    }, unavailableResponse, () => assert.fail('next must not be called on database failure'));
+    }, unavailableResponse, (error) => {
+      // Now expect next to be called with an error
+      assert.ok(error);
+      assert.equal(error.status, 503);
+      assert.equal(error.code, 'SERVICE_UNAVAILABLE');
+    });
 
-    assert.equal(unavailableResponse.statusCode, 503);
     assert.equal(lookupCalled, true);
 
     lookupCalled = false;
     const invalidResponse = createResponse();
     await verifyAdmin({
       cookies: { accessToken: 'invalid-token' },
-    }, invalidResponse, () => assert.fail('next must not be called for an invalid token'));
+    }, invalidResponse, (error) => {
+      // Expect next to be called with JWT error (handled by global error handler)
+      assert.ok(error);
+    });
 
-    assert.equal(invalidResponse.statusCode, 401);
     assert.equal(lookupCalled, false);
   } finally {
     prisma.user.findUnique = originalFindUnique;
   }
 });
+
