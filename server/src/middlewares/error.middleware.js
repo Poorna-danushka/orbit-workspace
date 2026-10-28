@@ -1,4 +1,4 @@
-const multer = require('multer');
+﻿const multer = require('multer');
 const { TokenExpiredError, JsonWebTokenError, NotBeforeError } = require('jsonwebtoken');
 const AppError = require('../utils/AppError');
 const ErrorCodes = require('../utils/error-codes');
@@ -134,9 +134,13 @@ const errorHandler = (err, req, res, next) => {
       error = AppError.badRequest(ErrorCodes.BAD_REQUEST, 'Invalid JSON in request body');
     }
 
-    // Payload Too Large
-    else if (error.status === 413 || error.code === 'ENTITY_TOO_LARGE') {
-      error = AppError.badRequest(ErrorCodes.PAYLOAD_TOO_LARGE, 'Request payload is too large');
+    // Payload Too Large (body-parser/express-json)
+    else if (
+      error.status === 413 || 
+      error.code === 'ENTITY_TOO_LARGE' || 
+      error.type === 'entity.too.large'
+    ) {
+      error = new AppError('Request payload is too large', 413, ErrorCodes.PAYLOAD_TOO_LARGE);
     }
 
     // Unknown errors -> Internal Server Error
@@ -147,6 +151,7 @@ const errorHandler = (err, req, res, next) => {
         name: error.name,
         message: error.message,
         code: error.code,
+        type: error.type,
         stack: isProduction ? undefined : error.stack,
       });
 
@@ -176,6 +181,9 @@ const errorHandler = (err, req, res, next) => {
   if (error.validationErrors && Array.isArray(error.validationErrors)) {
     response.errors = error.validationErrors;
   }
+
+  // Set X-Request-Id header
+  res.set('X-Request-Id', requestId);
 
   res.status(response.status).json(response);
 };
