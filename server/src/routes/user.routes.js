@@ -5,15 +5,9 @@ const path = require('path');
 const fs = require('fs');
 const userController = require('../controllers/user.controller');
 const { verifyToken } = require('../middlewares/auth.middleware');
-const { body, query, validationResult } = require('express-validator');
+const { body, query } = require('express-validator');
 const rateLimit = require('express-rate-limit');
-
-const validate = (validations) => async (req, res, next) => {
-  await Promise.all(validations.map((validation) => validation.run(req)));
-  const errors = validationResult(req);
-  if (errors.isEmpty()) return next();
-  return res.status(400).json({ errors: errors.array() });
-};
+const { validate } = require('../utils/validation.util');
 
 // Ensure uploads directory exists
 const uploadDir = path.join(__dirname, '../../uploads');

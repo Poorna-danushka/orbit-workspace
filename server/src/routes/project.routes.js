@@ -1,16 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { body, query, validationResult } = require('express-validator');
+const { body, query } = require('express-validator');
 const projectController = require('../controllers/project.controller');
 const { verifyToken } = require('../middlewares/auth.middleware');
 const { validateMongoIdParam } = require('../middlewares/mongo-id.middleware');
-
-const validate = (validations) => async (req, res, next) => {
-  await Promise.all(validations.map((validation) => validation.run(req)));
-  const errors = validationResult(req);
-  if (errors.isEmpty()) return next();
-  return res.status(400).json({ errors: errors.array() });
-};
+const { validate } = require('../utils/validation.util');
 
 router.get('/invitations/:token', projectController.getInvitation);
 router.use(verifyToken);
