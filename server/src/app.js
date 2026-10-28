@@ -4,6 +4,7 @@ const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const errorHandler = require('./middlewares/error.middleware');
+const { requestIdMiddleware } = require('./middlewares/request-id.middleware');
 const env = require('./config/env');
 const authRoutes = require('./routes/auth.routes');
 const projectRoutes = require('./routes/project.routes');
@@ -36,10 +37,12 @@ app.use(cors({
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+  exposedHeaders: ['X-Request-Id'],
   credentials: true,
   optionsSuccessStatus: 204,
 }));
 
+app.use(requestIdMiddleware);
 app.use(cookieParser());
 app.use(csrfTokenSetter);
 app.use(csrfProtection);
@@ -96,7 +99,12 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
 }));
 
 app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+  res.status(404).json({
+    status: 404,
+    code: 'NOT_FOUND',
+    message: 'Route not found',
+    requestId: req.id || 'unknown',
+  });
 });
 
 app.use(errorHandler);
