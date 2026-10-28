@@ -1,19 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
-const { body, validationResult } = require('express-validator');
+const { body } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const { verifyToken } = require('../middlewares/auth.middleware');
-
-// Validation middleware generator
-const validate = (validations) => {
-  return async (req, res, next) => {
-    await Promise.all(validations.map(validation => validation.run(req)));
-    const errors = validationResult(req);
-    if (errors.isEmpty()) return next();
-    res.status(400).json({ errors: errors.array() });
-  };
-};
+const { validate } = require('../utils/validation.util');
 
 const sensitiveActionLimiter = (max, message) => rateLimit({
   windowMs: 15 * 60 * 1000,
