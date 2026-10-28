@@ -63,8 +63,6 @@ app.use(helmet.contentSecurityPolicy({
 }));
 app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 
-const { createRateLimiter } = require('./utils/rate-limit.util');
-
 const apiLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 1000,
