@@ -3,19 +3,6 @@ const prisma = require('../../src/config/prisma');
 const { verifyAdmin } = require('../../src/middlewares/admin.middleware');
 const { generateAccessToken } = require('../../src/utils/token.util');
 
-const createResponse = () => ({
-  statusCode: 200,
-  body: null,
-  status(statusCode) {
-    this.statusCode = statusCode;
-    return this;
-  },
-  json(body) {
-    this.body = body;
-    return this;
-  },
-});
-
 test('admin authentication distinguishes invalid tokens from account-service outages', async () => {
   const originalFindUnique = prisma.user.findUnique;
 
@@ -23,32 +10,47 @@ test('admin authentication distinguishes invalid tokens from account-service out
     let lookupCalled = false;
     prisma.user.findUnique = async () => {
       lookupCalled = true;
-      throw new Error('database unavailable');
+      const error = new Error('database unavailable');
+      error.name = 'PrismaClientInitializationError';
+      throw error;
     };
-    const unavailableResponse = createResponse();
-    await verifyAdmin({
-      cookies: { accessToken: generateAccessToken({ id: 'admin-id', role: 'admin' }) },
-    }, unavailableResponse, (error) => {
-      // Now expect next to be called with an error
-      assert.ok(error);
-      assert.equal(error.status, 503);
-      assert.equal(error.code, 'SERVICE_UNAVAILABLE');
-    });
 
-    assert.equal(lookupCalled, true);
+    let capturedError = null;
+    await verifyAdmin(
+      {
+        cookies: { accessToken: generateAccessToken({ id: 'admin-id', role: 'admin' }) },
+      },
+      {}, // response object (not used when next() is called)
+      (error) => {
+        capturedError = error;
+      }
+    );
 
+    assert.ok(lookupCalled, 'Database lookup should have been attempted');
+    assert.ok(capturedError, 'Error should be passed to next()');
+    assert.equal(capturedError.status, 503);
+    assert.equal(capturedError.code, 'SERVICE_UNAVAILABLE');
+
+    // Test invalid token (JWT error)
     lookupCalled = false;
-    const invalidResponse = createResponse();
-    await verifyAdmin({
-      cookies: { accessToken: 'invalid-token' },
-    }, invalidResponse, (error) => {
-      // Expect next to be called with JWT error (handled by global error handler)
-      assert.ok(error);
-    });
+    capturedError = null;
 
-    assert.equal(lookupCalled, false);
+    await verifyAdmin(
+      {
+        cookies: { accessToken: 'invalid-token' },
+      },
+      {},
+      (error) => {
+        capturedError = error;
+      }
+    );
+
+    assert.ok(!lookupCalled, 'Database lookup should not happen for invalid token');
+    assert.ok(capturedError, 'JWT error should be passed to next()');
+    assert.equal(capturedError.name, 'JsonWebTokenError');
   } finally {
     prisma.user.findUnique = originalFindUnique;
   }
 });
+
 
