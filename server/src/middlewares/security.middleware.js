@@ -1,5 +1,7 @@
 const crypto = require('crypto');
 const env = require('../config/env');
+const AppError = require('../utils/AppError');
+const ErrorCodes = require('../utils/error-codes');
 
 const csrfSecret = env.JWT_SECRET;
 
@@ -76,7 +78,10 @@ const csrfProtection = (req, res, next) => {
 
   const cookieMatches = csrfCookie && csrfHeader && csrfCookie === csrfHeader;
   if (!cookieMatches && !isValidSignedToken(csrfHeader)) {
-    return res.status(403).json({ message: 'CSRF validation failed: Invalid or missing token' });
+    return next(AppError.forbidden(
+      ErrorCodes.CSRF_INVALID,
+      'CSRF validation failed: Invalid or missing token'
+    ));
   }
 
   next();
