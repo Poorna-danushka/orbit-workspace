@@ -45,6 +45,18 @@ const nextConfig: NextConfig = {
     root: process.cwd(),
   },
 
+  async redirects() {
+    return [
+      { source: '/user-dashboard', destination: '/dashboard', permanent: true },
+      { source: '/user-projects', destination: '/projects', permanent: true },
+      { source: '/user-projects/:id', destination: '/projects/:id', permanent: true },
+      { source: '/user-tasks', destination: '/tasks', permanent: true },
+      { source: '/user-analytics', destination: '/analytics', permanent: true },
+      { source: '/user-notifications', destination: '/notifications', permanent: true },
+      { source: '/user-profile', destination: '/profile', permanent: true },
+    ];
+  },
+
   async headers() {
     return [
       {

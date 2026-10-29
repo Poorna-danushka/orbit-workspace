@@ -1,4 +1,4 @@
-﻿const assert = require('node:assert/strict');
+const assert = require('node:assert/strict');
 const AppError = require('../../src/utils/AppError');
 const ErrorCodes = require('../../src/utils/error-codes');
 

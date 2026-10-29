@@ -1,4 +1,4 @@
-﻿# Error Code Usage Table
+# Error Code Usage Table
 
 | Code | HTTP | Emit Sites |
 |------|------|------------|

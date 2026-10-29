@@ -1,4 +1,4 @@
-﻿const assert = require('node:assert/strict');
+const assert = require('node:assert/strict');
 const errorHandler = require('../../src/middlewares/error.middleware');
 
 test('reports rejected CORS origins as a forbidden response', () => {

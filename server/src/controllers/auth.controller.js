@@ -1,4 +1,4 @@
-﻿const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 const crypto = require('node:crypto');
 const { TokenExpiredError } = require('jsonwebtoken');
 const prisma = require('../config/prisma');

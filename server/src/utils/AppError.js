@@ -1,4 +1,4 @@
-﻿const ErrorCodes = require('./error-codes');
+const ErrorCodes = require('./error-codes');
 
 /**
  * Application Error Class

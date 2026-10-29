@@ -1,4 +1,4 @@
-﻿const rateLimit = require('express-rate-limit');
+const rateLimit = require('express-rate-limit');
 const AppError = require('./AppError');
 const ErrorCodes = require('./error-codes');
 

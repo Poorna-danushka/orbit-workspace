@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const adminController = require('../controllers/admin.controller');

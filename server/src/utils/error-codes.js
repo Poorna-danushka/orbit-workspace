@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Standardized Error Codes
  *
  * Each code maps to a specific HTTP status and client-side handling strategy.

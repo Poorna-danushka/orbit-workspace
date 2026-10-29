@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import ReduxProvider from "@/components/providers/ReduxProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import AppToaster from "@/components/providers/AppToaster";
 
 export const metadata: Metadata = {
   title: "Orbit Workspace — All your projects, tasks, and team in one intelligent orbit.",
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body style={{ minHeight: "100%", display: "flex", flexDirection: "column", fontFamily: "Inter, 'Segoe UI', sans-serif" }}>
         <ReduxProvider>
           <ThemeProvider>
+            <AppToaster />
             {children}
           </ThemeProvider>
         </ReduxProvider>

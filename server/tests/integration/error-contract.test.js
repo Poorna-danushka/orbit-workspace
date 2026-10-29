@@ -1,4 +1,4 @@
-﻿const request = require('supertest');
+const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const { io: ioClient } = require('socket.io-client');
 const app = require('../../src/app');

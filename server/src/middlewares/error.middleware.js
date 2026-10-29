@@ -1,4 +1,4 @@
-﻿const multer = require('multer');
+const multer = require('multer');
 const { TokenExpiredError, JsonWebTokenError, NotBeforeError } = require('jsonwebtoken');
 const AppError = require('../utils/AppError');
 const ErrorCodes = require('../utils/error-codes');
