@@ -2,7 +2,7 @@
  * Standardized Error Codes
  *
  * Each code maps to a specific HTTP status and client-side handling strategy.
- * The contract: AUTH_TOKEN_EXPIRED is the ONLY code that triggers silent refresh.
+ * The contract: AUTH_TOKEN_EXPIRED and AUTH_TOKEN_MISSING trigger silent refresh.
  * All AUTH_REFRESH_* codes mean "log the user out".
  */
 

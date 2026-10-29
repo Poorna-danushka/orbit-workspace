@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const logger = require('../utils/logger.util');
 const cloudinaryUrlPattern = /https:\/\/res\.cloudinary\.com\/[^\s<>"']+/g;
 
 const sanitizeMessageContent = (content, attachmentPaths) => content.replace(
@@ -52,7 +53,7 @@ const getProjectMessages = async (req, res, next) => {
       content: sanitizeMessageContent(message.content, attachmentPaths),
     })));
   } catch (error) {
-    console.error('Get project messages error:', error);
+    logger.error('Get project messages failed', error);
     next(error);
   }
 };

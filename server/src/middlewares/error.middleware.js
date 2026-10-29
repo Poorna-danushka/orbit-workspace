@@ -2,6 +2,7 @@ const multer = require('multer');
 const { TokenExpiredError, JsonWebTokenError, NotBeforeError } = require('jsonwebtoken');
 const AppError = require('../utils/AppError');
 const ErrorCodes = require('../utils/error-codes');
+const logger = require('../utils/logger.util');
 
 /**
  * Normalize express-validator errors to standard format
@@ -10,7 +11,6 @@ const normalizeValidationErrors = (errors) => {
   return errors.map((err) => ({
     field: err.path || err.param || 'unknown',
     message: err.msg || 'Invalid value',
-    msg: err.msg || 'Invalid value', // Keep for frontend compatibility (temporary)
   }));
 };
 
@@ -23,8 +23,8 @@ const normalizePrismaError = (err) => {
     const fields = err.meta?.target || [];
     const fieldStr = Array.isArray(fields) ? fields.join(', ') : 'field';
     return AppError.conflict(
-      `A record with this ${fieldStr} already exists`,
-      ErrorCodes.CONFLICT
+      ErrorCodes.CONFLICT,
+      `A record with this ${fieldStr} already exists`
     );
   }
 
@@ -58,7 +58,7 @@ const normalizePrismaError = (err) => {
  *   status: number,
  *   code: string,
  *   message: string,
- *   errors?: Array<{field, message, msg}>,
+ *   errors?: Array<{field, message}>,
  *   requestId: string
  * }
  */
@@ -69,7 +69,6 @@ const errorHandler = (err, req, res, next) => {
   }
 
   const requestId = req.id || 'unknown';
-  const isProduction = process.env.NODE_ENV === 'production';
 
   let error = err;
 
@@ -124,8 +123,8 @@ const errorHandler = (err, req, res, next) => {
     }
     else if (error.name === 'PrismaClientInitializationError') {
       error = AppError.serviceUnavailable(
-        'Database connection failed',
-        ErrorCodes.SERVICE_UNAVAILABLE
+        ErrorCodes.SERVICE_UNAVAILABLE,
+        'Database connection failed'
       );
     }
 
@@ -145,26 +144,21 @@ const errorHandler = (err, req, res, next) => {
 
     // Unknown errors -> Internal Server Error
     else {
-      // Log the full error for debugging
-      console.error('Unhandled error:', {
+      logger.error('Unhandled request error', {
         requestId,
         name: error.name,
-        message: error.message,
         code: error.code,
-        type: error.type,
-        stack: isProduction ? undefined : error.stack,
       });
 
-      error = AppError.internal('An unexpected error occurred', ErrorCodes.INTERNAL_ERROR);
+      error = AppError.internal(ErrorCodes.INTERNAL_ERROR, 'An unexpected error occurred');
     }
   }
 
   // Log operational errors (less verbose)
   if (error.isOperational && error.status >= 500) {
-    console.error('Operational error:', {
+    logger.error('Operational request error', {
       requestId,
       code: error.code,
-      message: error.message,
       status: error.status,
     });
   }

@@ -5,9 +5,13 @@ const path = require('path');
 const fs = require('fs');
 const userController = require('../controllers/user.controller');
 const { verifyToken } = require('../middlewares/auth.middleware');
-const { body, query } = require('express-validator');
 const { createRateLimiter } = require('../utils/rate-limit.util');
 const { validate } = require('../utils/validation.util');
+const {
+  changePasswordValidation,
+  searchUsersValidation,
+  updateProfileValidation,
+} = require('../validators/user.validators');
 
 // Ensure uploads directory exists
 const uploadDir = path.join(__dirname, '../../uploads');
@@ -36,17 +40,10 @@ const avatarUploadLimiter = createRateLimiter({
 
 router.use(verifyToken);
 
-router.get('/search', validate([
-  query('q').optional().isString().trim().isLength({ max: 100 }),
-]), userController.searchUsers);
+router.get('/search', validate(searchUsersValidation), userController.searchUsers);
 router.get('/me', userController.getMe);
-router.patch('/profile', validate([
-  body('username').isString().trim().isLength({ min: 2, max: 50 }),
-]), userController.updateProfile);
-router.patch('/change-password', validate([
-  body('currentPassword').isByteLength({ min: 1, max: 72 }),
-  body('newPassword').isByteLength({ min: 8, max: 72 }),
-]), userController.changePassword);
+router.patch('/profile', validate(updateProfileValidation), userController.updateProfile);
+router.patch('/change-password', validate(changePasswordValidation), userController.changePassword);
 
 // Avatar upload — field name must be "avatar"
 router.post('/avatar', avatarUploadLimiter, (req, res, next) => {

@@ -19,7 +19,6 @@ const validate = (validations) => {
     const validationErrors = errors.array().map((err) => ({
       field: err.path || err.param || 'unknown',
       message: err.msg || 'Invalid value',
-      msg: err.msg || 'Invalid value', // Keep for frontend compatibility (temporary)
     }));
 
     return next(AppError.validation(ErrorCodes.VALIDATION_ERROR, 'Validation failed', validationErrors));

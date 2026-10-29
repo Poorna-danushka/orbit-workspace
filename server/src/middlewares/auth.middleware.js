@@ -1,5 +1,4 @@
 const { verifyAccessToken } = require('../utils/token.util');
-const { TokenExpiredError } = require('jsonwebtoken');
 const prisma = require('../config/prisma');
 const AppError = require('../utils/AppError');
 const ErrorCodes = require('../utils/error-codes');
@@ -15,14 +14,7 @@ const verifyToken = async (req, res, next) => {
       );
     }
 
-    let decoded;
-    try {
-      decoded = verifyAccessToken(token);
-    } catch (error) {
-      // JWT library will throw TokenExpiredError or JsonWebTokenError
-      // Let these bubble up to the global error handler for proper code assignment
-      throw error;
-    }
+    const decoded = verifyAccessToken(token);
 
     const userId = decoded.sub || decoded.userId;
     const user = await prisma.user.findUnique({
@@ -43,8 +35,8 @@ const verifyToken = async (req, res, next) => {
     // Database connection errors
     if (error.name && error.name.startsWith('Prisma')) {
       return next(AppError.serviceUnavailable(
-        'Authentication service unavailable',
-        ErrorCodes.SERVICE_UNAVAILABLE
+        ErrorCodes.SERVICE_UNAVAILABLE,
+        'Authentication service unavailable'
       ));
     }
     // AppError or JWT errors pass through to global handler

@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const prisma = require('../config/prisma');
 const { isAllowedFileContent } = require('../utils/file-validation.util');
+const logger = require('../utils/logger.util');
 
 exports.getMe = async (req, res) => {
   try {
@@ -29,7 +30,7 @@ exports.updateProfile = async (req, res) => {
     });
     res.json({ message: 'Profile updated', user });
   } catch (error) {
-    console.error('Update profile error:', error);
+    logger.error('Update profile failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -54,7 +55,7 @@ exports.changePassword = async (req, res) => {
     ]);
     res.json({ message: 'Password changed successfully' });
   } catch (error) {
-    console.error('Change password error:', error);
+    logger.error('Change password failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -86,7 +87,7 @@ exports.searchUsers = async (req, res) => {
     });
     res.json(users);
   } catch (error) {
-    console.error('Search users error:', error);
+    logger.error('Search users failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -118,7 +119,7 @@ exports.uploadAvatar = async (req, res) => {
 
     res.json({ message: 'Avatar updated', user });
   } catch (error) {
-    console.error('Upload avatar error:', error);
+    logger.error('Upload avatar failed', error);
     res.status(500).json({ message: 'Server error during avatar upload' });
   }
 };

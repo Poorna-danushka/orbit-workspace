@@ -1,11 +1,12 @@
 const prisma = require('../config/prisma');
 const { getIo, getProjectRoom } = require('../sockets/socketManager');
+const logger = require('../utils/logger.util');
 
 const broadcastTaskStatus = (projectId, taskId, status) => {
   try {
     getIo().to(getProjectRoom(projectId)).emit('taskChanged', { projectId, taskId, status });
   } catch (error) {
-    console.error('Task status broadcast failed:', error);
+    logger.error('Task status broadcast failed', error);
   }
 };
 
@@ -74,7 +75,7 @@ exports.createTask = async (req, res) => {
 
     res.status(201).json(task);
   } catch (error) {
-    console.error('Create task error:', error);
+    logger.error('Create task failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -97,7 +98,7 @@ exports.getTasksByProject = async (req, res) => {
     });
     res.json(tasks);
   } catch (error) {
-    console.error('Get tasks error:', error);
+    logger.error('Get tasks failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -120,7 +121,7 @@ exports.getMyTasks = async (req, res) => {
     });
     res.json(tasks);
   } catch (error) {
-    console.error('Get my tasks error:', error);
+    logger.error('Get my tasks failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -164,7 +165,7 @@ exports.getAllUserTasks = async (req, res) => {
 
     res.json({ data: tasks, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } });
   } catch (error) {
-    console.error('Get all tasks error:', error);
+    logger.error('Get all tasks failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -209,7 +210,7 @@ exports.updateTask = async (req, res) => {
 
     res.json(task);
   } catch (error) {
-    console.error('Update task error:', error);
+    logger.error('Update task failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -230,7 +231,7 @@ exports.updateTaskStatus = async (req, res) => {
     broadcastTaskStatus(oldTask.projectId, id, task.status);
     res.json(task);
   } catch (error) {
-    console.error('Update task status error:', error);
+    logger.error('Update task status failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -252,7 +253,7 @@ exports.deleteTask = async (req, res) => {
     ]);
     res.json({ message: 'Task deleted successfully' });
   } catch (error) {
-    console.error('Delete task error:', error);
+    logger.error('Delete task failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

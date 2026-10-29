@@ -48,8 +48,8 @@ const verifyAdmin = async (req, res, next) => {
     // Database connection errors
     if (error.name && error.name.startsWith('Prisma')) {
       return next(AppError.serviceUnavailable(
-        'Authentication service unavailable',
-        ErrorCodes.SERVICE_UNAVAILABLE
+        ErrorCodes.SERVICE_UNAVAILABLE,
+        'Authentication service unavailable'
       ));
     }
     next(error);

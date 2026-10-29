@@ -7,6 +7,7 @@ const {
 const { isAllowedFileContent } = require('../utils/file-validation.util');
 const { Readable } = require('node:stream');
 const { pipeline } = require('node:stream/promises');
+const logger = require('../utils/logger.util');
 
 const inlineImageTypes = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
 const cloudinaryHosts = new Set(['api.cloudinary.com', 'res.cloudinary.com']);
@@ -106,10 +107,10 @@ exports.uploadFile = async (req, res) => {
           resourceType: uploadResult.resource_type,
         });
       } catch (cleanupError) {
-        console.error('Failed to clean up unattached Cloudinary upload:', cleanupError);
+        logger.error('Failed to clean up unattached Cloudinary upload', cleanupError);
       }
     }
-    console.error('File upload error:', error);
+    logger.error('File upload failed', error);
     res.status(500).json({ message: 'Server error during upload' });
   }
 };
@@ -139,7 +140,7 @@ exports.getAttachments = async (req, res) => {
     const attachments = await prisma.attachment.findMany({ where, orderBy: { createdAt: 'desc' } });
     res.json(attachments.map(attachmentResponse));
   } catch (error) {
-    console.error('Get attachments error:', error);
+    logger.error('Get attachments failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -195,7 +196,7 @@ exports.getAttachmentContent = async (req, res) => {
     }
 
     if (!upstream?.ok || !upstream.body) {
-      console.error('Cloudinary attachment request failed with status:', upstream?.status);
+      logger.error('Cloudinary attachment request failed', { status: upstream?.status });
       return res.status(502).json({ message: 'Unable to retrieve attachment' });
     }
 
@@ -221,7 +222,7 @@ exports.getAttachmentContent = async (req, res) => {
       res.destroy(error);
       return;
     }
-    console.error('Get attachment content error:', error?.name || 'Error');
+    logger.error('Get attachment content failed', { name: error?.name || 'Error' });
     res.status(502).json({ message: 'Unable to retrieve attachment' });
   }
 };
@@ -252,7 +253,7 @@ exports.deleteAttachment = async (req, res) => {
     await prisma.attachment.delete({ where: { id } });
     res.json({ message: 'Attachment deleted successfully' });
   } catch (error) {
-    console.error('Delete attachment error:', error);
+    logger.error('Delete attachment failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

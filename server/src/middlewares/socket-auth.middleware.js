@@ -3,6 +3,7 @@ const { verifyAccessToken } = require('../utils/token.util');
 const { TokenExpiredError } = require('jsonwebtoken');
 const prisma = require('../config/prisma');
 const ErrorCodes = require('../utils/error-codes');
+const logger = require('../utils/logger.util');
 
 const authenticateSocket = async (socket, next) => {
   let decoded;
@@ -46,7 +47,7 @@ const authenticateSocket = async (socket, next) => {
     socket.data.authExpiresAt = decoded.exp * 1000;
     return next();
   } catch (error) {
-    console.error('Socket account authentication failed:', error);
+    logger.error('Socket account authentication failed', error);
     const err = new Error('Authentication service unavailable');
     err.data = { code: ErrorCodes.SERVICE_UNAVAILABLE };
     return next(err);

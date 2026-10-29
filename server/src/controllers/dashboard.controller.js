@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const logger = require('../utils/logger.util');
 
 exports.getDashboardStats = async (req, res) => {
   try {
@@ -55,7 +56,7 @@ exports.getDashboardStats = async (req, res) => {
 
     res.json({ totalTasks, completedTasks, inProgressTasks, pendingTasks, urgentTasks, overdueTasks, productivity, upcomingDeadlines, weeklyData, totalProjects: projectIds.length });
   } catch (error) {
-    console.error('Dashboard stats error:', error);
+    logger.error('Dashboard stats failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

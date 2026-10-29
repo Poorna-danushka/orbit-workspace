@@ -45,7 +45,7 @@ describe('Error Contract Integration Tests', () => {
     const emailError = response.body.errors.find(e => e.field === 'email');
     expect(emailError).toBeDefined();
     expect(emailError.message).toBeDefined();
-    expect(emailError.msg).toBeDefined();
+    expect(emailError).not.toHaveProperty('msg');
     
     expect(response.body.requestId).toBeDefined();
     expect(response.headers['x-request-id']).toBe(response.body.requestId);
@@ -201,7 +201,7 @@ describe('Error Contract Integration Tests', () => {
       expect(rateLimited.status).toBe(429);
       expect(rateLimited.body.status).toBe(429);
       expect(rateLimited.body.code).toBe('RATE_LIMITED');
-      expect(rateLimited.body.message).toMatch(/too many requests/i);
+      expect(rateLimited.body.message).toBe('Too many sign-in attempts. Please try again later.');
       expect(rateLimited.body.requestId).toBeDefined();
       expect(rateLimited.headers['x-request-id']).toBe(rateLimited.body.requestId);
       expect(rateLimited.headers['retry-after']).toBeDefined();

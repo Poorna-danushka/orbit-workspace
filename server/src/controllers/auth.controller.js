@@ -1,5 +1,4 @@
 const bcrypt = require('bcrypt');
-const crypto = require('node:crypto');
 const { TokenExpiredError } = require('jsonwebtoken');
 const prisma = require('../config/prisma');
 const {
@@ -10,76 +9,29 @@ const {
   verifyRefreshToken,
 } = require('../utils/token.util');
 const { sendPasswordResetEmail } = require('../services/email.service');
-const {
-  createGoogleAuthorizationRequest,
-  verifyGoogleAuthorizationCode,
-} = require('../services/google-oauth.service');
-const { resolveGoogleAccount } = require('../services/google-account.service');
-const { getSafeNextPath, hasMatchingOAuthState } = require('../utils/google-oauth-security.util');
+const { rotateRefreshToken } = require('../services/refresh-token.service');
 const AppError = require('../utils/AppError');
 const ErrorCodes = require('../utils/error-codes');
-const env = require('../config/env');
+const logger = require('../utils/logger.util');
+const { clearAllAuthCookies, setAccessCookie, setAuthCookies } = require('../utils/auth-cookies.util');
 
-const GOOGLE_OAUTH_COOKIE_NAMES = [
-  'googleOAuthState',
-  'googleOAuthNonce',
-  'googleOAuthCodeVerifier',
-  'googleOAuthNext',
-];
-const googleOAuthCookieOptions = {
-  httpOnly: true,
-  secure: env.COOKIE_SECURE,
-  sameSite: 'lax',
-  path: '/api/auth',
-  maxAge: 10 * 60 * 1000,
-};
-
-/**
- * Cookies must be Secure when SameSite=None is used. Keep localhost HTTP
- * development compatible while using cross-site cookies for HTTPS deployments.
- */
-const authCookieAttributes = {
-  httpOnly: true,
-  secure: env.COOKIE_SECURE,
-  sameSite: env.COOKIE_SECURE ? 'none' : 'lax',
-  path: '/',
-};
-
-/** Shared cookie option factory */
-const cookieOptions = (days) => ({
-  ...authCookieAttributes,
-  maxAge: days * 24 * 60 * 60 * 1000,
-});
-
-/** Clear all auth cookies */
-const clearAllAuthCookies = (res) => {
-  const opts = { ...authCookieAttributes };
-
-  res.clearCookie('accessToken', opts);
-  res.clearCookie('refreshToken', opts);
-};
-
-const clearGoogleOAuthCookies = (res) => {
-  const options = { ...googleOAuthCookieOptions };
-  delete options.maxAge;
-  for (const name of GOOGLE_OAUTH_COOKIE_NAMES) {
-    res.clearCookie(name, options);
+const sendRefreshResponse = (res, user, accessToken, refreshToken) => {
+  if (refreshToken) {
+    setAuthCookies(res, accessToken, refreshToken);
+  } else {
+    setAccessCookie(res, accessToken);
   }
-};
 
-const redirectGoogleAuthError = (res) => {
-  clearGoogleOAuthCookies(res);
-  const redirectUrl = new URL('/login', env.CLIENT_URL);
-  redirectUrl.searchParams.set('google', 'error');
-  res.set('Cache-Control', 'no-store');
-  res.set('Referrer-Policy', 'no-referrer');
-  return res.redirect(303, redirectUrl.toString());
-};
-
-/** Set auth cookies using unified names */
-const setAuthCookies = (res, accessToken, refreshToken) => {
-  res.cookie('accessToken', accessToken, cookieOptions(1 / 24)); // 1 hour
-  res.cookie('refreshToken', refreshToken, cookieOptions(7));    // 7 days
+  return res.json({
+    message: 'Token refreshed successfully',
+    user: {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar ?? null,
+    },
+  });
 };
 
 exports.register = async (req, res) => {
@@ -168,112 +120,6 @@ exports.login = async (req, res) => {
   });
 };
 
-exports.startGoogleOAuth = async (req, res) => {
-  if (!env.GOOGLE_OAUTH_CONFIGURED) {
-    throw AppError.serviceUnavailable(ErrorCodes.SERVICE_UNAVAILABLE, 'Google sign-in is not configured');
-  }
-
-  const state = crypto.randomBytes(32).toString('base64url');
-  const nonce = crypto.randomBytes(32).toString('base64url');
-  const { authorizationUrl, codeVerifier } = await createGoogleAuthorizationRequest({ state, nonce });
-
-  res.cookie('googleOAuthState', state, googleOAuthCookieOptions);
-  res.cookie('googleOAuthNonce', nonce, googleOAuthCookieOptions);
-  res.cookie('googleOAuthCodeVerifier', codeVerifier, googleOAuthCookieOptions);
-
-  const nextPath = getSafeNextPath(req.query.next);
-  if (nextPath) {
-    res.cookie('googleOAuthNext', nextPath, googleOAuthCookieOptions);
-  } else {
-    const clearOptions = { ...googleOAuthCookieOptions };
-    delete clearOptions.maxAge;
-    res.clearCookie('googleOAuthNext', clearOptions);
-  }
-
-  res.set('Cache-Control', 'no-store');
-  res.set('Referrer-Policy', 'no-referrer');
-  return res.redirect(302, authorizationUrl);
-};
-
-exports.googleCallback = async (req, res) => {
-  const state = req.query.state;
-  const storedState = req.cookies?.googleOAuthState;
-  const nonce = req.cookies?.googleOAuthNonce;
-  const codeVerifier = req.cookies?.googleOAuthCodeVerifier;
-  const nextPath = getSafeNextPath(req.cookies?.googleOAuthNext);
-
-  if (
-    req.query.error ||
-    !hasMatchingOAuthState(state, storedState) ||
-    typeof nonce !== 'string' ||
-    typeof codeVerifier !== 'string' ||
-    typeof req.query.code !== 'string' ||
-    req.query.code.length === 0 ||
-    req.query.code.length > 4096
-  ) {
-    return redirectGoogleAuthError(res);
-  }
-
-  clearGoogleOAuthCookies(res);
-  res.set('Cache-Control', 'no-store');
-  res.set('Referrer-Policy', 'no-referrer');
-
-  try {
-    const identity = await verifyGoogleAuthorizationCode({
-      code: req.query.code,
-      codeVerifier,
-      nonce,
-    });
-    const { user, created } = await resolveGoogleAccount(identity);
-
-    if (created) {
-      const pendingInvitations = await prisma.projectInvitation.findMany({
-        where: {
-          invitedEmail: identity.email,
-          status: 'pending',
-          expiresAt: { gt: new Date() },
-        },
-        include: {
-          project: { select: { id: true, title: true } },
-        },
-      });
-
-      for (const invitation of pendingInvitations) {
-        await prisma.projectInvitation.update({
-          where: { id: invitation.id },
-          data: { invitedUserId: user.id },
-        });
-        await prisma.notification.create({
-          data: {
-            userId: user.id,
-            message: `You have a pending invitation to join "${invitation.project.title}".`,
-          },
-        });
-      }
-    }
-
-    const refreshPayload = generateRefreshToken(user);
-    await prisma.refreshToken.create({
-      data: {
-        userId: user.id,
-        tokenHash: refreshPayload.tokenHash,
-        expiresAt: refreshPayload.expiresAt,
-      },
-    });
-
-    const accessToken = generateAccessToken(user);
-    setAuthCookies(res, accessToken, refreshPayload.token);
-
-    const redirectUrl = new URL('/login', env.CLIENT_URL);
-    redirectUrl.searchParams.set('google', 'success');
-    if (nextPath) redirectUrl.searchParams.set('next', nextPath);
-    return res.redirect(303, redirectUrl.toString());
-  } catch (error) {
-    console.error('Google OAuth callback failed:', error?.name || 'Error');
-    return redirectGoogleAuthError(res);
-  }
-};
-
 exports.refresh = async (req, res) => {
   const refreshToken = req.cookies?.refreshToken;
 
@@ -292,41 +138,14 @@ exports.refresh = async (req, res) => {
     throw AppError.unauthorized(ErrorCodes.AUTH_REFRESH_INVALID, 'Invalid refresh token');
   }
 
-  const tokenHash = hashToken(refreshToken);
-  const tokenRecord = await prisma.refreshToken.findUnique({ where: { tokenHash } });
-
-  if (!tokenRecord || tokenRecord.revokedAt || tokenRecord.expiresAt < new Date()) {
-    throw AppError.unauthorized(ErrorCodes.AUTH_REFRESH_INVALID, 'Invalid or expired refresh token');
-  }
-
   const userId = decoded.sub || decoded.userId;
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
     throw AppError.unauthorized(ErrorCodes.AUTH_USER_NOT_FOUND, 'User account no longer exists');
   }
 
-  const nextRefresh = generateRefreshToken(user);
-  await prisma.$transaction([
-    prisma.refreshToken.update({
-      where: { tokenHash },
-      data: { revokedAt: new Date(), replacedBy: nextRefresh.tokenHash },
-    }),
-    prisma.refreshToken.create({
-      data: {
-        userId: user.id,
-        tokenHash: nextRefresh.tokenHash,
-        expiresAt: nextRefresh.expiresAt,
-      },
-    }),
-  ]);
-
-  const nextAccessToken = generateAccessToken(user);
-  setAuthCookies(res, nextAccessToken, nextRefresh.token);
-
-  res.json({
-    message: 'Token refreshed successfully',
-    user: { id: user.id, username: user.username, email: user.email, role: user.role, avatar: user.avatar ?? null },
-  });
+  const session = await rotateRefreshToken(user, hashToken(refreshToken));
+  return sendRefreshResponse(res, user, session.accessToken, session.refreshToken);
 };
 
 exports.logout = async (req, res) => {
@@ -376,7 +195,7 @@ exports.forgotPassword = async (req, res) => {
     await sendPasswordResetEmail({ to: user.email, resetToken });
   } catch (error) {
     // Log email failure but return success response to prevent email enumeration
-    console.error('Failed to send password reset email:', {
+    logger.error('Password reset email delivery failed', {
       email: user.email,
       error: error.message,
     });

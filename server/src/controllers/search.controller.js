@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const logger = require('../utils/logger.util');
 
 exports.globalSearch = async (req, res) => {
   try {
@@ -21,7 +22,7 @@ exports.globalSearch = async (req, res) => {
 
     res.json({ projects, tasks });
   } catch (error) {
-    console.error('Search error:', error);
+    logger.error('Search failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

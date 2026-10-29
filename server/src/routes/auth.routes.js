@@ -1,10 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
-const { body } = require('express-validator');
-const { verifyToken } = require('../middlewares/auth.middleware');
+const googleOAuthController = require('../controllers/google-oauth.controller');
 const { validate } = require('../utils/validation.util');
 const { createRateLimiter } = require('../utils/rate-limit.util');
+const {
+  forgotPasswordValidation,
+  loginValidation,
+  registerValidation,
+  resetPasswordValidation,
+} = require('../validators/auth.validators');
 
 const sensitiveActionLimiter = (max, message) => createRateLimiter({
   windowMs: 15 * 60 * 1000,
@@ -17,28 +22,16 @@ const registrationLimiter = sensitiveActionLimiter(10, 'Too many registration at
 const resetRequestLimiter = sensitiveActionLimiter(5, 'Too many password-reset requests. Please try again later.');
 const googleOAuthLimiter = sensitiveActionLimiter(20, 'Too many Google sign-in attempts. Please try again later.');
 
-router.post('/register', validate([
-  body('username').trim().isLength({ min: 3, max: 50 }).withMessage('Username must be 3 to 50 characters'),
-  body('email').isEmail().isLength({ max: 254 }).normalizeEmail().withMessage('Valid email is required'),
-  body('password').isByteLength({ min: 8, max: 72 }).withMessage('Password must be 8 to 72 bytes'),
-]), registrationLimiter, authController.register);
+router.post('/register', validate(registerValidation), registrationLimiter, authController.register);
 
-router.post('/login', validate([
-  body('email').isEmail().isLength({ max: 254 }).normalizeEmail().withMessage('Valid email is required'),
-  body('password').isByteLength({ min: 1, max: 72 }).withMessage('Password is required and must be at most 72 bytes'),
-]), loginLimiter, authController.login);
-router.get('/google', googleOAuthLimiter, authController.startGoogleOAuth);
-router.get('/google/callback', googleOAuthLimiter, authController.googleCallback);
+router.post('/login', validate(loginValidation), loginLimiter, authController.login);
+router.get('/google', googleOAuthLimiter, googleOAuthController.startGoogleOAuth);
+router.get('/google/callback', googleOAuthLimiter, googleOAuthController.googleCallback);
 router.post('/refresh', authController.refresh);
 
-router.post('/forgot-password', validate([
-  body('email').isEmail().isLength({ max: 254 }).normalizeEmail().withMessage('Valid email is required'),
-]), resetRequestLimiter, authController.forgotPassword);
+router.post('/forgot-password', validate(forgotPasswordValidation), resetRequestLimiter, authController.forgotPassword);
 
-router.post('/reset-password', validate([
-  body('token').isLength({ min: 32, max: 256 }).withMessage('Reset token is invalid'),
-  body('newPassword').isByteLength({ min: 8, max: 72 }).withMessage('Password must be 8 to 72 bytes'),
-]), resetRequestLimiter, authController.resetPassword);
+router.post('/reset-password', validate(resetPasswordValidation), resetRequestLimiter, authController.resetPassword);
 
 router.post('/logout', authController.logout);
 
