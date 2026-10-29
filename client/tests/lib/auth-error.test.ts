@@ -1,5 +1,5 @@
 import { AxiosError, type AxiosResponse } from 'axios';
-import { getAuthErrorMessage } from '@/lib/authError';
+import { getErrorMessage } from '@/lib/errors';
 
 function createAxiosError(data: unknown) {
   const error = new AxiosError('Request failed');
@@ -8,15 +8,15 @@ function createAxiosError(data: unknown) {
 }
 
 test('shows backend validation errors from Axios responses', () => {
-  expect(getAuthErrorMessage(createAxiosError({
-    errors: [{ msg: 'Email is invalid' }, { msg: 'Password is required' }],
+  expect(getErrorMessage(createAxiosError({
+    errors: [{ message: 'Email is invalid' }, { message: 'Password is required' }],
   }), 'Sign-in failed')).toBe('Email is invalid Password is required');
 });
 
 test('uses the API message and falls back for non-Axios errors', () => {
-  expect(getAuthErrorMessage(createAxiosError({ message: 'Invalid credentials' }), 'Try again'))
+  expect(getErrorMessage(createAxiosError({ message: 'Invalid credentials' }), 'Try again'))
     .toBe('Invalid credentials');
-  expect(getAuthErrorMessage(new Error('Network unavailable'), 'Try again'))
+  expect(getErrorMessage(new Error('Network unavailable'), 'Try again'))
     .toBe('Network unavailable');
-  expect(getAuthErrorMessage(null, 'Try again')).toBe('Try again');
+  expect(getErrorMessage(null, 'Try again')).toBe('Try again');
 });

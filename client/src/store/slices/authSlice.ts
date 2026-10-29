@@ -14,27 +14,10 @@
  */
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { clearAuthTokens, getStoredUser } from '@/lib/tokenStorage';
-import { clearVerifiedAdminUser } from '@/lib/adminSessionCache';
+import { getStoredUser } from '@/lib/auth/storage';
+import type { User } from '@/types/user';
 
-/**
- * User information stored in Redux and cookies
- * 
- * @interface User
- * @property {string} id - Unique user identifier
- * @property {string} username - Display name
- * @property {string} email - User email address
- * @property {string} role - User role (user | admin)
- */
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-  avatar?: string | null;
-}
-
-export interface AuthState {
+interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
@@ -64,13 +47,9 @@ const authSlice = createSlice({
       state.loading = action.payload;
     },
     logout: (state) => {
-      clearVerifiedAdminUser();
       state.user = null;
       state.isAuthenticated = false;
       state.loading = false;
-      if (typeof window !== 'undefined') {
-        clearAuthTokens();
-      }
     },
     rehydrateAuth: (state) => {
       if (typeof window !== 'undefined') {

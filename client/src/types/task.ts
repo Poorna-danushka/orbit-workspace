@@ -20,6 +20,7 @@ export interface Task {
   assignee?: {
     id: string;
     username: string;
+    email?: string;
     avatar: string | null;
   } | null;
   attachments?: TaskAttachment[];

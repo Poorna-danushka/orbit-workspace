@@ -1,4 +1,4 @@
-import { getPostAuthPath } from '@/lib/authNavigation';
+import { getPostAuthPath } from '@/lib/auth/redirect';
 
 test('admins are always routed to the admin dashboard', () => {
   expect(getPostAuthPath('admin', '/projects')).toBe('/admin-dashboard');
