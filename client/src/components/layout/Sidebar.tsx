@@ -6,9 +6,9 @@ import {
   LayoutDashboard, FolderKanban, CheckSquare, LogOut,
   Bell, X, BarChart2, User, ChevronRight, Shield
 } from 'lucide-react';
-import Avatar from '@/components/common/Avatar';
+import Avatar from '@/components/ui/Avatar';
 
-import OrbitIcon from '@/components/auth/OrbitIcon';
+import OrbitIcon from '@/features/auth/components/OrbitIcon';
 
 const navItems = [
   { name: 'Dashboard',     href: '/dashboard',      icon: LayoutDashboard, exact: true  },

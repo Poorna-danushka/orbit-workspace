@@ -3,14 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Search, Bell, ChevronRight, Menu } from 'lucide-react';
-import api from '@/lib/axios';
-import Avatar from '@/components/common/Avatar';
+import Avatar from '@/components/ui/Avatar';
 import ThemeToggle from '@/components/ui/ThemeToggle';
-
-interface SearchResult {
-  projects: { id: string; title: string; description: string | null }[];
-  tasks: { id: string; title: string; projectId: string; status: string; project?: { title: string } }[];
-}
+import { notifyError } from '@/lib/errors';
+import { searchWorkspace } from '@/features/search/services/searchService';
+import type { WorkspaceSearchResult } from '@/features/search/types';
 
 interface WorkspaceHeaderUser {
   username: string;
@@ -28,7 +25,7 @@ interface WorkspaceHeaderProps {
 export default function WorkspaceHeader({ user, unreadCount, onMenuOpen, pageName }: WorkspaceHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
+  const [searchResults, setSearchResults] = useState<WorkspaceSearchResult | null>(null);
 
   const closeSearch = () => { setSearchOpen(false); setSearchQuery(''); setSearchResults(null); };
 
@@ -36,9 +33,11 @@ export default function WorkspaceHeader({ user, unreadCount, onMenuOpen, pageNam
     setSearchQuery(q);
     if (q.length < 2) { setSearchResults(null); return; }
     try {
-      const res = await api.get<SearchResult>(`/search?q=${q}`);
+      const res = await searchWorkspace(q);
       setSearchResults(res.data);
-    } catch {}
+    } catch (error: unknown) {
+      notifyError(error, 'Search is temporarily unavailable.');
+    }
   };
 
   return (

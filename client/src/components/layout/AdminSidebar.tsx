@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, FolderKanban, Activity, BarChart2, LogOut, Shield, User, X } from 'lucide-react';
-import Avatar from '@/components/common/Avatar';
+import Avatar from '@/components/ui/Avatar';
 
 const navItems = [
   { name: 'Overview',  href: '/admin-dashboard', icon: LayoutDashboard },

@@ -2,8 +2,8 @@ import { Provider } from 'react-redux';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AxiosError, type AxiosResponse } from 'axios';
-import Login from '@/app/(public)/login/page';
-import api from '@/lib/axios';
+import Login from '@/app/(auth)/login/page';
+import api from '@/lib/api/client';
 import { store } from '@/store';
 
 const mockReplace = jest.fn();
@@ -19,7 +19,7 @@ jest.mock('@/components/ui/ThemeToggle', () => ({
   default: () => null,
 }));
 
-jest.mock('@/lib/axios', () => ({
+jest.mock('@/lib/api/client', () => ({
   __esModule: true,
   default: { post: jest.fn() },
 }));
