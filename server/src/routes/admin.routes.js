@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const adminController = require('../controllers/admin.controller');
@@ -18,7 +18,7 @@ router.patch('/users/:id/role', body('role').isIn(['admin', 'user']), (req, res,
       message: err.msg || 'Invalid value',
       msg: err.msg || 'Invalid value',
     }));
-    return next(AppError.validation('Validation failed', validationErrors, ErrorCodes.VALIDATION_ERROR));
+    return next(AppError.validation(ErrorCodes.VALIDATION_ERROR, 'Validation failed', validationErrors));
   }
   next();
 }, adminController.updateUserRole);
@@ -36,7 +36,7 @@ router.post('/broadcast', body('message').isString().trim().isLength({ min: 1, m
       message: err.msg || 'Invalid value',
       msg: err.msg || 'Invalid value',
     }));
-    return next(AppError.validation('Validation failed', validationErrors, ErrorCodes.VALIDATION_ERROR));
+    return next(AppError.validation(ErrorCodes.VALIDATION_ERROR, 'Validation failed', validationErrors));
   }
   next();
 }, adminController.broadcastNotification);

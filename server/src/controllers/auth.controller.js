@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+﻿const bcrypt = require('bcrypt');
 const crypto = require('node:crypto');
 const { TokenExpiredError } = require('jsonwebtoken');
 const prisma = require('../config/prisma');
@@ -87,7 +87,7 @@ exports.register = async (req, res) => {
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
-    throw AppError.conflict('User already exists', ErrorCodes.CONFLICT);
+    throw AppError.conflict(ErrorCodes.CONFLICT, 'User already exists');
   }
 
   const hashedPassword = await bcrypt.hash(password, 12);
@@ -170,7 +170,7 @@ exports.login = async (req, res) => {
 
 exports.startGoogleOAuth = async (req, res) => {
   if (!env.GOOGLE_OAUTH_CONFIGURED) {
-    throw AppError.serviceUnavailable('Google sign-in is not configured', ErrorCodes.SERVICE_UNAVAILABLE);
+    throw AppError.serviceUnavailable(ErrorCodes.SERVICE_UNAVAILABLE, 'Google sign-in is not configured');
   }
 
   const state = crypto.randomBytes(32).toString('base64url');

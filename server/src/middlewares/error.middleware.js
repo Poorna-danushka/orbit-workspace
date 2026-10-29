@@ -30,7 +30,7 @@ const normalizePrismaError = (err) => {
 
   // P2025: Record not found (operation failed)
   if (err.code === 'P2025') {
-    return AppError.notFound('The requested resource was not found', ErrorCodes.NOT_FOUND);
+    return AppError.notFound(ErrorCodes.NOT_FOUND, 'The requested resource was not found');
   }
 
   // P2003: Foreign key constraint violation
@@ -47,7 +47,7 @@ const normalizePrismaError = (err) => {
   }
 
   // Other Prisma errors
-  return AppError.internal('Database operation failed', ErrorCodes.DATABASE_ERROR);
+  return AppError.internal(ErrorCodes.DATABASE_ERROR, 'Database operation failed');
 };
 
 /**
