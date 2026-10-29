@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const uploadController = require('../controllers/upload.controller');
 const { verifyToken } = require('../middlewares/auth.middleware');
@@ -33,6 +33,7 @@ const upload = multer({
 const uploadLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 30,
+  message: 'Too many uploads. Please try again later.',
 });
 
 router.use(verifyToken);

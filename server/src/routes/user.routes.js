@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
@@ -31,6 +31,7 @@ const avatarUpload = multer({
 const avatarUploadLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 30,
+  message: 'Too many avatar uploads. Please try again later.',
 });
 
 router.use(verifyToken);
