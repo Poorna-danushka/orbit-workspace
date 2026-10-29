@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Application Error Class
  *
  * Standardized error for operational (expected) failures.
@@ -81,13 +81,6 @@ class AppError extends Error {
    */
   static internal(message = 'Internal server error', code = 'INTERNAL_ERROR') {
     return new AppError(message, 500, code);
-  }
-
-  /**
-   * Factory: 502 Bad Gateway
-   */
-  static badGateway(message = 'Bad gateway', code = 'BAD_GATEWAY') {
-    return new AppError(message, 502, code);
   }
 
   /**

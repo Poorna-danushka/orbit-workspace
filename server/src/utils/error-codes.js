@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Standardized Error Codes
  *
  * Each code maps to a specific HTTP status and client-side handling strategy.
@@ -24,10 +24,9 @@ const VALIDATION_ERROR = 'VALIDATION_ERROR';
 const BAD_REQUEST = 'BAD_REQUEST';
 const INVALID_INPUT = 'INVALID_INPUT';
 
-// Resource Errors (404, 409, 410)
+// Resource Errors (404, 409)
 const NOT_FOUND = 'NOT_FOUND';
 const CONFLICT = 'CONFLICT';
-const GONE = 'GONE';
 
 // Upload & File Errors (400, 413)
 const UPLOAD_ERROR = 'UPLOAD_ERROR';
@@ -38,9 +37,8 @@ const PAYLOAD_TOO_LARGE = 'PAYLOAD_TOO_LARGE';
 // Rate Limiting (429)
 const RATE_LIMITED = 'RATE_LIMITED';
 
-// Server Errors (500, 502, 503)
+// Server Errors (500, 503)
 const INTERNAL_ERROR = 'INTERNAL_ERROR';
-const BAD_GATEWAY = 'BAD_GATEWAY';
 const SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE';
 const DATABASE_ERROR = 'DATABASE_ERROR';
 
@@ -66,7 +64,6 @@ module.exports = {
   // Resources
   NOT_FOUND,
   CONFLICT,
-  GONE,
 
   // Uploads
   UPLOAD_ERROR,
@@ -79,7 +76,6 @@ module.exports = {
 
   // Server
   INTERNAL_ERROR,
-  BAD_GATEWAY,
   SERVICE_UNAVAILABLE,
   DATABASE_ERROR,
 };
