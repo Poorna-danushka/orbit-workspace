@@ -90,3 +90,4 @@ test('shows the backend authentication error without changing routes', async () 
   expect(await screen.findByRole('alert')).toHaveTextContent('Invalid credentials');
   expect(mockReplace).not.toHaveBeenCalled();
 });
+import '@testing-library/jest-dom';

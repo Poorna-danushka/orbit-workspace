@@ -8,7 +8,7 @@ export function registerRequestInterceptor(api: AxiosInstance): void {
   api.interceptors.request.use(async (config) => {
     const method = (config.method ?? 'GET').toUpperCase();
     if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
-      delete config.headers['Content-Type'];
+      config.headers.setContentType(false);
     } else if (!config.headers.get('Content-Type')) {
       config.headers['Content-Type'] = 'application/json';
     }

@@ -13,7 +13,12 @@ test.each([
   '/admin-users',
   '/login',
   '/%2f%2fattacker.example',
+  '/%252f%252fattacker.example',
   '/\\attacker.example',
+  '/%5cattacker.example',
+  '/%2561dmin-dashboard',
+  '/admin%252fusers',
+  '/administrator',
 ])('unsafe post-login path %s falls back to the dashboard', (path) => {
   expect(getPostAuthPath('user', path)).toBe('/dashboard');
 });

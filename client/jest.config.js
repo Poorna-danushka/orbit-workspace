@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const nextJest = require('next/jest');
 
+process.env.NEXT_PUBLIC_SERVER_URL ??= 'http://localhost:5000';
+
 const createJestConfig = nextJest({ dir: './' });
 
 /** @type {import('jest').Config} */
 const config = {
   coverageProvider: 'v8',
   testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/tests/setup/jest.setup.ts'],
   testMatch: ['<rootDir>/tests/**/*.test.[jt]s?(x)'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',

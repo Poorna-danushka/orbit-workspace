@@ -25,12 +25,17 @@ export function getPostAuthPath(role: string, requestedPath?: string | null): st
     return ROUTES.dashboard;
   }
 
-  let pathname: string;
+  let pathname = destination.pathname;
   try {
-    pathname = decodeURIComponent(destination.pathname).toLowerCase();
+    while (true) {
+      const decodedPathname = decodeURIComponent(pathname);
+      if (decodedPathname === pathname) break;
+      pathname = decodedPathname;
+    }
   } catch {
     return ROUTES.dashboard;
   }
+  pathname = pathname.toLowerCase();
 
   if (
     destination.origin !== 'https://orbit.local' ||
@@ -39,7 +44,7 @@ export function getPostAuthPath(role: string, requestedPath?: string | null): st
     pathname.startsWith('/admin') ||
     PUBLIC_AUTH_PATHS.has(pathname)
   ) {
-    return '/dashboard';
+    return ROUTES.dashboard;
   }
 
   return `${destination.pathname}${destination.search}${destination.hash}`;
