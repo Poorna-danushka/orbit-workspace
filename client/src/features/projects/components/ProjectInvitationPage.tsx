@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import { CheckCircle2, Loader2, ShieldCheck, XCircle } from 'lucide-react';
-import { RootState } from '@/store';
 import { getErrorMessage } from '@/lib/errors';
 import {
   acceptProjectInvitation,
@@ -17,7 +16,7 @@ import type { ProjectInvitation } from '@/features/projects/types';
 export default function ProjectInvitationPage() {
   const params = useParams<{ token: string }>();
   const router = useRouter();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user } = useAppSelector((state) => state.auth);
   const [invitation, setInvitation] = useState<ProjectInvitation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

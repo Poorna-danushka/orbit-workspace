@@ -8,6 +8,7 @@ import ThemeToggle from '@/components/ui/ThemeToggle';
 import { notifyError } from '@/lib/errors';
 import { searchWorkspace } from '@/features/search/services/searchService';
 import type { WorkspaceSearchResult } from '@/features/search/types';
+import { ROUTES } from '@/lib/constants/routes';
 
 interface WorkspaceHeaderUser {
   username: string;
@@ -78,7 +79,7 @@ export default function WorkspaceHeader({ user, unreadCount, onMenuOpen, pageNam
                       <div className="p-2">
                         <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest px-2 mb-1">Projects</p>
                         {searchResults.projects.map(p => (
-                          <Link key={p.id} href={`/projects/${p.id}`} onClick={closeSearch}
+                          <Link key={p.id} href={ROUTES.project(p.id)} onClick={closeSearch}
                             className="block px-3 py-2 hover:bg-white/5 rounded-lg transition-colors">
                             <p className="text-sm text-purple-400 font-medium">{p.title}</p>
                             {p.description && <p className="text-xs text-gray-500 truncate">{p.description}</p>}
@@ -90,7 +91,7 @@ export default function WorkspaceHeader({ user, unreadCount, onMenuOpen, pageNam
                       <div className="p-2 border-t border-white/[0.06]">
                         <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest px-2 mb-1">Tasks</p>
                         {searchResults.tasks.map(t => (
-                          <Link key={t.id} href={`/projects/${t.projectId}`} onClick={closeSearch}
+                          <Link key={t.id} href={ROUTES.project(t.projectId)} onClick={closeSearch}
                             className="block px-3 py-2 hover:bg-white/5 rounded-lg transition-colors">
                             <p className="text-sm font-medium text-white">{t.title}</p>
                             <p className="text-xs text-gray-500">{t.project?.title} · {t.status}</p>
@@ -114,14 +115,14 @@ export default function WorkspaceHeader({ user, unreadCount, onMenuOpen, pageNam
             <ThemeToggle compact />
           </div>
 
-          <Link href="/notifications"
+          <Link href={ROUTES.notifications}
             className="relative p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
             <Bell className="w-5 h-5" />
             {unreadCount > 0 && (
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.8)]" />
             )}
           </Link>
-          <Link href="/profile" className="flex-shrink-0 ml-1">
+          <Link href={ROUTES.profile} className="flex-shrink-0 ml-1">
             <Avatar user={user} size="sm" className="ring-2 ring-purple-500/30 hover:ring-purple-500/60 hover:shadow-[0_0_14px_rgba(139,92,246,0.4)] transition-all" />
           </Link>
         </div>
@@ -157,7 +158,7 @@ export default function WorkspaceHeader({ user, unreadCount, onMenuOpen, pageNam
           <Search className="w-4 h-4" />
         </button>
 
-        <Link href="/notifications"
+        <Link href={ROUTES.notifications}
           className="relative p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
           <Bell className="w-4 h-4" />
           {unreadCount > 0 && (

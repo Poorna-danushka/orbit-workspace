@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
+import { useAppSelector } from '@/store/hooks';
 import { Loader2 } from 'lucide-react';
 import { acquireSocket, releaseSocket } from '@/lib/realtime/socket';
 import { getErrorMessage } from '@/lib/errors';
@@ -25,7 +24,7 @@ import TaskDetailsModal from './TaskDetailsModal';
 export default function ProjectDetail() {
   const { id } = useParams();
   const router = useRouter();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user } = useAppSelector((state) => state.auth);
 
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);

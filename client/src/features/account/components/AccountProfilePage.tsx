@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, type ChangeEvent, type FormEvent } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   AlertCircle,
   ArrowRight,
@@ -24,15 +24,14 @@ import {
 } from '@/features/account/services/accountService';
 import { getErrorMessage } from '@/lib/errors';
 import { setCredentials } from '@/store/slices/authSlice';
-import type { RootState } from '@/store';
 import { saveUserMetadata } from '@/lib/auth/storage';
 import { updateVerifiedUser } from '@/features/auth/services/sessionVerification';
 
 type Feedback = { type: 'success' | 'error'; message: string };
 
 export default function AccountProfilePage() {
-  const { user } = useSelector((state: RootState) => state.auth);
-  const dispatch = useDispatch();
+  const { user } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
   const fileInput = useRef<HTMLInputElement>(null);
   const [username, setUsername] = useState(user?.username ?? '');
   const [saving, setSaving] = useState(false);

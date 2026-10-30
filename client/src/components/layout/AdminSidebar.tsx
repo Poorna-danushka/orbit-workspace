@@ -2,17 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, FolderKanban, Activity, BarChart2, LogOut, Shield, User, X } from 'lucide-react';
+import { LogOut, Shield, X } from 'lucide-react';
 import Avatar from '@/components/ui/Avatar';
-
-const navItems = [
-  { name: 'Overview',  href: '/admin-dashboard', icon: LayoutDashboard },
-  { name: 'Users',     href: '/admin-users',     icon: Users },
-  { name: 'Projects',  href: '/admin-projects',  icon: FolderKanban },
-  { name: 'Activity',  href: '/admin-activity',  icon: Activity },
-  { name: 'Analytics', href: '/admin-analytics', icon: BarChart2 },
-  { name: 'Profile',   href: '/admin-profile',   icon: User },
-];
+import { adminNavigation } from './adminNavigation';
+import { ROUTES } from '@/lib/constants/routes';
 
 interface AdminSidebarUser {
   id?: string;
@@ -55,7 +48,7 @@ export default function AdminSidebar({ user, isOpen, onClose, onLogout }: AdminS
       {/* Nav */}
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
         <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-widest text-[var(--ob-text-faint)]">Management</p>
-        {navItems.map(item => {
+        {adminNavigation.map(item => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (
@@ -81,7 +74,7 @@ export default function AdminSidebar({ user, isOpen, onClose, onLogout }: AdminS
       {/* User */}
       <div className="border-t p-4">
         <Link
-          href="/admin-profile"
+          href={ROUTES.adminProfile}
           onClick={onClose}
           className="group mb-3 flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-black/5"
         >

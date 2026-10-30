@@ -2,22 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard, FolderKanban, CheckSquare, LogOut,
-  Bell, X, BarChart2, User, ChevronRight, Shield
-} from 'lucide-react';
+import { LogOut, X, ChevronRight } from 'lucide-react';
 import Avatar from '@/components/ui/Avatar';
-
 import OrbitIcon from '@/features/auth/components/OrbitIcon';
-
-const navItems = [
-  { name: 'Dashboard',     href: '/dashboard',      icon: LayoutDashboard, exact: true  },
-  { name: 'Projects',      href: '/projects',        icon: FolderKanban,    exact: false },
-  { name: 'My Tasks',      href: '/tasks',           icon: CheckSquare,     exact: true  },
-  { name: 'Analytics',     href: '/analytics',       icon: BarChart2,       exact: true  },
-  { name: 'Notifications', href: '/notifications',   icon: Bell,            exact: true  },
-  { name: 'Profile',       href: '/profile',         icon: User,            exact: true  },
-];
+import { workspaceNavigation } from './workspaceNavigation';
+import { ROUTES } from '@/lib/constants/routes';
 
 interface SidebarUser {
   id?: string;
@@ -38,12 +27,11 @@ interface SidebarProps {
 export default function Sidebar({ user, isOpen, onClose, unreadCount, onLogout }: SidebarProps) {
   const pathname = usePathname();
 
-  const adminLink = user?.role === 'admin'
-    ? [{ name: 'Admin Console', href: '/admin-dashboard', icon: Shield, exact: false }]
-    : [];
-  const allNavItems = [...navItems, ...adminLink];
+  const allNavItems = workspaceNavigation.filter(
+    (item) => !('adminOnly' in item && item.adminOnly) || user?.role === 'admin',
+  );
 
-  const isActive = (item: typeof navItems[0]) =>
+  const isActive = (item: (typeof workspaceNavigation)[number]) =>
     item.exact ? pathname === item.href : pathname.startsWith(item.href);
 
   return (
@@ -120,7 +108,7 @@ export default function Sidebar({ user, isOpen, onClose, unreadCount, onLogout }
       {/* User footer */}
       <div className="border-t border-white/[0.07] p-3 flex-shrink-0">
         <Link
-          href="/profile"
+          href={ROUTES.profile}
           onClick={onClose}
           className="flex items-center gap-3 px-2 py-2 rounded-xl
                      hover:bg-white/[0.05] transition-colors group"

@@ -4,6 +4,7 @@ import { store } from '@/store';
 import { logout } from '@/store/slices/authSlice';
 import { clearUserStorage } from './storage';
 import { sessionEvents } from './events';
+import { ROUTES } from '@/lib/constants/routes';
 
 type SessionMessage = {
   type: 'logout' | 'session-ended';
@@ -57,9 +58,9 @@ export function endSession(
   }
 
   if (broadcast) getBroadcastChannel()?.postMessage({ type: reason, timestamp: Date.now() });
-  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+  if (typeof window !== 'undefined' && !window.location.pathname.startsWith(ROUTES.login)) {
     const next = currentPath ? `?next=${encodeURIComponent(currentPath)}` : '';
-    window.location.replace(`/login${next}`);
+    window.location.replace(`${ROUTES.login}${next}`);
   }
 }
 

@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
+import { useAppSelector } from '@/store/hooks';
 import { acquireSocket, releaseSocket } from '@/lib/realtime/socket';
 import { getErrorMessage, reportError } from '@/lib/errors';
 import type { Project } from '@/features/projects/types';
@@ -21,8 +20,8 @@ import ProjectGrid from './ProjectGrid';
 import useProjectTeamManagement from '../hooks/useProjectTeamManagement';
 import { useAsyncResource } from '@/hooks/useAsyncResource';
 
-export default function Projects() {
-  const { user } = useSelector((state: RootState) => state.auth);
+export default function ProjectListPage() {
+  const { user } = useAppSelector((state) => state.auth);
 
   const loadProjectResource = useCallback(async () => {
     const res = await getProjects();

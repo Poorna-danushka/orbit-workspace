@@ -3,10 +3,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { AlertTriangle, Calendar, Loader2, RefreshCw, Search, Shield, Trash2, User, Users, X } from 'lucide-react';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import { getAvatarUrl } from '@/lib/utils/avatar';
 import { getErrorMessage } from '@/lib/errors';
-import { RootState } from '@/store';
 import {
   changeAdminRole,
   deleteAdminUser,
@@ -15,7 +14,7 @@ import {
 import type { AdminUser } from '@/features/admin/types';
 
 export default function AdminUsersPage() {
-  const { user: currentUser } = useSelector((state: RootState) => state.auth);
+  const { user: currentUser } = useAppSelector((state) => state.auth);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

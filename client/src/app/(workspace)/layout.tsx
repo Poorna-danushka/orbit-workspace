@@ -13,16 +13,7 @@ import { logout } from '@/features/auth/services/authService';
 import { acquireSocket, releaseSocket } from '@/lib/realtime/socket';
 import { getUnreadNotificationCount } from '@/features/notifications/services/notificationService';
 import { useAsyncResource } from '@/hooks/useAsyncResource';
-
-const navItems = [
-  { name: 'Dashboard', href: '/dashboard', exact: true },
-  { name: 'Projects', href: '/projects', exact: false },
-  { name: 'My Tasks', href: '/tasks', exact: true },
-  { name: 'Analytics', href: '/analytics', exact: true },
-  { name: 'Notifications', href: '/notifications', exact: true },
-  { name: 'Profile', href: '/profile', exact: true },
-  { name: 'Admin Console', href: '/admin-dashboard', exact: false },
-];
+import { getWorkspacePageName } from '@/components/layout/workspaceNavigation';
 
 function WorkspaceShell({ children }: { children: ReactNode }) {
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
@@ -68,12 +59,7 @@ function WorkspaceShell({ children }: { children: ReactNode }) {
     }
   };
 
-  const isActive = (item: (typeof navItems)[number]) =>
-    item.exact ? pathname === item.href : pathname.startsWith(item.href);
-
-  const pageName =
-    navItems.find(isActive)?.name ??
-    (pathname.includes('/projects/') ? 'Kanban Board' : 'Dashboard');
+  const pageName = getWorkspacePageName(pathname);
 
   if (!isAuthenticated || !user) {
     return <LoadingSpinner variant="workspace" message="Loading workspace..." />;

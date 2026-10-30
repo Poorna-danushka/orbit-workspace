@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import type { ChangeEvent, Dispatch, FormEvent, RefObject, SetStateAction } from 'react';
 import type { ChatMessage } from '@/features/chat/types';
-import { BACKEND_URL } from '@/lib/config';
+import { getUploadUrl } from '@/lib/config';
 
 type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
@@ -185,17 +185,15 @@ export default function ProjectChatView({
                           </span>
                         </div>
                         <p className="whitespace-pre-wrap break-words text-sm leading-6">
-                          {message.content.split('\n').map((line, index) => (
+                          {message.content.split('\n').map((line, index) => {
+                            const uploadUrl = getUploadUrl(line);
+                            return (
                             <span key={`${message.id}-${index}`}>
                               {line.startsWith('http://') ||
                               line.startsWith('https://') ||
-                              line.startsWith('/api/uploads/') ? (
+                              uploadUrl !== line ? (
                                 <a
-                                  href={
-                                    line.startsWith('/api/uploads/')
-                                      ? `${BACKEND_URL}${line}`
-                                      : line
-                                  }
+                                  href={uploadUrl}
                                   target="_blank"
                                   rel="noreferrer"
                                   className="text-blue-300 underline underline-offset-2"
@@ -207,7 +205,8 @@ export default function ProjectChatView({
                               )}
                               {index < message.content.split('\n').length - 1 && <br />}
                             </span>
-                          ))}
+                            );
+                          })}
                         </p>
                       </div>
                     </div>

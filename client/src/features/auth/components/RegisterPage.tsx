@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from '@/store/hooks';
 import { Loader2 } from 'lucide-react';
 import { getErrorMessage } from '@/lib/errors';
 import { setCredentials } from '@/store/slices/authSlice';
@@ -22,7 +22,7 @@ function RegisterForm() {
   const [error, setError] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const nextPath = searchParams.get('next') || '';
 
   const handleRegister = async (e: React.FormEvent) => {

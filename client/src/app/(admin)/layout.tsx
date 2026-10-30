@@ -11,15 +11,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { reportError } from '@/lib/errors';
 import { endSession } from '@/lib/auth/session';
 import { logout } from '@/features/auth/services/authService';
-
-const navLabels: Record<string, string> = {
-  '/admin-dashboard': 'Overview',
-  '/admin-users': 'Users',
-  '/admin-projects': 'Projects',
-  '/admin-activity': 'Activity',
-  '/admin-analytics': 'Analytics',
-  '/admin-profile': 'Profile',
-};
+import { getAdminPageName } from '@/components/layout/adminNavigation';
 
 function AdminShell({ children }: { children: ReactNode }) {
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
@@ -73,7 +65,7 @@ function AdminShell({ children }: { children: ReactNode }) {
           <div className="hidden items-center gap-2 text-sm md:flex">
             <span className="text-gray-600">Admin</span>
             <span className="mx-1 text-gray-700">/</span>
-            <span className="font-medium text-white">{navLabels[pathname] || 'Admin'}</span>
+            <span className="font-medium text-white">{getAdminPageName(pathname)}</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden items-center gap-1.5 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1.5 sm:flex">
