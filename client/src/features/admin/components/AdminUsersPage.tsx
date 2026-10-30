@@ -22,6 +22,7 @@ import {
   getAdminUsers,
 } from '@/features/admin/services/adminService';
 import type { AdminUser } from '@/features/admin/types';
+import AdminMetricCard from './AdminMetricCard';
 import AdminUserDeleteConfirmation from './AdminUserDeleteConfirmation';
 import AdminSearchInput from './AdminSearchInput';
 
@@ -123,18 +124,15 @@ export default function AdminUsersPage() {
           { label: 'Admins', value: adminCount, icon: Shield, tone: 'text-red-400' },
           { label: 'Regular users', value: regularCount, icon: User, tone: 'text-violet-400' },
           { label: 'New today', value: newUsersToday, icon: Calendar, tone: 'text-emerald-400' },
-        ].map((item) => {
-          const Icon = item.icon;
-          return (
-            <div key={item.label} className="rounded-2xl border border-white/10 bg-[#11131b] p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm text-gray-400">{item.label}</span>
-                <Icon className={`h-5 w-5 ${item.tone}`} />
-              </div>
-              <div className="text-3xl font-bold text-white">{item.value}</div>
-            </div>
-          );
-        })}
+        ].map((item) => (
+          <AdminMetricCard
+            key={item.label}
+            label={item.label}
+            value={item.value}
+            icon={item.icon}
+            tone={item.tone}
+          />
+        ))}
       </div>
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">

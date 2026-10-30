@@ -5,6 +5,7 @@ import { AlertTriangle, CheckCircle2, FolderKanban, Loader2, RefreshCw, Users } 
 import { reportError } from '@/lib/errors';
 import { getAdminStats } from '@/features/admin/services/adminService';
 import type { AdminStats } from '@/features/admin/types';
+import AdminMetricCard from './AdminMetricCard';
 import AdminAnalyticsPanels from './AdminAnalyticsPanels';
 
 export default function AdminAnalyticsPage() {
@@ -101,19 +102,16 @@ export default function AdminAnalyticsPage() {
             tone: 'text-red-400',
             delta: 'need attention',
           },
-        ].map((item) => {
-          const Icon = item.icon;
-          return (
-            <div key={item.label} className="rounded-2xl border border-white/10 bg-[#11131b] p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm text-gray-400">{item.label}</span>
-                <Icon className={`h-5 w-5 ${item.tone}`} />
-              </div>
-              <div className="text-3xl font-bold text-white">{item.value}</div>
-              <div className="mt-2 text-xs text-gray-500">{item.delta}</div>
-            </div>
-          );
-        })}
+        ].map((item) => (
+          <AdminMetricCard
+            key={item.label}
+            label={item.label}
+            value={item.value}
+            icon={item.icon}
+            tone={item.tone}
+            detail={item.delta}
+          />
+        ))}
       </div>
 
       <AdminAnalyticsPanels
