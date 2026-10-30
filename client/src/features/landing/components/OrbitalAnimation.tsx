@@ -1,4 +1,4 @@
-import OrbitIcon from '@/features/auth/components/OrbitIcon';
+import OrbitIcon from '@/components/ui/OrbitIcon';
 import OrbitalStats from './OrbitalStats';
 
 export function OrbitalAnimation() {

@@ -2,7 +2,7 @@
 
 import { AlertTriangle, Bell, Loader2, Send } from 'lucide-react';
 import type { AdminDashboardOverviewProps } from '@/features/admin/types';
-import { useAdminDashboard } from '@/features/admin/hooks/useAdminDashboard';
+import { useAdminDashboard } from '../hooks/useAdminDashboard';
 import AdminMetrics from './AdminMetrics';
 import AdminPerformance from './AdminPerformance';
 import AdminActivityPanels from './AdminActivityPanels';

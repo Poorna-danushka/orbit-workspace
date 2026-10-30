@@ -3,8 +3,6 @@ import { Plus } from 'lucide-react';
 import TaskCard from './TaskCard';
 import type { Task } from '@/features/tasks/types';
 
-export const COLUMNS = ['Todo', 'In Progress', 'Review', 'Completed'];
-
 const COLUMN_COLORS: Record<string, string> = {
   Todo: 'border-gray-500/30',
   'In Progress': 'border-blue-500/30',

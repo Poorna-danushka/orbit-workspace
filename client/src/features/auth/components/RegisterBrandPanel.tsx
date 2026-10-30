@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Rocket, ShieldCheck, Sparkles, Users } from 'lucide-react';
-import OrbitIcon from '@/features/auth/components/OrbitIcon';
+import OrbitIcon from '@/components/ui/OrbitIcon';
 import { InteractiveRegisterPreview } from './InteractiveRegisterPreview';
 
 export function RegisterBrandPanel() {

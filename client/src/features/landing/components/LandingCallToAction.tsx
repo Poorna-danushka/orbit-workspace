@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import OrbitIcon from '@/features/auth/components/OrbitIcon';
+import OrbitIcon from '@/components/ui/OrbitIcon';
 import { ROUTES } from '@/lib/constants/routes';
 
 export default function LandingCallToAction() {

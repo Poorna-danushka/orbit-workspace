@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { BarChart3, ShieldCheck, Sparkles, Zap } from 'lucide-react';
-import OrbitIcon from '@/features/auth/components/OrbitIcon';
+import OrbitIcon from '@/components/ui/OrbitIcon';
 import { InteractiveLoginPreview } from './InteractiveLoginPreview';
 
 export function LoginBrandPanel() {

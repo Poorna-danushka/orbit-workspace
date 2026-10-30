@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAppSelector } from '@/store/hooks';
 import AuthGate from '@/features/auth/components/AuthGate';
-import Sidebar from '@/components/layout/Sidebar';
-import WorkspaceHeader from '@/components/layout/WorkspaceHeader';
+import Sidebar from '@/features/shell/components/Sidebar';
+import WorkspaceHeader from '@/features/shell/components/WorkspaceHeader';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { reportError } from '@/lib/errors';
 import { endSession } from '@/lib/auth/session';
@@ -13,7 +13,7 @@ import { logout } from '@/features/auth/services/authService';
 import { acquireSocket, releaseSocket } from '@/lib/realtime/socket';
 import { getUnreadNotificationCount } from '@/features/notifications/services/notificationService';
 import { useAsyncResource } from '@/hooks/useAsyncResource';
-import { getWorkspacePageName } from '@/components/layout/workspaceNavigation';
+import { getWorkspacePageName } from '@/features/shell/components/workspaceNavigation';
 
 function WorkspaceShell({ children }: { children: ReactNode }) {
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);

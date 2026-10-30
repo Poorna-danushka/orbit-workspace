@@ -12,7 +12,7 @@ import {
   Target,
 } from 'lucide-react';
 import type { DashboardOverviewProps } from '@/features/dashboard/types';
-import { useDashboard } from '@/features/dashboard/hooks/useDashboard';
+import { useDashboard } from '../hooks/useDashboard';
 import DashboardInsights from './DashboardInsights';
 import DashboardProjects from './DashboardProjects';
 import DashboardQuickAdd from './DashboardQuickAdd';

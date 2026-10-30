@@ -9,8 +9,9 @@ import {
 import { ArrowLeft, Plus } from 'lucide-react';
 import type { Project } from '@/features/projects/types';
 import type { Task } from '@/features/tasks/types';
-import KanbanColumn, { COLUMNS } from '@/features/tasks/components/KanbanColumn';
-import ProjectChatView from '@/features/chat/components/ProjectChatView';
+import KanbanColumn from './KanbanColumn';
+import ProjectChatView from './ProjectChatView';
+import { COLUMNS } from '../constants/kanban';
 
 interface ProjectKanbanWorkspaceProps {
   project: Project;

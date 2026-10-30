@@ -1,6 +1,6 @@
 import type { ChangeEvent, Dispatch, FormEvent, MouseEvent, SetStateAction } from 'react';
 import { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
-import { COLUMNS } from '@/features/tasks/components/KanbanColumn';
+import { COLUMNS } from '../constants/kanban';
 import { getErrorMessage, reportError } from '@/lib/errors';
 import {
   createTask,
@@ -11,7 +11,7 @@ import {
 } from '@/features/tasks/services/taskService';
 import type { Task } from '@/features/tasks/types';
 import type { NewTaskForm } from '../components/CreateTaskModal';
-import { getTaskUploadValidationError } from '@/features/tasks/utils/taskUploadValidation';
+import { getTaskUploadValidationError } from '../utils/taskUploadValidation';
 
 interface ProjectTaskActionsParams {
   projectId: string;

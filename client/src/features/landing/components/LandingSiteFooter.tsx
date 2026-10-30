@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import OrbitIcon from '@/features/auth/components/OrbitIcon';
+import OrbitIcon from '@/components/ui/OrbitIcon';
 
 export default function LandingSiteFooter() {
   return (

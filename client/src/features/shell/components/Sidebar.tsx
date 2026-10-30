@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogOut, X, ChevronRight } from 'lucide-react';
 import Avatar from '@/components/ui/Avatar';
-import OrbitIcon from '@/features/auth/components/OrbitIcon';
+import OrbitIcon from '@/components/ui/OrbitIcon';
 import { workspaceNavigation } from './workspaceNavigation';
 import { ROUTES } from '@/lib/constants/routes';
 

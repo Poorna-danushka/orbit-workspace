@@ -5,7 +5,7 @@ import type { Task } from '@/features/tasks/types';
 import { reportError } from '@/lib/errors';
 import { getTasks, updateTaskStatus } from '@/features/tasks/services/taskService';
 import { useAsyncResource } from '@/hooks/useAsyncResource';
-import { PRIORITY_ORDER, isOverdue } from '@/features/tasks/utils/taskPresentation';
+import { PRIORITY_ORDER, isOverdue } from '../utils/taskPresentation';
 
 export type SortKey = 'dueDate' | 'priority' | 'title' | 'status';
 

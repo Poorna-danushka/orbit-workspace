@@ -6,7 +6,7 @@ import { Mail, Loader2, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react
 import { getErrorMessage } from '@/lib/errors';
 import { requestPasswordReset } from '@/features/auth/services/authService';
 import ThemeToggle from '@/components/ui/ThemeToggle';
-import OrbitIcon from '@/features/auth/components/OrbitIcon';
+import OrbitIcon from '@/components/ui/OrbitIcon';
 import { ROUTES } from '@/lib/constants/routes';
 
 export default function ForgotPassword() {

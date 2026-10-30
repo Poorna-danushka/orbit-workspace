@@ -1,7 +1,6 @@
 import type { ChangeEvent } from 'react';
 import { Download, FileText, Loader2, Paperclip, UploadCloud, X } from 'lucide-react';
-import { COLUMNS } from '@/features/tasks/components/KanbanColumn';
-import { PRIORITY_COLORS } from '@/features/tasks/components/TaskCard';
+import { COLUMNS, PRIORITY_COLORS } from '../constants/kanban';
 import { BACKEND_URL } from '@/lib/config';
 import RemoteImage from '@/components/ui/RemoteImage';
 import type { Project } from '@/features/projects/types';

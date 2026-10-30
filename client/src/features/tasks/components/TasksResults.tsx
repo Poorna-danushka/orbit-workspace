@@ -10,7 +10,7 @@ import {
   STATUS_ICONS,
   STATUS_OPTIONS,
   isOverdue,
-} from '@/features/tasks/utils/taskPresentation';
+} from '../utils/taskPresentation';
 
 type TasksResultsModel = {
   tasks: Task[];

@@ -1,6 +1,6 @@
 import type { Dispatch, FormEvent, SetStateAction } from 'react';
 import { Loader2, X } from 'lucide-react';
-import { COLUMNS } from '@/features/tasks/components/KanbanColumn';
+import { COLUMNS } from '../constants/kanban';
 import type { Project } from '@/features/projects/types';
 
 export interface NewTaskForm {

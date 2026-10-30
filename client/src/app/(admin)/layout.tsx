@@ -6,12 +6,12 @@ import { Shield, Menu, X } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import AdminGate from '@/features/auth/components/AdminGate';
 import ThemeToggle from '@/components/ui/ThemeToggle';
-import AdminSidebar from '@/components/layout/AdminSidebar';
+import AdminSidebar from '@/features/shell/components/AdminSidebar';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { reportError } from '@/lib/errors';
 import { endSession } from '@/lib/auth/session';
 import { logout } from '@/features/auth/services/authService';
-import { getAdminPageName } from '@/components/layout/adminNavigation';
+import { getAdminPageName } from '@/features/shell/components/adminNavigation';
 
 function AdminShell({ children }: { children: ReactNode }) {
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);

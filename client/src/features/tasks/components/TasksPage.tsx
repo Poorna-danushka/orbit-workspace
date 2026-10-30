@@ -2,9 +2,8 @@
 
 import { AlertTriangle, ArrowUpDown, Loader2, X } from 'lucide-react';
 import TasksResults from './TasksResults';
-import { useTasks } from '@/features/tasks/hooks/useTasks';
-import type { SortKey } from '@/features/tasks/hooks/useTasks';
-import { STATUS_OPTIONS } from '@/features/tasks/utils/taskPresentation';
+import { useTasks, type SortKey } from '../hooks/useTasks';
+import { STATUS_OPTIONS } from '../utils/taskPresentation';
 
 export default function Tasks() {
   const {

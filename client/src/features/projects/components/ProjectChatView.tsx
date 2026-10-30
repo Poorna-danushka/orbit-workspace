@@ -9,8 +9,8 @@ import {
   WifiOff,
   X,
 } from 'lucide-react';
-import { useProjectChat } from '@/features/chat/hooks/useProjectChat';
-import type { UseProjectChatOptions } from '@/features/chat/hooks/useProjectChat';
+import { useProjectChat } from '../hooks/useProjectChat';
+import type { UseProjectChatOptions } from '../hooks/useProjectChat';
 import ProjectChatMessages from './ProjectChatMessages';
 
 const emojiOptions = ['😊', '👍', '🎉', '🔥', '💡', '✅', '🚀', '❤️', '👏', '😄'];
