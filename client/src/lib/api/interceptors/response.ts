@@ -17,7 +17,8 @@ function attachApiError(error: unknown): Error & { apiError: ApiError } {
 }
 
 function getRetryAfterDelay(error: AxiosError): number | undefined {
-  const header = error.response?.headers?.['Retry-After'] ?? error.response?.headers?.['retry-after'];
+  const header =
+    error.response?.headers?.['Retry-After'] ?? error.response?.headers?.['retry-after'];
   if (typeof header !== 'string' || !header.trim()) return undefined;
   const seconds = Number(header);
   if (Number.isFinite(seconds)) return Math.max(0, seconds * 1_000);

@@ -1,94 +1,92 @@
-
 /* ─── ORBIT DESIGN TOKENS ─────────────────────────────────────────── */
 :root {
   /* Backgrounds */
-  --ob-bg:          #07080f;
-  --ob-surface:     #0d0e1a;
-  --ob-surface-2:   #131525;
-  --ob-surface-3:   #191b2e;
+  --ob-bg: #07080f;
+  --ob-surface: #0d0e1a;
+  --ob-surface-2: #131525;
+  --ob-surface-3: #191b2e;
 
   /* Borders */
-  --ob-border:      rgba(124, 110, 255, 0.14);
-  --ob-border-2:    rgba(124, 110, 255, 0.22);
+  --ob-border: rgba(124, 110, 255, 0.14);
+  --ob-border-2: rgba(124, 110, 255, 0.22);
 
   /* Brand Colors */
-  --ob-primary:     #7c6eff;
-  --ob-primary-dk:  #6354e8;
-  --ob-primary-lt:  #a395ff;
+  --ob-primary: #7c6eff;
+  --ob-primary-dk: #6354e8;
+  --ob-primary-lt: #a395ff;
   --ob-primary-glow: rgba(124, 110, 255, 0.38);
 
-  --ob-cyan:        #06d6f7;
-  --ob-cyan-glow:   rgba(6, 214, 247, 0.28);
-  --ob-violet:      #a855f7;
+  --ob-cyan: #06d6f7;
+  --ob-cyan-glow: rgba(6, 214, 247, 0.28);
+  --ob-violet: #a855f7;
   --ob-violet-glow: rgba(168, 85, 247, 0.28);
-  --ob-success:     #22d3a0;
-  --ob-warning:     #f59e0b;
-  --ob-danger:      #f43f5e;
+  --ob-success: #22d3a0;
+  --ob-warning: #f59e0b;
+  --ob-danger: #f43f5e;
 
   /* Text */
-  --ob-text:        #eeeef8;
-  --ob-text-muted:  rgba(220, 220, 255, 0.52);
-  --ob-text-faint:  rgba(180, 180, 230, 0.28);
+  --ob-text: #eeeef8;
+  --ob-text-muted: rgba(220, 220, 255, 0.52);
+  --ob-text-faint: rgba(180, 180, 230, 0.28);
 
   /* Misc */
-  --ob-radius:      14px;
-  --ob-radius-lg:   22px;
-  --ob-shadow:      0 8px 40px rgba(0,0,0,0.6);
-  --ob-shadow-glow: 0 0 40px rgba(124,110,255,0.22);
+  --ob-radius: 14px;
+  --ob-radius-lg: 22px;
+  --ob-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+  --ob-shadow-glow: 0 0 40px rgba(124, 110, 255, 0.22);
 
   /* Auth Brand Panel Tokens */
-  --ob-auth-panel-bg:       linear-gradient(160deg, #06070d 0%, #0c0d1a 45%, #100c26 100%);
-  --ob-auth-panel-border:   rgba(124, 110, 255, 0.18);
-  --ob-auth-panel-text:     #ffffff;
-  --ob-auth-panel-muted:    rgba(220, 220, 255, 0.65);
-  --ob-auth-panel-faint:    rgba(200, 200, 245, 0.4);
-  --ob-auth-widget-bg:      rgba(13, 14, 26, 0.85);
+  --ob-auth-panel-bg: linear-gradient(160deg, #06070d 0%, #0c0d1a 45%, #100c26 100%);
+  --ob-auth-panel-border: rgba(124, 110, 255, 0.18);
+  --ob-auth-panel-text: #ffffff;
+  --ob-auth-panel-muted: rgba(220, 220, 255, 0.65);
+  --ob-auth-panel-faint: rgba(200, 200, 245, 0.4);
+  --ob-auth-widget-bg: rgba(13, 14, 26, 0.85);
   --ob-auth-widget-card-bg: rgba(255, 255, 255, 0.04);
-  --ob-auth-widget-border:  rgba(124, 110, 255, 0.22);
+  --ob-auth-widget-border: rgba(124, 110, 255, 0.22);
 
   color-scheme: dark;
 }
 
 /* ─── LIGHT MODE ─────────────────────────────────────────────────────── */
-html[data-theme="light"] {
-  --ob-bg:          #f2f2fc;
-  --ob-surface:     #ffffff;
-  --ob-surface-2:   #f5f5fd;
-  --ob-surface-3:   #eeeeff;
+html[data-theme='light'] {
+  --ob-bg: #f2f2fc;
+  --ob-surface: #ffffff;
+  --ob-surface-2: #f5f5fd;
+  --ob-surface-3: #eeeeff;
 
-  --ob-border:      rgba(90, 72, 245, 0.13);
-  --ob-border-2:    rgba(90, 72, 245, 0.22);
+  --ob-border: rgba(90, 72, 245, 0.13);
+  --ob-border-2: rgba(90, 72, 245, 0.22);
 
-  --ob-primary:     #5a48f5;
-  --ob-primary-dk:  #4535d8;
-  --ob-primary-lt:  #7c6eff;
+  --ob-primary: #5a48f5;
+  --ob-primary-dk: #4535d8;
+  --ob-primary-lt: #7c6eff;
   --ob-primary-glow: rgba(90, 72, 245, 0.22);
 
-  --ob-cyan:        #0ab8d9;
-  --ob-cyan-glow:   rgba(10, 184, 217, 0.18);
-  --ob-violet:      #9333ea;
+  --ob-cyan: #0ab8d9;
+  --ob-cyan-glow: rgba(10, 184, 217, 0.18);
+  --ob-violet: #9333ea;
   --ob-violet-glow: rgba(147, 51, 234, 0.18);
-  --ob-success:     #16a870;
-  --ob-warning:     #d97706;
-  --ob-danger:      #e11d48;
+  --ob-success: #16a870;
+  --ob-warning: #d97706;
+  --ob-danger: #e11d48;
 
-  --ob-text:        #0e0e1c;
-  --ob-text-muted:  rgba(14, 14, 28, 0.56);
-  --ob-text-faint:  rgba(14, 14, 28, 0.28);
+  --ob-text: #0e0e1c;
+  --ob-text-muted: rgba(14, 14, 28, 0.56);
+  --ob-text-faint: rgba(14, 14, 28, 0.28);
 
-  --ob-shadow:      0 8px 40px rgba(90,72,245,0.10);
-  --ob-shadow-glow: 0 0 40px rgba(90,72,245,0.12);
+  --ob-shadow: 0 8px 40px rgba(90, 72, 245, 0.1);
+  --ob-shadow-glow: 0 0 40px rgba(90, 72, 245, 0.12);
 
   /* Auth Brand Panel Light Tokens */
-  --ob-auth-panel-bg:       linear-gradient(160deg, #eef0fd 0%, #f4f5fd 50%, #eae7ff 100%);
-  --ob-auth-panel-border:   rgba(90, 72, 245, 0.16);
-  --ob-auth-panel-text:     #0e0e1c;
-  --ob-auth-panel-muted:    rgba(14, 14, 28, 0.68);
-  --ob-auth-panel-faint:    rgba(14, 14, 28, 0.45);
-  --ob-auth-widget-bg:      rgba(255, 255, 255, 0.90);
+  --ob-auth-panel-bg: linear-gradient(160deg, #eef0fd 0%, #f4f5fd 50%, #eae7ff 100%);
+  --ob-auth-panel-border: rgba(90, 72, 245, 0.16);
+  --ob-auth-panel-text: #0e0e1c;
+  --ob-auth-panel-muted: rgba(14, 14, 28, 0.68);
+  --ob-auth-panel-faint: rgba(14, 14, 28, 0.45);
+  --ob-auth-widget-bg: rgba(255, 255, 255, 0.9);
   --ob-auth-widget-card-bg: rgba(90, 72, 245, 0.05);
-  --ob-auth-widget-border:  rgba(90, 72, 245, 0.18);
+  --ob-auth-widget-border: rgba(90, 72, 245, 0.18);
 
   color-scheme: light;
 }
-

@@ -96,13 +96,22 @@ export default function ProjectInvitationPage() {
                 <h2 className="text-xl font-semibold">Invitation unavailable</h2>
               </div>
               <p className="text-gray-300">{error}</p>
-              <Link href="/" className="inline-flex items-center px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium">Back to Orbit</Link>
+              <Link
+                href="/"
+                className="inline-flex items-center px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium"
+              >
+                Back to Orbit
+              </Link>
             </div>
           ) : invitation ? (
             <div className="space-y-5">
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-purple-300">Project invitation</p>
-                <h2 className="mt-2 text-3xl font-bold">You&apos;ve been invited to join {invitation.project?.title}</h2>
+                <p className="text-xs uppercase tracking-[0.18em] text-purple-300">
+                  Project invitation
+                </p>
+                <h2 className="mt-2 text-3xl font-bold">
+                  You&apos;ve been invited to join {invitation.project?.title}
+                </h2>
               </div>
 
               {invitation.status === 'expired' ? (
@@ -120,23 +129,48 @@ export default function ProjectInvitationPage() {
               ) : null}
 
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-2 text-sm text-gray-300">
-                <p><span className="text-gray-500">Invited email:</span> {invitation.invitedEmail}</p>
-                <p><span className="text-gray-500">Invited by:</span> {invitation.inviter?.username || 'Project owner'}</p>
-                <p><span className="text-gray-500">Project:</span> {invitation.project?.title}</p>
-                {invitation.project?.description && <p><span className="text-gray-500">Description:</span> {invitation.project.description}</p>}
+                <p>
+                  <span className="text-gray-500">Invited email:</span> {invitation.invitedEmail}
+                </p>
+                <p>
+                  <span className="text-gray-500">Invited by:</span>{' '}
+                  {invitation.inviter?.username || 'Project owner'}
+                </p>
+                <p>
+                  <span className="text-gray-500">Project:</span> {invitation.project?.title}
+                </p>
+                {invitation.project?.description && (
+                  <p>
+                    <span className="text-gray-500">Description:</span>{' '}
+                    {invitation.project.description}
+                  </p>
+                )}
               </div>
 
               {!user ? (
                 <div className="space-y-3">
-                  <p className="text-sm text-gray-400">Please sign in or create an account to continue.</p>
+                  <p className="text-sm text-gray-400">
+                    Please sign in or create an account to continue.
+                  </p>
                   <div className="flex gap-3">
-                    <Link href={loginHref} className="flex-1 inline-flex items-center justify-center rounded-xl bg-purple-600 hover:bg-purple-500 px-4 py-3 font-medium">Sign in</Link>
-                    <Link href={registerHref} className="flex-1 inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-3 font-medium">Create account</Link>
+                    <Link
+                      href={loginHref}
+                      className="flex-1 inline-flex items-center justify-center rounded-xl bg-purple-600 hover:bg-purple-500 px-4 py-3 font-medium"
+                    >
+                      Sign in
+                    </Link>
+                    <Link
+                      href={registerHref}
+                      className="flex-1 inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-3 font-medium"
+                    >
+                      Create account
+                    </Link>
                   </div>
                 </div>
               ) : user.email.toLowerCase() !== invitation.invitedEmail.toLowerCase() ? (
                 <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-red-200">
-                  This invitation belongs to a different email address. Please sign in with the invited account to continue.
+                  This invitation belongs to a different email address. Please sign in with the
+                  invited account to continue.
                 </div>
               ) : invitation.status === 'pending' ? (
                 <div className="flex gap-3">
@@ -146,7 +180,11 @@ export default function ProjectInvitationPage() {
                     onClick={handleAccept}
                     className="flex-1 rounded-xl bg-purple-600 hover:bg-purple-500 px-4 py-3 font-medium disabled:opacity-60"
                   >
-                    {actionLoading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Accept Invitation'}
+                    {actionLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                    ) : (
+                      'Accept Invitation'
+                    )}
                   </button>
                   <button
                     type="button"

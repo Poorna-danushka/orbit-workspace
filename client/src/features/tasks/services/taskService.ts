@@ -20,8 +20,7 @@ type TaskListResponse = Task[] | { data: Task[] };
 export const getTasks = () => api.get<TaskListResponse>('/tasks/all?page=1&limit=100');
 export const updateTaskStatus = (taskId: string, status: string) =>
   api.patch<Task>(`/tasks/${taskId}/status`, { status });
-export const createTask = (payload: CreateTaskPayload) =>
-  api.post<Task>('/tasks', payload);
+export const createTask = (payload: CreateTaskPayload) => api.post<Task>('/tasks', payload);
 export const updateTask = (taskId: string, payload: UpdateTaskPayload) =>
   api.put<Task>(`/tasks/${taskId}`, payload);
 export const deleteTask = (taskId: string) => api.delete(`/tasks/${taskId}`);

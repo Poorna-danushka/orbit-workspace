@@ -96,7 +96,9 @@ export default function ProjectListPage() {
     try {
       if (editProject) {
         await updateProject(editProject.id, form);
-        setProjects((prev) => (prev ?? []).map((p) => (p.id === editProject.id ? { ...p, ...form } : p)));
+        setProjects((prev) =>
+          (prev ?? []).map((p) => (p.id === editProject.id ? { ...p, ...form } : p)),
+        );
       } else {
         const res = await createProject(form);
         setProjects((prev) => [res.data, ...(prev ?? [])]);

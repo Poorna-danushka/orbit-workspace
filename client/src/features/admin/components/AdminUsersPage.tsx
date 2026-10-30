@@ -2,7 +2,18 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
-import { AlertTriangle, Calendar, Loader2, RefreshCw, Search, Shield, Trash2, User, Users, X } from 'lucide-react';
+import {
+  AlertTriangle,
+  Calendar,
+  Loader2,
+  RefreshCw,
+  Search,
+  Shield,
+  Trash2,
+  User,
+  Users,
+  X,
+} from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import { getAvatarUrl } from '@/lib/utils/avatar';
 import { getErrorMessage } from '@/lib/errors';
@@ -56,7 +67,9 @@ export default function AdminUsersPage() {
     const nextRole = user.role === 'admin' ? 'user' : 'admin';
     try {
       await changeAdminRole(user.id, nextRole);
-      setUsers((prev) => prev.map((item) => item.id === user.id ? { ...item, role: nextRole } : item));
+      setUsers((prev) =>
+        prev.map((item) => (item.id === user.id ? { ...item, role: nextRole } : item)),
+      );
     } catch (error: unknown) {
       setActionError(getErrorMessage(error, 'Failed to update role'));
     }
@@ -64,7 +77,8 @@ export default function AdminUsersPage() {
 
   const filteredUsers = users.filter((user) => {
     const q = search.toLowerCase();
-    const matchesSearch = user.username.toLowerCase().includes(q) || user.email.toLowerCase().includes(q);
+    const matchesSearch =
+      user.username.toLowerCase().includes(q) || user.email.toLowerCase().includes(q);
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     return matchesSearch && matchesRole;
   });
@@ -83,15 +97,22 @@ export default function AdminUsersPage() {
           <h1 className="text-2xl font-bold text-white">User Management</h1>
           <p className="mt-1 text-sm text-gray-500">Manage platform access and permissions</p>
         </div>
-        <button onClick={refreshUsers} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-gray-300">
+        <button
+          onClick={refreshUsers}
+          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-gray-300"
+        >
           <RefreshCw className="h-4 w-4" /> Refresh
         </button>
       </div>
 
       {actionError && (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
-          <div className="flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> {actionError}</div>
-          <button onClick={() => setActionError(null)}><X className="h-4 w-4" /></button>
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" /> {actionError}
+          </div>
+          <button onClick={() => setActionError(null)}>
+            <X className="h-4 w-4" />
+          </button>
         </div>
       )}
 
@@ -139,9 +160,13 @@ export default function AdminUsersPage() {
       </div>
 
       {loading ? (
-        <div className="flex min-h-[220px] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-red-400" /></div>
+        <div className="flex min-h-[220px] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-red-400" />
+        </div>
       ) : filteredUsers.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-white/10 bg-[#11131b] p-10 text-center text-gray-500">No users found for the current filters.</div>
+        <div className="rounded-2xl border border-dashed border-white/10 bg-[#11131b] p-10 text-center text-gray-500">
+          No users found for the current filters.
+        </div>
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">
           {filteredUsers.map((user) => (
@@ -149,7 +174,14 @@ export default function AdminUsersPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   {user.avatar ? (
-                    <Image src={getAvatarUrl(user.avatar)} alt={user.username} width={48} height={48} unoptimized className="h-12 w-12 rounded-full object-cover" />
+                    <Image
+                      src={getAvatarUrl(user.avatar)}
+                      alt={user.username}
+                      width={48}
+                      height={48}
+                      unoptimized
+                      className="h-12 w-12 rounded-full object-cover"
+                    />
                   ) : (
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-tr from-red-500 to-orange-400 text-sm font-bold text-white">
                       {user.username.slice(0, 1).toUpperCase()}
@@ -161,14 +193,18 @@ export default function AdminUsersPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${user.role === 'admin' ? 'border-red-500/20 bg-red-500/10 text-red-400' : 'border-blue-500/20 bg-blue-500/10 text-blue-400'}`}>
+                  <span
+                    className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${user.role === 'admin' ? 'border-red-500/20 bg-red-500/10 text-red-400' : 'border-blue-500/20 bg-blue-500/10 text-blue-400'}`}
+                  >
                     {user.role}
                   </span>
                 </div>
               </div>
 
               <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-4">
-                <div className="text-xs text-gray-500">Joined {new Date(user.createdAt).toLocaleDateString()}</div>
+                <div className="text-xs text-gray-500">
+                  Joined {new Date(user.createdAt).toLocaleDateString()}
+                </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleToggleRole(user)}
@@ -196,11 +232,23 @@ export default function AdminUsersPage() {
           <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#11131b] p-5">
             <h3 className="text-lg font-semibold text-white">Delete user</h3>
             <p className="mt-2 text-sm text-gray-400">
-              This action will permanently remove <span className="font-medium text-white">{confirmDelete.username}</span> and their account data. Continue?
+              This action will permanently remove{' '}
+              <span className="font-medium text-white">{confirmDelete.username}</span> and their
+              account data. Continue?
             </p>
             <div className="mt-5 flex justify-end gap-3">
-              <button onClick={() => setConfirmDelete(null)} className="rounded-lg border border-white/10 px-3 py-2 text-sm text-gray-300">Cancel</button>
-              <button onClick={() => handleDelete(confirmDelete)} className="rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white">Delete</button>
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="rounded-lg border border-white/10 px-3 py-2 text-sm text-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(confirmDelete)}
+                className="rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

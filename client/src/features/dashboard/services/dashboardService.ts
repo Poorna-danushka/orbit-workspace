@@ -8,5 +8,4 @@ type DashboardProjectList = Project[] | { data?: Project[] };
 export const getDashboardStats = () => api.get<DashboardStats>('/dashboard/stats');
 export const getDashboardProjects = () =>
   api.get<DashboardProjectList>('/projects?page=1&limit=50');
-export const createDashboardTask = (payload: CreateTaskPayload) =>
-  api.post('/tasks', payload);
+export const createDashboardTask = (payload: CreateTaskPayload) => api.post('/tasks', payload);

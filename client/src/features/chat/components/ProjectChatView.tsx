@@ -188,23 +188,23 @@ export default function ProjectChatView({
                           {message.content.split('\n').map((line, index) => {
                             const uploadUrl = getUploadUrl(line);
                             return (
-                            <span key={`${message.id}-${index}`}>
-                              {line.startsWith('http://') ||
-                              line.startsWith('https://') ||
-                              uploadUrl !== line ? (
-                                <a
-                                  href={uploadUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-blue-300 underline underline-offset-2"
-                                >
-                                  {line}
-                                </a>
-                              ) : (
-                                line
-                              )}
-                              {index < message.content.split('\n').length - 1 && <br />}
-                            </span>
+                              <span key={`${message.id}-${index}`}>
+                                {line.startsWith('http://') ||
+                                line.startsWith('https://') ||
+                                uploadUrl !== line ? (
+                                  <a
+                                    href={uploadUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-blue-300 underline underline-offset-2"
+                                  >
+                                    {line}
+                                  </a>
+                                ) : (
+                                  line
+                                )}
+                                {index < message.content.split('\n').length - 1 && <br />}
+                              </span>
                             );
                           })}
                         </p>

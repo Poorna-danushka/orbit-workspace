@@ -60,7 +60,10 @@ export default function AccountProfilePage() {
       setUsername(updatedUser.username);
       setProfileFeedback({ type: 'success', message: 'Your profile details have been saved.' });
     } catch (error: unknown) {
-      setProfileFeedback({ type: 'error', message: getErrorMessage(error, 'Could not update your profile.') });
+      setProfileFeedback({
+        type: 'error',
+        message: getErrorMessage(error, 'Could not update your profile.'),
+      });
     } finally {
       setSaving(false);
     }
@@ -87,7 +90,10 @@ export default function AccountProfilePage() {
       updateVerifiedUser(updatedUser);
       setProfileFeedback({ type: 'success', message: 'Your profile photo has been updated.' });
     } catch (error: unknown) {
-      setProfileFeedback({ type: 'error', message: getErrorMessage(error, 'Could not upload your profile photo.') });
+      setProfileFeedback({
+        type: 'error',
+        message: getErrorMessage(error, 'Could not upload your profile photo.'),
+      });
     } finally {
       setUploading(false);
       event.target.value = '';
@@ -102,7 +108,10 @@ export default function AccountProfilePage() {
       return;
     }
     if (newPassword.length < 8) {
-      setPasswordFeedback({ type: 'error', message: 'Use at least 8 characters for your new password.' });
+      setPasswordFeedback({
+        type: 'error',
+        message: 'Use at least 8 characters for your new password.',
+      });
       return;
     }
 
@@ -114,7 +123,10 @@ export default function AccountProfilePage() {
       setNewPassword('');
       setConfirmPassword('');
     } catch (error: unknown) {
-      setPasswordFeedback({ type: 'error', message: getErrorMessage(error, 'Could not change your password.') });
+      setPasswordFeedback({
+        type: 'error',
+        message: getErrorMessage(error, 'Could not change your password.'),
+      });
     } finally {
       setChangingPassword(false);
     }
@@ -141,8 +153,20 @@ export default function AccountProfilePage() {
         <div className="account-identity-content">
           <div className="account-avatar-wrap">
             <Avatar user={user} size="xl" className="!h-24 !w-24 !text-3xl" />
-            <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={handleAvatarChange} />
-            <button type="button" onClick={() => fileInput.current?.click()} disabled={uploading} className="account-avatar-button" aria-label="Change profile photo">
+            <input
+              ref={fileInput}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="sr-only"
+              onChange={handleAvatarChange}
+            />
+            <button
+              type="button"
+              onClick={() => fileInput.current?.click()}
+              disabled={uploading}
+              className="account-avatar-button"
+              aria-label="Change profile photo"
+            >
               {uploading ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
             </button>
           </div>
@@ -162,8 +186,15 @@ export default function AccountProfilePage() {
       </section>
 
       {profileFeedback && (
-        <div className={`account-feedback ${profileFeedback.type}`} role={profileFeedback.type === 'error' ? 'alert' : 'status'}>
-          {profileFeedback.type === 'error' ? <AlertCircle size={17} /> : <CheckCircle2 size={17} />}
+        <div
+          className={`account-feedback ${profileFeedback.type}`}
+          role={profileFeedback.type === 'error' ? 'alert' : 'status'}
+        >
+          {profileFeedback.type === 'error' ? (
+            <AlertCircle size={17} />
+          ) : (
+            <CheckCircle2 size={17} />
+          )}
           {profileFeedback.message}
         </div>
       )}
@@ -171,7 +202,9 @@ export default function AccountProfilePage() {
       <div className="account-settings-grid">
         <section className="account-settings-card">
           <div className="account-card-heading">
-            <span className="account-card-icon"><UserRound size={18} /></span>
+            <span className="account-card-icon">
+              <UserRound size={18} />
+            </span>
             <div>
               <h2>Personal details</h2>
               <p>Your public workspace identity.</p>
@@ -180,14 +213,31 @@ export default function AccountProfilePage() {
           <form onSubmit={handleSaveProfile} className="account-form">
             <label className="account-field">
               <span>Display name</span>
-              <span className="account-input-wrap"><UserRound size={16} /><input value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="nickname" minLength={2} maxLength={40} required /></span>
+              <span className="account-input-wrap">
+                <UserRound size={16} />
+                <input
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  autoComplete="nickname"
+                  minLength={2}
+                  maxLength={40}
+                  required
+                />
+              </span>
             </label>
             <label className="account-field">
               <span>Email address</span>
-              <span className="account-input-wrap is-disabled"><Mail size={16} /><input value={user?.email ?? ''} readOnly disabled /></span>
+              <span className="account-input-wrap is-disabled">
+                <Mail size={16} />
+                <input value={user?.email ?? ''} readOnly disabled />
+              </span>
               <small>Email changes aren’t available from account settings.</small>
             </label>
-            <button className="account-primary-button" type="submit" disabled={saving || username.trim() === user?.username || username.trim().length < 2}>
+            <button
+              className="account-primary-button"
+              type="submit"
+              disabled={saving || username.trim() === user?.username || username.trim().length < 2}
+            >
               {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
               {saving ? 'Saving changes…' : 'Save profile'}
             </button>
@@ -196,7 +246,9 @@ export default function AccountProfilePage() {
 
         <section className="account-settings-card">
           <div className="account-card-heading">
-            <span className="account-card-icon security"><KeyRound size={18} /></span>
+            <span className="account-card-icon security">
+              <KeyRound size={18} />
+            </span>
             <div>
               <h2>Change password</h2>
               <p>Choose a password you don’t use elsewhere.</p>
@@ -205,24 +257,76 @@ export default function AccountProfilePage() {
           <form onSubmit={handleChangePassword} className="account-form">
             <label className="account-field">
               <span>Current password</span>
-              <span className="account-input-wrap"><KeyRound size={16} /><input type={showPasswords ? 'text' : 'password'} value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} autoComplete="current-password" required /></span>
+              <span className="account-input-wrap">
+                <KeyRound size={16} />
+                <input
+                  type={showPasswords ? 'text' : 'password'}
+                  value={currentPassword}
+                  onChange={(event) => setCurrentPassword(event.target.value)}
+                  autoComplete="current-password"
+                  required
+                />
+              </span>
             </label>
             <label className="account-field">
               <span>New password</span>
-              <span className="account-input-wrap"><KeyRound size={16} /><input type={showPasswords ? 'text' : 'password'} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} autoComplete="new-password" minLength={8} required /><button type="button" className="account-password-toggle" onClick={() => setShowPasswords((visible) => !visible)} aria-label={showPasswords ? 'Hide passwords' : 'Show passwords'}>{showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}</button></span>
+              <span className="account-input-wrap">
+                <KeyRound size={16} />
+                <input
+                  type={showPasswords ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                  autoComplete="new-password"
+                  minLength={8}
+                  required
+                />
+                <button
+                  type="button"
+                  className="account-password-toggle"
+                  onClick={() => setShowPasswords((visible) => !visible)}
+                  aria-label={showPasswords ? 'Hide passwords' : 'Show passwords'}
+                >
+                  {showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </span>
             </label>
             <label className="account-field">
               <span>Confirm new password</span>
-              <span className="account-input-wrap"><KeyRound size={16} /><input type={showPasswords ? 'text' : 'password'} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" minLength={8} required /></span>
+              <span className="account-input-wrap">
+                <KeyRound size={16} />
+                <input
+                  type={showPasswords ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  autoComplete="new-password"
+                  minLength={8}
+                  required
+                />
+              </span>
             </label>
             {passwordFeedback && (
-              <div className={`account-feedback ${passwordFeedback.type}`} role={passwordFeedback.type === 'error' ? 'alert' : 'status'}>
-                {passwordFeedback.type === 'error' ? <AlertCircle size={17} /> : <CheckCircle2 size={17} />}
+              <div
+                className={`account-feedback ${passwordFeedback.type}`}
+                role={passwordFeedback.type === 'error' ? 'alert' : 'status'}
+              >
+                {passwordFeedback.type === 'error' ? (
+                  <AlertCircle size={17} />
+                ) : (
+                  <CheckCircle2 size={17} />
+                )}
                 {passwordFeedback.message}
               </div>
             )}
-            <button className="account-primary-button secondary" type="submit" disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}>
-              {changingPassword ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+            <button
+              className="account-primary-button secondary"
+              type="submit"
+              disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
+            >
+              {changingPassword ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <ShieldCheck size={16} />
+              )}
               {changingPassword ? 'Updating password…' : 'Update password'}
             </button>
           </form>

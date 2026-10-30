@@ -40,29 +40,37 @@ export default function AdminSidebar({ user, isOpen, onClose, onLogout }: AdminS
           <p className="text-sm font-bold leading-none">Orbit Admin</p>
           <p className="mt-1 text-[10px] text-[var(--ob-text-muted)]">Workspace control</p>
         </div>
-        <button className="rounded-md p-1 text-[var(--ob-text-muted)] hover:bg-black/5 hover:text-[var(--ob-text)] md:hidden" onClick={onClose} aria-label="Close admin menu">
+        <button
+          className="rounded-md p-1 text-[var(--ob-text-muted)] hover:bg-black/5 hover:text-[var(--ob-text)] md:hidden"
+          onClick={onClose}
+          aria-label="Close admin menu"
+        >
           <X className="w-4 h-4" />
         </button>
       </div>
 
       {/* Nav */}
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
-        <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-widest text-[var(--ob-text-faint)]">Management</p>
-        {adminNavigation.map(item => {
+        <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-widest text-[var(--ob-text-faint)]">
+          Management
+        </p>
+        {adminNavigation.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (
-            <Link key={item.href} href={item.href}
+            <Link
+              key={item.href}
+              href={item.href}
               onClick={onClose}
               aria-current={isActive ? 'page' : undefined}
               className={`group flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors ${
-                isActive
-                  ? 'admin-nav-active'
-                  : 'admin-nav-link'
+                isActive ? 'admin-nav-active' : 'admin-nav-link'
               }`}
             >
               <div className="flex items-center gap-3">
-                <Icon className={`h-4 w-4 ${isActive ? 'text-red-500' : 'text-[var(--ob-text-muted)]'}`} />
+                <Icon
+                  className={`h-4 w-4 ${isActive ? 'text-red-500' : 'text-[var(--ob-text-muted)]'}`}
+                />
                 <span className="text-sm font-medium">{item.name}</span>
               </div>
               {isActive && <div className="h-1.5 w-1.5 rounded-full bg-red-500" />}
@@ -83,7 +91,9 @@ export default function AdminSidebar({ user, isOpen, onClose, onLogout }: AdminS
             <p className="truncate text-sm font-semibold leading-none">{user?.username}</p>
             <p className="mt-1 truncate text-[11px] text-[var(--ob-text-muted)]">{user?.email}</p>
           </div>
-          <span className="flex-shrink-0 rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-500">ADMIN</span>
+          <span className="flex-shrink-0 rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-500">
+            ADMIN
+          </span>
         </Link>
         <button
           onClick={onLogout}

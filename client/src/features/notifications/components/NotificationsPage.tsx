@@ -9,8 +9,17 @@ import {
 } from '@/features/notifications/services/notificationService';
 import type { NotificationItem } from '@/features/notifications/types';
 import {
-  Bell, Check, CheckCheck, Loader2, RefreshCw,
-  UserCheck, Calendar, Shield, Megaphone, AlertTriangle, Info
+  Bell,
+  Check,
+  CheckCheck,
+  Loader2,
+  RefreshCw,
+  UserCheck,
+  Calendar,
+  Shield,
+  Megaphone,
+  AlertTriangle,
+  Info,
 } from 'lucide-react';
 
 const timeAgo = (date: string) => {
@@ -26,11 +35,26 @@ const timeAgo = (date: string) => {
 // Detect notification type from message text
 const detectType = (message: string) => {
   const m = message.toLowerCase();
-  if (m.includes('[admin]')) return { icon: Megaphone, color: 'text-orange-400', bg: 'bg-orange-400/10', label: 'Announcement' };
-  if (m.includes('assigned')) return { icon: UserCheck, color: 'text-blue-400', bg: 'bg-blue-400/10', label: 'Assignment' };
-  if (m.includes('due') || m.includes('deadline') || m.includes('overdue')) return { icon: Calendar, color: 'text-red-400', bg: 'bg-red-400/10', label: 'Deadline' };
-  if (m.includes('admin') || m.includes('role')) return { icon: Shield, color: 'text-purple-400', bg: 'bg-purple-400/10', label: 'System' };
-  if (m.includes('warning') || m.includes('alert')) return { icon: AlertTriangle, color: 'text-yellow-400', bg: 'bg-yellow-400/10', label: 'Alert' };
+  if (m.includes('[admin]'))
+    return {
+      icon: Megaphone,
+      color: 'text-orange-400',
+      bg: 'bg-orange-400/10',
+      label: 'Announcement',
+    };
+  if (m.includes('assigned'))
+    return { icon: UserCheck, color: 'text-blue-400', bg: 'bg-blue-400/10', label: 'Assignment' };
+  if (m.includes('due') || m.includes('deadline') || m.includes('overdue'))
+    return { icon: Calendar, color: 'text-red-400', bg: 'bg-red-400/10', label: 'Deadline' };
+  if (m.includes('admin') || m.includes('role'))
+    return { icon: Shield, color: 'text-purple-400', bg: 'bg-purple-400/10', label: 'System' };
+  if (m.includes('warning') || m.includes('alert'))
+    return {
+      icon: AlertTriangle,
+      color: 'text-yellow-400',
+      bg: 'bg-yellow-400/10',
+      label: 'Alert',
+    };
   return { icon: Info, color: 'text-gray-400', bg: 'bg-gray-400/10', label: 'Info' };
 };
 
@@ -51,7 +75,9 @@ export default function Notifications() {
     }
   }, []);
 
-  useEffect(() => { queueMicrotask(() => void fetchNotifications()); }, [fetchNotifications]);
+  useEffect(() => {
+    queueMicrotask(() => void fetchNotifications());
+  }, [fetchNotifications]);
 
   const refreshNotifications = () => {
     setLoading(true);
@@ -61,7 +87,7 @@ export default function Notifications() {
   const markRead = async (id: string) => {
     try {
       await markNotificationRead(id);
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
     } catch (err) {
       reportError(err, 'Failed to update notification');
     }
@@ -70,15 +96,15 @@ export default function Notifications() {
   const markAllRead = async () => {
     try {
       await markAllNotificationsRead();
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch (err) {
       reportError(err, 'Failed to update notifications');
     }
   };
 
-  const unread = notifications.filter(n => !n.isRead).length;
+  const unread = notifications.filter((n) => !n.isRead).length;
 
-  const filtered = notifications.filter(n => {
+  const filtered = notifications.filter((n) => {
     if (filter === 'unread') return !n.isRead;
     if (filter === 'read') return n.isRead;
     return true;
@@ -97,11 +123,18 @@ export default function Notifications() {
         <div>
           <h2 className="text-2xl font-bold">Notifications</h2>
           <p className="text-gray-400 text-sm mt-1">
-            {loading ? 'Loading...' : unread > 0 ? `${unread} unread notification${unread > 1 ? 's' : ''}` : 'All caught up!'}
+            {loading
+              ? 'Loading...'
+              : unread > 0
+                ? `${unread} unread notification${unread > 1 ? 's' : ''}`
+                : 'All caught up!'}
           </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <button onClick={refreshNotifications} className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-colors flex-shrink-0">
+          <button
+            onClick={refreshNotifications}
+            className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-colors flex-shrink-0"
+          >
             <RefreshCw className="w-4 h-4" />
           </button>
           {unread > 0 && (
@@ -118,7 +151,7 @@ export default function Notifications() {
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-1 p-1 bg-white/[0.03] rounded-xl w-full sm:w-fit border border-white/5 overflow-x-auto scrollbar-none flex-nowrap">
-        {FILTERS.map(f => (
+        {FILTERS.map((f) => (
           <button
             key={f.value}
             onClick={() => setFilter(f.value)}
@@ -129,7 +162,9 @@ export default function Notifications() {
             }`}
           >
             {f.label}
-            <span className={`text-xs px-1.5 py-0.5 rounded-md ${filter === f.value ? 'bg-purple-500/20' : 'bg-white/5'}`}>
+            <span
+              className={`text-xs px-1.5 py-0.5 rounded-md ${filter === f.value ? 'bg-purple-500/20' : 'bg-white/5'}`}
+            >
               {f.count}
             </span>
           </button>
@@ -150,39 +185,48 @@ export default function Notifications() {
             {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
           </h3>
           <p className="text-gray-600 text-sm">
-            {filter === 'unread' ? "You're all caught up!" : 'Notifications will appear here when tasks are assigned or deadlines approach.'}
+            {filter === 'unread'
+              ? "You're all caught up!"
+              : 'Notifications will appear here when tasks are assigned or deadlines approach.'}
           </p>
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map(n => {
+          {filtered.map((n) => {
             const type = detectType(n.message);
             const Icon = type.icon;
             return (
               <div
                 key={n.id}
                 onClick={() => !n.isRead && markRead(n.id)}
-                className={`flex items-start gap-4 p-4 rounded-2xl border shadow-lg shadow-black/10 transition-all ${n.isRead
-                  ? 'bg-[#11131b]/60 border-white/[0.06] opacity-60 cursor-default'
-                  : 'bg-[#11131b] border-purple-500/30 hover:border-purple-500/50 cursor-pointer'
+                className={`flex items-start gap-4 p-4 rounded-2xl border shadow-lg shadow-black/10 transition-all ${
+                  n.isRead
+                    ? 'bg-[#11131b]/60 border-white/[0.06] opacity-60 cursor-default'
+                    : 'bg-[#11131b] border-purple-500/30 hover:border-purple-500/50 cursor-pointer'
                 }`}
               >
                 {/* Type Icon */}
-                <div className={`w-9 h-9 rounded-xl ${type.bg} flex items-center justify-center flex-shrink-0`}>
+                <div
+                  className={`w-9 h-9 rounded-xl ${type.bg} flex items-center justify-center flex-shrink-0`}
+                >
                   <Icon className={`w-4 h-4 ${type.color}`} />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${type.bg} ${type.color}`}>
+                    <span
+                      className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${type.bg} ${type.color}`}
+                    >
                       {type.label}
                     </span>
                     {!n.isRead && (
                       <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_6px_rgba(168,85,247,0.8)]" />
                     )}
                   </div>
-                  <p className={`text-sm leading-relaxed ${n.isRead ? 'text-gray-500' : 'text-white'}`}>
+                  <p
+                    className={`text-sm leading-relaxed ${n.isRead ? 'text-gray-500' : 'text-white'}`}
+                  >
                     {n.message.replace('[Admin] ', '')}
                   </p>
                   <p className="text-xs text-gray-600 mt-1.5">{timeAgo(n.createdAt)}</p>
@@ -191,7 +235,10 @@ export default function Notifications() {
                 {/* Mark Read Button */}
                 {!n.isRead && (
                   <button
-                    onClick={e => { e.stopPropagation(); markRead(n.id); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      markRead(n.id);
+                    }}
                     className="p-1.5 text-gray-600 hover:text-purple-400 transition-colors rounded-lg hover:bg-purple-500/10 flex-shrink-0"
                     title="Mark as read"
                   >

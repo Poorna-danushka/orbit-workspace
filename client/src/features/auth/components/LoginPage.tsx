@@ -9,10 +9,7 @@ import { setCredentials } from '@/store/slices/authSlice';
 import { saveUserMetadata } from '@/lib/auth/storage';
 import { getPostAuthPath } from '@/lib/auth/redirect';
 import { markSessionActive } from '@/lib/auth/session';
-import {
-  getGoogleOAuthUrl,
-  login,
-} from '@/features/auth/services/authService';
+import { getGoogleOAuthUrl, login } from '@/features/auth/services/authService';
 import { verifyCurrentSession } from '@/features/auth/services/sessionVerification';
 import { LoginBrandPanel } from './LoginBrandPanel';
 import LoginFormPanel from './LoginFormPanel';

@@ -38,7 +38,9 @@ function getRetryAfter(error: AxiosError): number | undefined {
   const seconds = Number(value);
   if (Number.isFinite(seconds)) return Math.max(0, Math.ceil(seconds));
   const timestamp = Date.parse(value);
-  return Number.isNaN(timestamp) ? undefined : Math.max(0, Math.ceil((timestamp - Date.now()) / 1000));
+  return Number.isNaN(timestamp)
+    ? undefined
+    : Math.max(0, Math.ceil((timestamp - Date.now()) / 1000));
 }
 
 export function normalizeError(input: unknown): ApiError {
@@ -59,7 +61,11 @@ export function normalizeError(input: unknown): ApiError {
   }
 
   if (!input) {
-    return Object.assign(new Error(base.message), base, { status: 500, code: ErrorCode.INTERNAL_ERROR, fieldErrors: {} }) as ApiError;
+    return Object.assign(new Error(base.message), base, {
+      status: 500,
+      code: ErrorCode.INTERNAL_ERROR,
+      fieldErrors: {},
+    }) as ApiError;
   }
 
   const axiosError = axios.isAxiosError(input) ? input : undefined;
@@ -67,9 +73,15 @@ export function normalizeError(input: unknown): ApiError {
   if (axiosError && axiosError.response) {
     const status = axiosError.response.status;
     const body = (axiosError.response.data ?? {}) as Record<string, unknown>;
-    const code = (body.code as string | undefined) ?? (body.error as string | undefined) ?? undefined;
-    const fieldErrors = parseFieldErrors(body.errors ?? (body as { fieldErrors?: unknown }).fieldErrors);
-    const requestId = (body.requestId as string | undefined) ?? (axiosError.response.headers?.['x-request-id'] as string | undefined) ?? (axiosError.response.headers?.['X-Request-Id'] as string | undefined);
+    const code =
+      (body.code as string | undefined) ?? (body.error as string | undefined) ?? undefined;
+    const fieldErrors = parseFieldErrors(
+      body.errors ?? (body as { fieldErrors?: unknown }).fieldErrors,
+    );
+    const requestId =
+      (body.requestId as string | undefined) ??
+      (axiosError.response.headers?.['x-request-id'] as string | undefined) ??
+      (axiosError.response.headers?.['X-Request-Id'] as string | undefined);
 
     const message =
       getValidationMessage(body.errors) ||
@@ -94,7 +106,8 @@ export function normalizeError(input: unknown): ApiError {
   }
 
   if (axiosError && !axiosError.response) {
-    const isTimeout = axiosError.code === 'ECONNABORTED' || axiosError.message.toLowerCase().includes('timeout');
+    const isTimeout =
+      axiosError.code === 'ECONNABORTED' || axiosError.message.toLowerCase().includes('timeout');
     return Object.assign(new Error(axiosError.message || 'Network error'), base, {
       status: 0,
       code: isTimeout ? 'TIMEOUT' : 'NETWORK_ERROR',
@@ -109,7 +122,8 @@ export function normalizeError(input: unknown): ApiError {
   if (typeof input === 'object' && input !== null) {
     const candidate = input as Partial<ApiError> & Record<string, unknown>;
     const status = typeof candidate.status === 'number' ? candidate.status : 500;
-    const message = typeof candidate.message === 'string' ? candidate.message : 'Something went wrong.';
+    const message =
+      typeof candidate.message === 'string' ? candidate.message : 'Something went wrong.';
     const fieldErrors = parseFieldErrors(candidate.errors ?? candidate.fieldErrors);
     const requestId = typeof candidate.requestId === 'string' ? candidate.requestId : undefined;
     return Object.assign(new Error(message), base, {
@@ -124,9 +138,18 @@ export function normalizeError(input: unknown): ApiError {
   }
 
   if (input instanceof Error) {
-    return Object.assign(input, base, { status: 500, code: ErrorCode.INTERNAL_ERROR, fieldErrors: {}, message: input.message || base.message }) as ApiError;
+    return Object.assign(input, base, {
+      status: 500,
+      code: ErrorCode.INTERNAL_ERROR,
+      fieldErrors: {},
+      message: input.message || base.message,
+    }) as ApiError;
   }
 
   const message = String(input);
-  return Object.assign(new Error(message), base, { status: 500, code: ErrorCode.INTERNAL_ERROR, fieldErrors: {} }) as ApiError;
+  return Object.assign(new Error(message), base, {
+    status: 500,
+    code: ErrorCode.INTERNAL_ERROR,
+    fieldErrors: {},
+  }) as ApiError;
 }

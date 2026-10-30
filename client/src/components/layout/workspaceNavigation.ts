@@ -16,7 +16,13 @@ export const workspaceNavigation = [
   { name: 'Analytics', href: ROUTES.analytics, icon: BarChart2, exact: true },
   { name: 'Notifications', href: ROUTES.notifications, icon: Bell, exact: true },
   { name: 'Profile', href: ROUTES.profile, icon: User, exact: true },
-  { name: 'Admin Console', href: ROUTES.adminDashboard, icon: Shield, exact: false, adminOnly: true },
+  {
+    name: 'Admin Console',
+    href: ROUTES.adminDashboard,
+    icon: Shield,
+    exact: false,
+    adminOnly: true,
+  },
 ] as const;
 
 export function getWorkspacePageName(pathname: string): string {

@@ -35,18 +35,22 @@ export default function Sidebar({ user, isOpen, onClose, unreadCount, onLogout }
     item.exact ? pathname === item.href : pathname.startsWith(item.href);
 
   return (
-    <aside className={`
+    <aside
+      className={`
       fixed md:static inset-y-0 left-0 z-50 md:z-auto
       w-60 flex flex-col flex-shrink-0
       bg-[#0d0f16] border-r border-white/[0.08]
       transition-transform duration-300 ease-in-out
       ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-    `}>
+    `}
+    >
       {/* Logo */}
       <div className="h-[60px] flex items-center gap-2.5 px-5 border-b border-white/[0.07] flex-shrink-0">
         <OrbitIcon size={28} className="flex-shrink-0" />
-        <span className="font-bold text-sm bg-clip-text text-transparent
-                         bg-gradient-to-r from-purple-400 to-blue-400 flex-1">
+        <span
+          className="font-bold text-sm bg-clip-text text-transparent
+                         bg-gradient-to-r from-purple-400 to-blue-400 flex-1"
+        >
           Orbit
         </span>
         <button
@@ -64,7 +68,7 @@ export default function Sidebar({ user, isOpen, onClose, unreadCount, onLogout }
           Workspace
         </p>
 
-        {allNavItems.map(item => {
+        {allNavItems.map((item) => {
           const active = isActive(item);
           const isAdmin = item.name === 'Admin Console';
           const Icon = item.icon;
@@ -79,24 +83,32 @@ export default function Sidebar({ user, isOpen, onClose, unreadCount, onLogout }
               className={`
                 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
                 transition-colors duration-150 group relative
-                ${active
-                  ? `${activeBg} ${activeColor}`
-                  : 'text-gray-500 hover:text-gray-200 hover:bg-white/[0.04]'}
+                ${
+                  active
+                    ? `${activeBg} ${activeColor}`
+                    : 'text-gray-500 hover:text-gray-200 hover:bg-white/[0.04]'
+                }
               `}
             >
               {active && (
-                <span className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full
-                  ${isAdmin ? 'bg-orange-400' : 'bg-purple-400'}`} />
+                <span
+                  className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full
+                  ${isAdmin ? 'bg-orange-400' : 'bg-purple-400'}`}
+                />
               )}
 
-              <Icon className={`w-4 h-4 flex-shrink-0 transition-colors
-                ${active ? activeColor : 'text-gray-600 group-hover:text-gray-400'}`} />
+              <Icon
+                className={`w-4 h-4 flex-shrink-0 transition-colors
+                ${active ? activeColor : 'text-gray-600 group-hover:text-gray-400'}`}
+              />
 
               <span className="flex-1 truncate">{item.name}</span>
 
               {item.name === 'Notifications' && unreadCount > 0 && (
-                <span className="text-[10px] bg-red-500 text-white rounded-full
-                                 px-1.5 py-0.5 font-bold min-w-[18px] text-center leading-none">
+                <span
+                  className="text-[10px] bg-red-500 text-white rounded-full
+                                 px-1.5 py-0.5 font-bold min-w-[18px] text-center leading-none"
+                >
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}

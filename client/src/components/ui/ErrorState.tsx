@@ -49,7 +49,9 @@ export default function ErrorState({
         {resolvedTitle}
       </h3>
       <p className="text-sm text-[var(--ob-text-muted)] max-w-md mb-6">{message}</p>
-      {requestId ? <p className="mb-4 text-xs text-[var(--ob-text-muted)]">Reference: {requestId}</p> : null}
+      {requestId ? (
+        <p className="mb-4 text-xs text-[var(--ob-text-muted)]">Reference: {requestId}</p>
+      ) : null}
       {onRetry && (
         <button
           type="button"

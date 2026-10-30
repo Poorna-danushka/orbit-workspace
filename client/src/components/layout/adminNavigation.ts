@@ -1,11 +1,4 @@
-import {
-  Activity,
-  BarChart2,
-  FolderKanban,
-  LayoutDashboard,
-  User,
-  Users,
-} from 'lucide-react';
+import { Activity, BarChart2, FolderKanban, LayoutDashboard, User, Users } from 'lucide-react';
 import { ROUTES } from '@/lib/constants/routes';
 
 export const adminNavigation = [

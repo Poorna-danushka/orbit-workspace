@@ -7,7 +7,10 @@ interface LoadingSpinnerProps {
   variant?: 'default' | 'workspace' | 'admin';
 }
 
-export default function LoadingSpinner({ message = 'Loading...', variant = 'default' }: LoadingSpinnerProps) {
+export default function LoadingSpinner({
+  message = 'Loading...',
+  variant = 'default',
+}: LoadingSpinnerProps) {
   if (variant === 'workspace') {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">

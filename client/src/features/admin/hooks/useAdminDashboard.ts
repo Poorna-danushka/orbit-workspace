@@ -55,7 +55,9 @@ export function useAdminDashboard(): AdminDashboardOverviewProps {
     stats,
     activities,
     loading: resource.loading,
-    error: resource.error ? getErrorMessage(resource.error, 'Could not load the admin dashboard. Try again.') : '',
+    error: resource.error
+      ? getErrorMessage(resource.error, 'Could not load the admin dashboard. Try again.')
+      : '',
     broadcast,
     sending,
     broadcastStatus,

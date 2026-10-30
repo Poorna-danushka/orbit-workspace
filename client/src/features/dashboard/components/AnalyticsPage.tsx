@@ -2,8 +2,19 @@
 
 import { useCallback, useState, useEffect } from 'react';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend, AreaChart, Area
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  AreaChart,
+  Area,
 } from 'recharts';
 import { Loader2, RefreshCw, Activity } from 'lucide-react';
 import { reportError } from '@/lib/errors';
@@ -49,7 +60,7 @@ export default function Analytics() {
     { name: 'Completed', value: completed },
     { name: 'In Progress', value: inProgress },
     { name: 'Todo', value: pending },
-  ].filter(d => d.value > 0);
+  ].filter((d) => d.value > 0);
 
   const priorityBarData = [
     { name: 'Urgent', value: urgent },
@@ -65,14 +76,20 @@ export default function Analytics() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold">Workspace Analytics</h2>
-          <p className="text-gray-400 text-sm mt-1">Real-time productivity metrics and task performance</p>
+          <p className="text-gray-400 text-sm mt-1">
+            Real-time productivity metrics and task performance
+          </p>
         </div>
         <button
           onClick={refreshAnalytics}
           disabled={loading}
           className="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-xl font-medium shadow-[0_0_15px_rgba(120,119,198,0.3)] transition-all flex items-center justify-center gap-2 disabled:opacity-60 text-sm"
         >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <RefreshCw className="w-4 h-4" />
+          )}
           {loading ? 'Refreshing...' : 'Refresh Data'}
         </button>
       </div>
@@ -91,11 +108,10 @@ export default function Analytics() {
                 <Activity className="w-6 h-6 text-purple-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-purple-200 mb-1">
-                  Performance Summary
-                </h3>
+                <h3 className="text-lg font-semibold text-purple-200 mb-1">Performance Summary</h3>
                 <p className="text-gray-300 text-sm leading-relaxed">
-                  You have {total} total tasks across {dashData?.totalProjects || 0} active projects. Your overall completion rate is {productivity}%.
+                  You have {total} total tasks across {dashData?.totalProjects || 0} active
+                  projects. Your overall completion rate is {productivity}%.
                 </p>
               </div>
             </div>
@@ -106,10 +122,17 @@ export default function Analytics() {
             {[
               { label: 'Total Tasks', value: total, color: 'text-white' },
               { label: 'Completed', value: completed, color: 'text-green-400' },
-              { label: 'Overdue', value: overdue, color: overdue > 0 ? 'text-red-400' : 'text-gray-400' },
+              {
+                label: 'Overdue',
+                value: overdue,
+                color: overdue > 0 ? 'text-red-400' : 'text-gray-400',
+              },
               { label: 'Productivity', value: `${productivity}%`, color: 'text-purple-400' },
             ].map((s, i) => (
-              <div key={i} className="p-5 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
+              <div
+                key={i}
+                className="p-5 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10"
+              >
                 <p className="text-gray-400 text-xs mb-1">{s.label}</p>
                 <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
               </div>
@@ -123,34 +146,77 @@ export default function Analytics() {
               {pieData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={240}>
                   <PieChart>
-                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value">
-                      {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {pieData.map((_, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      ))}
                     </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }} />
-                    <Legend formatter={(value) => <span style={{ color: '#9ca3af', fontSize: 12 }}>{value}</span>} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#111',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px',
+                      }}
+                    />
+                    <Legend
+                      formatter={(value) => (
+                        <span style={{ color: '#9ca3af', fontSize: 12 }}>{value}</span>
+                      )}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-[240px] flex items-center justify-center text-gray-600 text-sm">No task data yet</div>
+                <div className="h-[240px] flex items-center justify-center text-gray-600 text-sm">
+                  No task data yet
+                </div>
               )}
             </div>
 
             <div className="p-6 rounded-2xl bg-[#11131b] border border-white/[0.08] shadow-lg shadow-black/10">
               <h3 className="text-base font-semibold mb-6">Priority Distribution</h3>
-              {priorityBarData.some(d => d.value > 0) ? (
+              {priorityBarData.some((d) => d.value > 0) ? (
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={priorityBarData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                    <XAxis dataKey="name" stroke="#ffffff50" tick={{ fill: '#ffffff50', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <YAxis stroke="#ffffff50" tick={{ fill: '#ffffff50', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }} />
+                    <XAxis
+                      dataKey="name"
+                      stroke="#ffffff50"
+                      tick={{ fill: '#ffffff50', fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      stroke="#ffffff50"
+                      tick={{ fill: '#ffffff50', fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#111',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px',
+                      }}
+                    />
                     <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                      {priorityBarData.map((_, i) => <Cell key={i} fill={PRIORITY_COLORS[i]} />)}
+                      {priorityBarData.map((_, i) => (
+                        <Cell key={i} fill={PRIORITY_COLORS[i]} />
+                      ))}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-[240px] flex items-center justify-center text-gray-600 text-sm">No task data yet</div>
+                <div className="h-[240px] flex items-center justify-center text-gray-600 text-sm">
+                  No task data yet
+                </div>
               )}
             </div>
           </div>
@@ -168,11 +234,42 @@ export default function Analytics() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                  <XAxis dataKey="name" stroke="#ffffff50" tick={{ fill: '#ffffff50', fontSize: 12 }} axisLine={false} tickLine={false} />
-                  <YAxis stroke="#ffffff50" tick={{ fill: '#ffffff50', fontSize: 12 }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }} />
-                  <Area type="monotone" dataKey="tasks" name="Tasks Due" stroke="#a855f7" strokeWidth={3} fill="url(#gradient)" />
-                  <Area type="monotone" dataKey="completed" name="Completed" stroke="#10b981" strokeWidth={3} fill="none" />
+                  <XAxis
+                    dataKey="name"
+                    stroke="#ffffff50"
+                    tick={{ fill: '#ffffff50', fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    stroke="#ffffff50"
+                    tick={{ fill: '#ffffff50', fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#111',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '12px',
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="tasks"
+                    name="Tasks Due"
+                    stroke="#a855f7"
+                    strokeWidth={3}
+                    fill="url(#gradient)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="completed"
+                    name="Completed"
+                    stroke="#10b981"
+                    strokeWidth={3}
+                    fill="none"
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (

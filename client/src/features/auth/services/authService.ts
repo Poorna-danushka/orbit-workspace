@@ -19,7 +19,8 @@ interface RegisterPayload {
 }
 
 export const login = (payload: LoginPayload) => api.post<AuthResponse>('/auth/login', payload);
-export const register = (payload: RegisterPayload) => api.post<AuthResponse>('/auth/register', payload);
+export const register = (payload: RegisterPayload) =>
+  api.post<AuthResponse>('/auth/register', payload);
 export const logout = () => api.post('/auth/logout');
 export const requestPasswordReset = (email: string) =>
   api.post<{ message: string }>('/auth/forgot-password', { email });

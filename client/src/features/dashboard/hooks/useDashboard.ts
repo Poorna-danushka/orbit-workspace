@@ -2,7 +2,11 @@
 
 import { useCallback, useState, type FormEvent } from 'react';
 import { useAppSelector } from '@/store/hooks';
-import { getDashboardProjects, getDashboardStats, createDashboardTask } from '@/features/dashboard/services/dashboardService';
+import {
+  getDashboardProjects,
+  getDashboardStats,
+  createDashboardTask,
+} from '@/features/dashboard/services/dashboardService';
 import type { DashboardStats } from '@/features/dashboard/types';
 import { getErrorMessage } from '@/lib/errors';
 import { useAsyncResource } from '@/hooks/useAsyncResource';
@@ -24,12 +28,17 @@ export function useDashboard(): DashboardOverviewProps {
     const projectData = projectsResponse.data;
     return {
       stats: statsResponse.data,
-      projects: Array.isArray(projectData) ? projectData : projectData.data ?? [],
+      projects: Array.isArray(projectData) ? projectData : (projectData.data ?? []),
     };
   }, []);
   const resource = useAsyncResource(loadDashboard);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
-  const [quickForm, setQuickForm] = useState({ title: '', projectId: '', priority: 'Medium', dueDate: '' });
+  const [quickForm, setQuickForm] = useState({
+    title: '',
+    projectId: '',
+    priority: 'Medium',
+    dueDate: '',
+  });
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const data = resource.data;
@@ -63,7 +72,9 @@ export function useDashboard(): DashboardOverviewProps {
     stats: data?.stats ?? null,
     projects: data?.projects ?? [],
     loading: resource.loading,
-    error: resource.error ? getErrorMessage(resource.error, 'Could not load your workspace overview.') : '',
+    error: resource.error
+      ? getErrorMessage(resource.error, 'Could not load your workspace overview.')
+      : '',
     showQuickAdd,
     quickForm,
     submitting,

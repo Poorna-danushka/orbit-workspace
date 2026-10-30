@@ -36,7 +36,8 @@ const authSlice = createSlice({
       state.loading = action.payload;
     },
     rehydrateAuth: (state) => {
-      const rawUser = typeof window !== 'undefined' ? window.localStorage.getItem('userInfo') : null;
+      const rawUser =
+        typeof window !== 'undefined' ? window.localStorage.getItem('userInfo') : null;
 
       if (!rawUser) {
         state.user = null;

@@ -1,5 +1,9 @@
 /* ─── BASE ─────────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 html {
   font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
@@ -20,5 +24,7 @@ body {
   overflow-x: clip;
 }
 
-::selection { background: rgba(124,110,255,0.28); color: var(--ob-text); }
-
+::selection {
+  background: rgba(124, 110, 255, 0.28);
+  color: var(--ob-text);
+}

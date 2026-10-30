@@ -44,7 +44,11 @@ export function decideAuthAction(
   }
 
   if (status !== 401) return 'pass-through';
-  if (code === 'AUTH_TOKEN_INVALID' || code === 'AUTH_USER_NOT_FOUND' || code.startsWith('AUTH_REFRESH_')) {
+  if (
+    code === 'AUTH_TOKEN_INVALID' ||
+    code === 'AUTH_USER_NOT_FOUND' ||
+    code.startsWith('AUTH_REFRESH_')
+  ) {
     return 'end-session';
   }
   if (requestConfig?.skipAuthRefresh || AUTH_ENDPOINTS.has(requestPath)) return 'pass-through';
