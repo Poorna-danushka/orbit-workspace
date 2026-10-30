@@ -4,6 +4,7 @@ import api from '@/lib/api/client';
 import { endSession } from '@/lib/auth/session';
 import { sessionEvents } from '@/lib/auth/events';
 import { refreshSession } from '@/lib/api/refresh';
+import { isRefreshableAuthCode } from '@/lib/api/auth-policy';
 
 let socket: Socket | null = null;
 let refCount = 0;
@@ -25,7 +26,7 @@ function registerSocketAuthHandlers(activeSocket: Socket): void {
   });
   activeSocket.on('connect_error', (error: unknown) => {
     const code = getSocketErrorCode(error);
-    if (code === 'AUTH_TOKEN_EXPIRED') {
+    if (isRefreshableAuthCode(code)) {
       if (refreshInProgress) return;
       refreshInProgress = true;
       void refreshSession(api).then(

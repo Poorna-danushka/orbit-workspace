@@ -23,6 +23,10 @@ function getRequestPath(url: string | undefined, baseURL: string | undefined): s
   }
 }
 
+export function isRefreshableAuthCode(code: string | undefined): boolean {
+  return code === 'AUTH_TOKEN_EXPIRED' || code === 'AUTH_TOKEN_MISSING';
+}
+
 export function decideAuthAction(
   error: AxiosError | unknown,
   requestConfig?: OrbitRequestConfig,
@@ -44,7 +48,7 @@ export function decideAuthAction(
     return 'end-session';
   }
   if (requestConfig?.skipAuthRefresh || AUTH_ENDPOINTS.has(requestPath)) return 'pass-through';
-  if (code === 'AUTH_TOKEN_EXPIRED' || code === 'AUTH_TOKEN_MISSING') return 'refresh';
+  if (isRefreshableAuthCode(code)) return 'refresh';
 
   return 'pass-through';
 }

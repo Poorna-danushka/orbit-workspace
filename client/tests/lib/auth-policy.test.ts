@@ -1,4 +1,4 @@
-import { decideAuthAction } from '@/lib/api/auth-policy';
+import { decideAuthAction, isRefreshableAuthCode } from '@/lib/api/auth-policy';
 import type { OrbitRequestConfig } from '@/lib/api/types';
 
 const request = (url: string, extra: Partial<OrbitRequestConfig> = {}) =>
@@ -12,6 +12,20 @@ test.each(['AUTH_TOKEN_EXPIRED', 'AUTH_TOKEN_MISSING'])(
   '%s refreshes a protected request',
   (code) => {
     expect(decideAuthAction(error(401, code), request('/user/me'))).toBe('refresh');
+  },
+);
+
+test.each(['AUTH_TOKEN_EXPIRED', 'AUTH_TOKEN_MISSING'])(
+  '%s is refreshable for HTTP and socket authentication',
+  (code) => {
+    expect(isRefreshableAuthCode(code)).toBe(true);
+  },
+);
+
+test.each(['AUTH_TOKEN_INVALID', 'AUTH_USER_NOT_FOUND', undefined])(
+  '%s is not refreshable',
+  (code) => {
+    expect(isRefreshableAuthCode(code)).toBe(false);
   },
 );
 
