@@ -8,7 +8,7 @@ import {
 import { Loader2, RefreshCw, Activity } from 'lucide-react';
 import { reportError } from '@/lib/errors';
 import { getDashboardStats } from '@/features/dashboard/services/dashboardService';
-import type { DashboardStats } from '@/lib/api/user';
+import type { DashboardStats } from '@/features/dashboard/types';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#6b7280'];
 const PRIORITY_COLORS = ['#ef4444', '#f97316', '#eab308', '#3b82f6'];

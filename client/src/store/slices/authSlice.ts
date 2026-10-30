@@ -1,20 +1,4 @@
-/**
- * User Authentication Redux Slice
- * 
- * Manages user authentication state including:
- * - Current user information
- * - Access token for API requests
- * - Authentication status
- * - Session rehydration from cookies
- * 
- * @module authSlice
- * @see {@link setCredentials} Update user and token
- * @see {@link logout} Clear user session
- * @see {@link rehydrateAuth} Restore session from cookies
- */
-
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { getStoredUser } from '@/lib/auth/storage';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { User } from '@/types/user';
 
 interface AuthState {
@@ -39,30 +23,62 @@ const authSlice = createSlice({
       state.loading = false;
     },
     updateUser: (state, action: PayloadAction<Partial<User>>) => {
-      if (state.user) {
-        state.user = { ...state.user, ...action.payload };
+      if (!state.user) {
+        return;
       }
+
+      state.user = {
+        ...state.user,
+        ...action.payload,
+      };
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
+    },
+    rehydrateAuth: (state) => {
+      const rawUser = typeof window !== 'undefined' ? window.localStorage.getItem('userInfo') : null;
+
+      if (!rawUser) {
+        state.user = null;
+        state.isAuthenticated = false;
+        state.loading = false;
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(rawUser) as Partial<User> | null;
+
+        if (parsed && typeof parsed.id === 'string' && typeof parsed.email === 'string') {
+          state.user = {
+            id: parsed.id,
+            username: parsed.username ?? '',
+            email: parsed.email,
+            role: parsed.role ?? 'user',
+            avatar: parsed.avatar ?? null,
+            createdAt: parsed.createdAt,
+          };
+          state.isAuthenticated = true;
+          state.loading = false;
+          return;
+        }
+      } catch {
+        state.user = null;
+        state.isAuthenticated = false;
+        state.loading = false;
+        return;
+      }
+
+      state.user = null;
+      state.isAuthenticated = false;
+      state.loading = false;
     },
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
       state.loading = false;
     },
-    rehydrateAuth: (state) => {
-      if (typeof window !== 'undefined') {
-        const user = getStoredUser();
-        if (user) {
-          state.user = user;
-          state.isAuthenticated = true;
-        }
-        state.loading = false;
-      }
-    },
   },
 });
 
-export const { setCredentials, updateUser, setLoading, logout, rehydrateAuth } = authSlice.actions;
+export const { setCredentials, updateUser, setLoading, rehydrateAuth, logout } = authSlice.actions;
 export default authSlice.reducer;

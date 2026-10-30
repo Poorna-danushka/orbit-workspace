@@ -1,7 +1,7 @@
 import { AlertTriangle, ShieldAlert, WifiOff, Clock3 } from 'lucide-react';
 import type { ApiError } from '@/lib/errors';
 
-export interface ErrorStateProps {
+interface ErrorStateProps {
   title?: string;
   message: string;
   onRetry?: () => void;

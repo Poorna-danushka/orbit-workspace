@@ -7,7 +7,7 @@ import type {
   ProjectMemberSearchResult,
 } from '../types';
 
-export type ProjectInput = Pick<Project, 'title' | 'description' | 'status'>;
+type ProjectInput = Pick<Project, 'title' | 'description' | 'status'>;
 
 export const getProjects = () =>
   api.get<ProjectListResponse>('/projects?page=1&limit=50');

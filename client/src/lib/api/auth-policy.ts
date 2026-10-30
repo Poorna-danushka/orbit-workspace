@@ -1,7 +1,7 @@
 import type { AxiosError } from 'axios';
 import type { OrbitRequestConfig } from './types';
 
-export type AuthDecision = 'refresh' | 'end-session' | 'pass-through' | 'retry-csrf';
+type AuthDecision = 'refresh' | 'end-session' | 'pass-through' | 'retry-csrf';
 
 const AUTH_ENDPOINTS = new Set([
   '/auth/login',

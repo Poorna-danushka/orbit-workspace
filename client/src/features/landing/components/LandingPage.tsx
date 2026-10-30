@@ -5,7 +5,9 @@ import { ArrowRight, Check, ChevronDown } from 'lucide-react';
 import LandingNav from './LandingNav';
 import { OrbitalAnimation } from './OrbitalAnimation';
 import { StarField } from './StarField';
-import LandingSections from './LandingSections';
+import LandingFeatureSections from './LandingFeatureSections';
+import LandingWorkflowSections from './LandingWorkflowSections';
+import LandingFooterSections from './LandingFooterSections';
 
 export default function LandingPage() {
   return (
@@ -248,7 +250,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <LandingSections />
+      <LandingFeatureSections />
+      <LandingWorkflowSections />
+      <LandingFooterSections />
     </div>
   );
 }

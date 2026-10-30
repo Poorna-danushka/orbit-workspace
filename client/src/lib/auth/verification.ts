@@ -1,5 +1,5 @@
 import type { User } from '@/types/user';
-import { getProfile } from '@/lib/api/user';
+import { getCurrentUser } from '@/features/auth/services/authService';
 import { saveUserMetadata } from './storage';
 import { sessionEvents } from './events';
 
@@ -43,7 +43,7 @@ export function verifyCurrentSession(): Promise<User> {
   if (verifiedUser) return Promise.resolve(verifiedUser);
   if (verificationRequest) return verificationRequest;
 
-  const request = getProfile().then(({ data }) => {
+  const request = getCurrentUser().then(({ data }) => {
     const user = unwrapUser(data);
     verifiedUser = user;
     saveUserMetadata(user);

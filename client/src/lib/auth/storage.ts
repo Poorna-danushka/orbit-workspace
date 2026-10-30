@@ -2,7 +2,6 @@ import type { User } from '@/types/user';
 import { logger } from '@/lib/utils/logger';
 
 const USER_STORAGE_KEY = 'userInfo';
-const LEGACY_USER_COOKIE_NAMES = ['userInfo', 'adminInfo'];
 
 function isStoredUser(value: unknown): value is User {
   if (!value || typeof value !== 'object') return false;
@@ -56,11 +55,7 @@ export function clearUserStorage(): void {
   if (typeof window === 'undefined') return;
   try {
     window.localStorage.removeItem(USER_STORAGE_KEY);
-    window.localStorage.removeItem('adminInfo');
   } catch {
     logger.warn('Unable to clear user display metadata');
-  }
-  for (const name of LEGACY_USER_COOKIE_NAMES) {
-    document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
   }
 }

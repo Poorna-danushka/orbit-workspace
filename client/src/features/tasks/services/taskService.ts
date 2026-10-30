@@ -11,11 +11,11 @@ export interface CreateTaskPayload {
   assignedTo?: string | null;
 }
 
-export type UpdateTaskPayload = Partial<
+type UpdateTaskPayload = Partial<
   Pick<Task, 'title' | 'description' | 'priority' | 'dueDate' | 'status' | 'assignedTo'>
 >;
 
-export type TaskListResponse = Task[] | { data: Task[] };
+type TaskListResponse = Task[] | { data: Task[] };
 
 export const getTasks = () => api.get<TaskListResponse>('/tasks/all?page=1&limit=100');
 export const updateTaskStatus = (taskId: string, status: string) =>

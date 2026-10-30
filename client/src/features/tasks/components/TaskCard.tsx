@@ -1,7 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Calendar, Paperclip, Trash2 } from 'lucide-react';
-import { getAvatarUrl } from '@/lib/utils/avatar';
+import Avatar from '@/components/ui/Avatar';
 import type { Task } from '@/types/task';
 
 export const PRIORITY_COLORS: Record<string, string> = {
@@ -79,21 +79,7 @@ export default function TaskCard({ task, onDelete, onClick, onMoveForward }: Tas
               )}
             </div>
 
-            {task.assignee && (
-              task.assignee.avatar ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={getAvatarUrl(task.assignee.avatar)}
-                  alt={task.assignee.username}
-                  title={`Assigned to ${task.assignee.username}`}
-                  className="w-6 h-6 rounded-full object-cover shadow-md ring-1 ring-black flex-shrink-0 ml-2"
-                />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 flex items-center justify-center text-[10px] font-bold text-white shadow-md flex-shrink-0 ml-2" title={`Assigned to ${task.assignee.username}`}>
-                  {task.assignee.username[0].toUpperCase()}
-                </div>
-              )
-            )}
+            {task.assignee && <Avatar user={task.assignee} size="sm" className="ml-2" />}
           </div>
 
           {/* Action Row */}
