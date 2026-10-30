@@ -1,6 +1,7 @@
 'use client';
 
 import { getAvatarUrl } from '@/lib/utils/avatar';
+import RemoteImage from './RemoteImage';
 
 interface AvatarUser {
   username?: string;
@@ -33,8 +34,7 @@ export default function Avatar({ user, size = 'sm', ring = false, className = ''
 
   if (src) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
+      <RemoteImage
         src={src}
         alt={displayName}
         title={displayName}

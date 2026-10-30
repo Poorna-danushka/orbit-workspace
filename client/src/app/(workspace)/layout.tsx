@@ -12,6 +12,7 @@ import { endSession } from '@/lib/auth/session';
 import { logout } from '@/features/auth/services/authService';
 import { acquireSocket, releaseSocket } from '@/lib/realtime/socket';
 import { getUnreadNotificationCount } from '@/features/notifications/services/notificationService';
+import { useAsyncResource } from '@/hooks/useAsyncResource';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', exact: true },
@@ -27,24 +28,22 @@ function WorkspaceShell({ children }: { children: ReactNode }) {
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const loadUnreadCount = useCallback(() => getUnreadNotificationCount(), []);
+  const unreadResource = useAsyncResource(loadUnreadCount, {
+    enabled: isAuthenticated && Boolean(user),
+    initialData: 0,
+  });
+  const unreadCount = unreadResource.data ?? 0;
+  const fetchUnreadCount = unreadResource.reload;
 
-  const fetchUnreadCount = useCallback(async () => {
-    try {
-      setUnreadCount(await getUnreadNotificationCount());
-    } catch (error: unknown) {
-      reportError(error);
-    }
-  }, []);
+  useEffect(() => {
+    if (unreadResource.error) reportError(unreadResource.error);
+  }, [unreadResource.error]);
 
   useEffect(() => {
     if (!isAuthenticated || !user) return;
-    const initialFetch = window.setTimeout(() => void fetchUnreadCount(), 0);
     const intervalId = window.setInterval(() => void fetchUnreadCount(), 30_000);
-    return () => {
-      window.clearTimeout(initialFetch);
-      window.clearInterval(intervalId);
-    };
+    return () => window.clearInterval(intervalId);
   }, [fetchUnreadCount, isAuthenticated, user]);
 
   useEffect(() => {

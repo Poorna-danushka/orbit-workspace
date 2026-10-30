@@ -43,7 +43,7 @@ const priorityClass: Record<string, string> = {
   Low: 'priority-low',
 };
 
-type DashboardOverviewProps = {
+export type DashboardOverviewProps = {
   user?: { username?: string | null } | null;
   stats: DashboardStats | null;
   projects: Project[];
@@ -65,22 +65,23 @@ type DashboardOverviewProps = {
   onQuickAddSubmit: (event: FormEvent<HTMLFormElement>) => void;
 };
 
-export default function DashboardOverview({
-  user,
-  stats,
-  projects,
-  loading,
-  error,
-  showQuickAdd,
-  quickForm,
-  submitting,
-  formError,
-  onRefresh,
-  onOpenQuickAdd,
-  onCloseQuickAdd,
-  onQuickAddChange,
-  onQuickAddSubmit,
-}: DashboardOverviewProps) {
+export default function DashboardOverview({ model }: { model: DashboardOverviewProps }) {
+  const {
+    user,
+    stats,
+    projects,
+    loading,
+    error,
+    showQuickAdd,
+    quickForm,
+    submitting,
+    formError,
+    onRefresh,
+    onOpenQuickAdd,
+    onCloseQuickAdd,
+    onQuickAddChange,
+    onQuickAddSubmit,
+  } = model;
   const cards = [
     { label: 'All tasks', value: stats?.totalTasks, icon: Target, tone: 'violet' },
     { label: 'Completed', value: stats?.completedTasks, icon: CheckCircle2, tone: 'green' },

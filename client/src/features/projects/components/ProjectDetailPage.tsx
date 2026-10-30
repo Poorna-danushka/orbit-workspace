@@ -161,10 +161,10 @@ export default function ProjectDetail() {
       socket.on('memberAdded', onMemberAdded);
       socket.on('memberRemoved', onMemberRemoved);
 
-      /* eslint-disable react-hooks/set-state-in-effect */
-      void fetchProject();
-      void fetchUnreadNotifications();
-      /* eslint-enable react-hooks/set-state-in-effect */
+      void Promise.resolve().then(() => {
+        void fetchProject();
+        void fetchUnreadNotifications();
+      });
     }
 
     return () => {

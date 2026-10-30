@@ -10,7 +10,9 @@ import {
 import type { Project } from '@/features/projects/types';
 import type { ProjectMemberSearchResult } from '@/features/projects/types';
 
-export default function useProjectTeamManagement(setProjects: Dispatch<SetStateAction<Project[]>>) {
+export default function useProjectTeamManagement(
+  setProjects: Dispatch<SetStateAction<Project[] | undefined>>,
+) {
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [selectedTeamProject, setSelectedTeamProject] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState('');

@@ -1,11 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { Activity, Clock3, Loader2, RefreshCw } from 'lucide-react';
 import { getErrorMessage } from '@/lib/errors';
 import { getAdminActivity } from '@/features/admin/services/adminService';
 import type { AdminActivityItem } from '@/features/admin/types';
 import ErrorState from '@/components/ui/ErrorState';
+import { useAsyncResource } from '@/hooks/useAsyncResource';
 
 function formatDate(value: string): string {
   const date = new Date(value);
@@ -15,27 +16,12 @@ function formatDate(value: string): string {
 }
 
 export default function AdminActivityPage() {
-  const [items, setItems] = useState<AdminActivityItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const fetchActivity = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const response = await getAdminActivity();
-      setItems(response.data);
-    } catch (loadError: unknown) {
-      setError(getErrorMessage(loadError, 'Could not load platform activity.'));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => { void fetchActivity(); }, 0);
-    return () => window.clearTimeout(timer);
-  }, [fetchActivity]);
+  const loadActivity = useCallback(async () => (await getAdminActivity()).data, []);
+  const { data: items = [], loading, error: loadError, reload: fetchActivity } =
+    useAsyncResource<AdminActivityItem[]>(loadActivity);
+  const error = loadError
+    ? getErrorMessage(loadError, 'Could not load platform activity.')
+    : '';
 
   return (
     <div className="admin-overview">

@@ -3,6 +3,7 @@ import { Download, FileText, Loader2, Paperclip, UploadCloud, X } from 'lucide-r
 import { COLUMNS } from '@/features/tasks/components/KanbanColumn';
 import { PRIORITY_COLORS } from '@/features/tasks/components/TaskCard';
 import { BACKEND_URL } from '@/lib/config';
+import RemoteImage from '@/components/ui/RemoteImage';
 import type { Project } from '@/features/projects/types';
 import type { Task } from '@/features/tasks/types';
 
@@ -173,8 +174,7 @@ export default function TaskDetailsModal({ task, project, onClose, onStatusChang
                               >
                                 {image && (
                                   <div className="relative aspect-video rounded-lg overflow-hidden bg-black/40 border border-white/5">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
+                                    <RemoteImage
                                       src={`${BACKEND_URL}${att.fileUrl}`}
                                       alt={att.fileName}
                                       className="w-full h-full object-cover"

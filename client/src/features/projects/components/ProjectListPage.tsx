@@ -19,13 +19,23 @@ import ProjectDeleteModal from './ProjectDeleteModal';
 import ProjectListSummary from './ProjectListSummary';
 import ProjectGrid from './ProjectGrid';
 import useProjectTeamManagement from '../hooks/useProjectTeamManagement';
+import { useAsyncResource } from '@/hooks/useAsyncResource';
 
 export default function Projects() {
   const { user } = useSelector((state: RootState) => state.auth);
 
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const loadProjectResource = useCallback(async () => {
+    const res = await getProjects();
+    return Array.isArray(res.data) ? res.data : (res.data.data ?? []);
+  }, []);
+  const projectResource = useAsyncResource<Project[]>(loadProjectResource);
+  const projects = projectResource.data ?? [];
+  const loading = projectResource.loading;
+  const loadError = projectResource.error
+    ? getErrorMessage(projectResource.error, 'Unable to load your projects.')
+    : null;
+  const setProjects = projectResource.setData;
+  const fetchProjects = projectResource.reload;
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editProject, setEditProject] = useState<Project | null>(null);
@@ -33,18 +43,6 @@ export default function Projects() {
   const [submitting, setSubmitting] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Project | null>(null);
-
-  const fetchProjects = useCallback(async () => {
-    try {
-      const res = await getProjects();
-      setProjects(Array.isArray(res.data) ? res.data : (res.data.data ?? []));
-      setLoadError(null);
-    } catch (err) {
-      setLoadError(getErrorMessage(err, 'Unable to load your projects.'));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const team = useProjectTeamManagement(setProjects);
   const { handleProjectRemoved } = team;
@@ -69,13 +67,6 @@ export default function Projects() {
       releaseSocket();
     };
   }, [user, fetchProjects, handleProjectRemoved]);
-
-  useEffect(() => {
-    const loadTimer = window.setTimeout(() => {
-      void fetchProjects();
-    }, 0);
-    return () => window.clearTimeout(loadTimer);
-  }, [fetchProjects]);
 
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -106,10 +97,10 @@ export default function Projects() {
     try {
       if (editProject) {
         await updateProject(editProject.id, form);
-        setProjects((prev) => prev.map((p) => (p.id === editProject.id ? { ...p, ...form } : p)));
+        setProjects((prev) => (prev ?? []).map((p) => (p.id === editProject.id ? { ...p, ...form } : p)));
       } else {
         const res = await createProject(form);
-        setProjects((prev) => [res.data, ...prev]);
+        setProjects((prev) => [res.data, ...(prev ?? [])]);
       }
       setIsModalOpen(false);
     } catch (err) {
@@ -123,7 +114,7 @@ export default function Projects() {
     setDeleteId(project.id);
     try {
       await deleteProject(project.id);
-      setProjects((prev) => prev.filter((p) => p.id !== project.id));
+      setProjects((prev) => (prev ?? []).filter((p) => p.id !== project.id));
       setConfirmDelete(null);
     } catch (err) {
       reportError(err, 'Failed to delete project');
@@ -158,7 +149,6 @@ export default function Projects() {
         setSearch={setSearch}
         onCreate={openCreate}
         onRetry={() => {
-          setLoading(true);
           void fetchProjects();
         }}
       />

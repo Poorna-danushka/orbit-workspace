@@ -56,7 +56,7 @@ const metricCards: {
   { label: 'Overdue tasks', key: 'overdueTasks', note: 'Need attention', icon: AlertTriangle, tone: 'amber' },
 ] as const;
 
-type AdminDashboardOverviewProps = {
+export type AdminDashboardOverviewProps = {
   stats: AdminStats | null;
   activities: AdminActivityItem[];
   loading: boolean;
@@ -72,21 +72,22 @@ type AdminDashboardOverviewProps = {
   onBroadcastSubmit: (event: FormEvent<HTMLFormElement>) => void;
 };
 
-export default function AdminDashboardOverview({
-  stats,
-  activities,
-  loading,
-  error,
-  broadcast,
-  sending,
-  broadcastStatus,
-  broadcastError,
-  completionRate,
-  recentUsers,
-  onRefresh,
-  onBroadcastChange,
-  onBroadcastSubmit,
-}: AdminDashboardOverviewProps) {
+export default function AdminDashboardOverview({ model }: { model: AdminDashboardOverviewProps }) {
+  const {
+    stats,
+    activities,
+    loading,
+    error,
+    broadcast,
+    sending,
+    broadcastStatus,
+    broadcastError,
+    completionRate,
+    recentUsers,
+    onRefresh,
+    onBroadcastChange,
+    onBroadcastSubmit,
+  } = model;
   return (
     <div className="admin-overview">
       <header className="admin-overview-heading">

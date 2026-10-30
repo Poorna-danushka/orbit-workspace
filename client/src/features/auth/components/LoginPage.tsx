@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useCallback, useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { Loader2 } from 'lucide-react';
@@ -16,6 +16,7 @@ import {
 import { verifyCurrentSession } from '@/features/auth/services/sessionVerification';
 import { LoginBrandPanel } from './LoginBrandPanel';
 import LoginFormPanel from './LoginFormPanel';
+import { useAsyncResource } from '@/hooks/useAsyncResource';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -30,38 +31,20 @@ function LoginForm() {
   const nextPath = searchParams.get('next') || '';
   const googleStatus = searchParams.get('google');
 
+  const loadGoogleSession = useCallback(async () => {
+    markSessionActive();
+    return verifyCurrentSession();
+  }, []);
+  const googleSession = useAsyncResource(loadGoogleSession, {
+    enabled: googleStatus === 'success',
+  });
+
   useEffect(() => {
-    if (googleStatus === 'error') {
-      const timer = window.setTimeout(() => {
-        setError('Google sign-in could not be completed. Please try again.');
-      }, 0);
-      return () => window.clearTimeout(timer);
-    }
-
-    if (googleStatus !== 'success') return;
-
-    let cancelled = false;
-    const timer = window.setTimeout(() => {
-      setLoading(true);
-      markSessionActive();
-      void verifyCurrentSession()
-        .then((user) => {
-          if (cancelled) return;
-          dispatch(setCredentials({ user }));
-          router.replace(getPostAuthPath(user.role, nextPath));
-        })
-        .catch(() => {
-          if (cancelled) return;
-          setError('Google sign-in could not be completed. Please try again.');
-          setLoading(false);
-        });
-    }, 0);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [dispatch, googleStatus, nextPath, router]);
+    const user = googleSession.data;
+    if (!user) return;
+    dispatch(setCredentials({ user }));
+    router.replace(getPostAuthPath(user.role, nextPath));
+  }, [dispatch, googleSession.data, nextPath, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,6 +80,13 @@ function LoginForm() {
     }
   };
 
+  const googleError =
+    googleStatus === 'error' || googleSession.error
+      ? 'Google sign-in could not be completed. Please try again.'
+      : '';
+  const displayError = error || googleError;
+  const isLoading = loading || (googleStatus === 'success' && googleSession.loading);
+
   return (
     <div
       className="ob-auth-screen"
@@ -115,8 +105,8 @@ function LoginForm() {
         password={password}
         rememberMe={rememberMe}
         showPwd={showPwd}
-        loading={loading}
-        error={error}
+        loading={isLoading}
+        error={displayError}
         setEmail={setEmail}
         setPassword={setPassword}
         setRememberMe={setRememberMe}
