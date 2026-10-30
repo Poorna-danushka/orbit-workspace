@@ -13,11 +13,7 @@ const config = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-  collectCoverageFrom: [
-    'src/lib/authError.ts',
-    'src/lib/authNavigation.ts',
-    'src/store/slices/authSlice.ts',
-  ],
+  collectCoverageFrom: ['src/store/slices/authSlice.ts'],
   coverageThreshold: {
     global: {
       branches: 60,

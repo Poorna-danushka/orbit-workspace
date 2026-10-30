@@ -41,7 +41,9 @@ test.each([
 
 test('CSRF errors retry while transient and excluded auth errors pass through', () => {
   expect(decideAuthAction(error(403, 'CSRF_INVALID'), request('/projects'))).toBe('retry-csrf');
-  expect(decideAuthAction(error(401, 'AUTH_TOKEN_EXPIRED'), request('/auth/login'))).toBe('pass-through');
+  expect(decideAuthAction(error(401, 'AUTH_TOKEN_EXPIRED'), request('/auth/login'))).toBe(
+    'pass-through',
+  );
   expect(decideAuthAction(error(429, 'RATE_LIMITED'), request('/user/me'))).toBe('pass-through');
   expect(decideAuthAction(error(500, 'INTERNAL_ERROR'), request('/user/me'))).toBe('pass-through');
 });

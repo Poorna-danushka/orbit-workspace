@@ -8,6 +8,7 @@ import api from '@/lib/api/client';
 import { clearCsrfToken } from '@/lib/api/csrf';
 import { markSessionActive } from '@/lib/auth/session';
 import { sessionEvents } from '@/lib/auth/events';
+import { getSessionRedirectUrl } from '@/lib/auth/redirect';
 
 function response(config: InternalAxiosRequestConfig, data: unknown, status = 200): AxiosResponse {
   return {
@@ -59,6 +60,13 @@ describe('real API client auth refresh interceptors', () => {
     clearCsrfToken();
   });
 
+  test('session redirect preserves the current location and avoids a login loop', () => {
+    expect(getSessionRedirectUrl('/projects?filter=mine')).toBe(
+      '/login?next=%2Fprojects%3Ffilter%3Dmine',
+    );
+    expect(getSessionRedirectUrl('/login?next=%2Fprojects')).toBeUndefined();
+  });
+
   test('three parallel expired-token requests share a refresh and replay successfully', async () => {
     const requestCounts = new Map<string, number>();
     let refreshCount = 0;
@@ -97,6 +105,79 @@ describe('real API client auth refresh interceptors', () => {
         .reduce((count, [, requests]) => count + requests, 0),
     ).toBe(6);
     expect(results.map(({ data }) => data.ok)).toEqual([true, true, true]);
+  });
+
+  test('independent tabs serialize refresh requests through the Web Locks API', async () => {
+    type LockCallback<T> = (lock: Lock | null) => Promise<T>;
+    let lockQueue = Promise.resolve();
+    let activeRefreshes = 0;
+    let maxActiveRefreshes = 0;
+    let refreshCount = 0;
+
+    const requestLock = async <T>(
+      _name: string,
+      _options: LockOptions,
+      callback: LockCallback<T>,
+    ): Promise<T> => {
+      const previousLock = lockQueue;
+      let releaseLock = () => {};
+      lockQueue = new Promise<void>((resolve) => {
+        releaseLock = resolve;
+      });
+      await previousLock;
+      try {
+        return await callback(null);
+      } finally {
+        releaseLock();
+      }
+    };
+
+    const previousLocks = Object.getOwnPropertyDescriptor(navigator, 'locks');
+    Object.defineProperty(navigator, 'locks', {
+      configurable: true,
+      value: { request: requestLock },
+    });
+
+    let firstTabRefresh: typeof import('@/lib/api/refresh').refreshSession | undefined;
+    let secondTabRefresh: typeof import('@/lib/api/refresh').refreshSession | undefined;
+    jest.isolateModules(() => {
+      firstTabRefresh =
+        jest.requireActual<typeof import('@/lib/api/refresh')>('@/lib/api/refresh').refreshSession;
+    });
+    jest.isolateModules(() => {
+      secondTabRefresh =
+        jest.requireActual<typeof import('@/lib/api/refresh')>('@/lib/api/refresh').refreshSession;
+    });
+    if (!firstTabRefresh || !secondTabRefresh) {
+      throw new Error('Refresh service could not be loaded in isolated tab contexts.');
+    }
+
+    const adapter: AxiosAdapter = async (config) => {
+      const path = new URL(config.url ?? '', config.baseURL).pathname;
+      if (path.endsWith('/csrf-token')) {
+        return response(config, { csrfToken: 'lock-csrf-token' });
+      }
+      if (path.endsWith('/auth/refresh')) {
+        refreshCount += 1;
+        activeRefreshes += 1;
+        maxActiveRefreshes = Math.max(maxActiveRefreshes, activeRefreshes);
+        await new Promise<void>((resolve) => setTimeout(resolve, 5));
+        activeRefreshes -= 1;
+        return response(config, { message: 'refreshed' });
+      }
+      throw new Error(`Unexpected API request: ${path}`);
+    };
+    api.defaults.adapter = adapter;
+    axios.defaults.adapter = adapter;
+
+    try {
+      await Promise.all([firstTabRefresh(api), secondTabRefresh(api)]);
+      expect(refreshCount).toBe(2);
+      expect(maxActiveRefreshes).toBe(1);
+    } finally {
+      if (previousLocks) Object.defineProperty(navigator, 'locks', previousLocks);
+      else Reflect.deleteProperty(navigator, 'locks');
+    }
   });
 
   test('a missing-token response refreshes and replays the original request once', async () => {
@@ -385,6 +466,30 @@ describe('real API client auth refresh interceptors', () => {
     try {
       const result = await api.get('/rate-limit-fixture');
       expect(result.data.ok).toBe(true);
+      expect(requests).toBe(2);
+      expect(endEvents).toBe(0);
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  test('a repeated GET 429 returns a normalized error without ending the session', async () => {
+    let requests = 0;
+    let endEvents = 0;
+    const unsubscribe = sessionEvents.on('session-ended', () => {
+      endEvents += 1;
+    });
+    const adapter: AxiosAdapter = async (config) => {
+      requests += 1;
+      throw failure(config, 429, { message: 'Slow down' }, { 'Retry-After': '0' });
+    };
+    api.defaults.adapter = adapter;
+    axios.defaults.adapter = adapter;
+
+    try {
+      await expect(api.get('/rate-limit-retry-limit')).rejects.toMatchObject({
+        apiError: { status: 429 },
+      });
       expect(requests).toBe(2);
       expect(endEvents).toBe(0);
     } finally {
