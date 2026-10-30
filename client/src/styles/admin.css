@@ -173,7 +173,8 @@
 
 .admin-metric-icon,
 .admin-panel-icon,
-.admin-broadcast-icon {
+.admin-broadcast-icon,
+.account-card-icon {
   display: grid;
   width: 38px;
   height: 38px;

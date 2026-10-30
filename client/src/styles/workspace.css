@@ -211,17 +211,6 @@
 .account-card-heading {
   gap: 12px;
 }
-.account-card-icon {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid var(--ob-border);
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--ob-primary) 10%, var(--ob-surface));
-  color: var(--ob-primary);
-}
 .account-card-icon.security {
   background: color-mix(in srgb, var(--ob-cyan) 9%, var(--ob-surface));
   color: var(--ob-cyan);
