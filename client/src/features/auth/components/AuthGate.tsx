@@ -5,7 +5,7 @@ import ErrorState from '@/components/ui/ErrorState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { getErrorMessage } from '@/lib/errors';
 import { normalizeError } from '@/lib/errors';
-import { useVerifiedSession } from '@/lib/auth/useVerifiedSession';
+import { useVerifiedSession } from '@/features/auth/hooks/useVerifiedSession';
 
 export default function AuthGate({ children }: { children: ReactNode }) {
   const { error, retry, state } = useVerifiedSession();

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { CheckSquare, Clock, AlertTriangle, Circle, Calendar, Loader2, ArrowRight, X, ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
-import type { Task } from '@/types/task';
+import type { Task } from '@/features/tasks/types';
 import { reportError } from '@/lib/errors';
 import { getTasks, updateTaskStatus } from '@/features/tasks/services/taskService';
 

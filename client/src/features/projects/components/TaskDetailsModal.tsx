@@ -3,8 +3,8 @@ import { Download, FileText, Loader2, Paperclip, UploadCloud, X } from 'lucide-r
 import { COLUMNS } from '@/features/tasks/components/KanbanColumn';
 import { PRIORITY_COLORS } from '@/features/tasks/components/TaskCard';
 import { BACKEND_URL } from '@/lib/config';
-import type { Project } from '@/types/project';
-import type { Task } from '@/types/task';
+import type { Project } from '@/features/projects/types';
+import type { Task } from '@/features/tasks/types';
 
 interface TaskDetailsModalProps {
   task: Task | null;

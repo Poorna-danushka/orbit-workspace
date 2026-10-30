@@ -26,7 +26,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { setCredentials } from '@/store/slices/authSlice';
 import type { RootState } from '@/store';
 import { saveUserMetadata } from '@/lib/auth/storage';
-import { updateVerifiedUser } from '@/lib/auth/verification';
+import { updateVerifiedUser } from '@/features/auth/services/sessionVerification';
 
 type Feedback = { type: 'success' | 'error'; message: string };
 

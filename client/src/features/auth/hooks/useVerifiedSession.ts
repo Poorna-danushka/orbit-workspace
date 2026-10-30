@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { setCredentials } from '@/store/slices/authSlice';
-import { getStoredUser } from './storage';
-import { verifyCurrentSession } from './verification';
+import { getStoredUser } from '@/lib/auth/storage';
+import { verifyCurrentSession } from '@/features/auth/services/sessionVerification';
 import type { User } from '@/types/user';
 
 type VerificationState = 'checking' | 'ready' | 'error';

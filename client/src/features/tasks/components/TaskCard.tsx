@@ -2,7 +2,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Calendar, Paperclip, Trash2 } from 'lucide-react';
 import Avatar from '@/components/ui/Avatar';
-import type { Task } from '@/types/task';
+import type { Task } from '@/features/tasks/types';
 
 export const PRIORITY_COLORS: Record<string, string> = {
   Low: 'text-blue-400 bg-blue-400/10 border-blue-400/20',

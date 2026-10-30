@@ -1,5 +1,5 @@
 import { Loader2, Trash2 } from 'lucide-react';
-import type { Project } from '@/types/project';
+import type { Project } from '@/features/projects/types';
 
 interface ProjectDeleteModalProps {
   project: Project | null;

@@ -1,7 +1,7 @@
 import type { User } from '@/types/user';
 import { getCurrentUser } from '@/features/auth/services/authService';
-import { saveUserMetadata } from './storage';
-import { sessionEvents } from './events';
+import { saveUserMetadata } from '@/lib/auth/storage';
+import { sessionEvents } from '@/lib/auth/events';
 
 let verifiedUser: User | null = null;
 let verificationRequest: Promise<User> | null = null;

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import ErrorState from '@/components/ui/ErrorState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { getErrorMessage, normalizeError } from '@/lib/errors';
-import { useVerifiedSession } from '@/lib/auth/useVerifiedSession';
+import { useVerifiedSession } from '@/features/auth/hooks/useVerifiedSession';
 
 export default function AdminGate({ children }: { children: ReactNode }) {
   const { error, retry, state, user } = useVerifiedSession();

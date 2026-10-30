@@ -1,4 +1,4 @@
-import type { Project } from '@/types/project';
+import type { Project } from '@/features/projects/types';
 import type { User } from '@/types/user';
 
 export type AdminUser = User & { createdAt: string };

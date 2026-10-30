@@ -27,7 +27,7 @@ import {
   YAxis,
 } from 'recharts';
 import type { DashboardStats } from '@/features/dashboard/types';
-import type { Project } from '@/types/project';
+import type { Project } from '@/features/projects/types';
 
 function formatDate(value: string): string {
   const date = new Date(value);

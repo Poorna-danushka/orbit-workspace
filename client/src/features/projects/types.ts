@@ -1,5 +1,34 @@
-import type { Project } from '@/types/project';
 import type { User } from '@/types/user';
+
+export interface ProjectMember {
+  id: string;
+  userId: string;
+  projectId: string;
+  role: string | null;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+    avatar: string | null;
+  };
+}
+
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  createdAt: string;
+  ownerId?: string;
+  owner?: {
+    id: string;
+    username: string;
+    email: string;
+    avatar: string | null;
+  };
+  members?: ProjectMember[];
+  _count?: { tasks: number };
+}
 
 export type ProjectListResponse = Project[] | { data?: Project[] };
 export type ProjectMemberSearchResult = Pick<User, 'id' | 'username' | 'email' | 'avatar'>;

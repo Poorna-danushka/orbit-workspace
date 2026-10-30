@@ -7,8 +7,8 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { ArrowLeft, Plus } from 'lucide-react';
-import type { Project } from '@/types/project';
-import type { Task } from '@/types/task';
+import type { Project } from '@/features/projects/types';
+import type { Task } from '@/features/tasks/types';
 import KanbanColumn, { COLUMNS } from '@/features/tasks/components/KanbanColumn';
 import ProjectChat from '@/features/chat/components/ProjectChat';
 

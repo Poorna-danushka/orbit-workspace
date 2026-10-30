@@ -1,6 +1,6 @@
 import api from '@/lib/api/client';
-import type { Project } from '@/types/project';
-import type { Task } from '@/types/task';
+import type { Project } from '@/features/projects/types';
+import type { Task } from '@/features/tasks/types';
 import type {
   ProjectInvitationResponse,
   ProjectListResponse,

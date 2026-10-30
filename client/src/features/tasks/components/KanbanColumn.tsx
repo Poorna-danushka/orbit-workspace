@@ -1,7 +1,7 @@
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Plus } from 'lucide-react';
 import TaskCard from './TaskCard';
-import type { Task } from '@/types/task';
+import type { Task } from '@/features/tasks/types';
 
 export const COLUMNS = ['Todo', 'In Progress', 'Review', 'Completed'];
 

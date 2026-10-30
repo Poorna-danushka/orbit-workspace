@@ -13,11 +13,11 @@ import {
   getNotifications,
   markAllNotificationsRead,
 } from '@/features/notifications/services/notificationService';
-import type { Project, ProjectMember } from '@/types/project';
-import type { Task } from '@/types/task';
+import type { Project, ProjectMember } from '@/features/projects/types';
+import type { Task } from '@/features/tasks/types';
 import ProjectKanbanWorkspace from './ProjectKanbanWorkspace';
 import { reportError } from '@/lib/errors';
-import useProjectTaskActions from './useProjectTaskActions';
+import useProjectTaskActions from '../hooks/useProjectTaskActions';
 import { generateProjectPdf } from '@/features/projects/services/projectReportService';
 import CreateTaskModal from './CreateTaskModal';
 import TaskDetailsModal from './TaskDetailsModal';

@@ -1,5 +1,5 @@
 import { FolderKanban, Plus } from 'lucide-react';
-import type { Project } from '@/types/project';
+import type { Project } from '@/features/projects/types';
 import ProjectCard from './ProjectCard';
 
 interface ProjectGridProps {

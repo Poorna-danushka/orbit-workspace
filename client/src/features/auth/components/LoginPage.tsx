@@ -12,8 +12,8 @@ import { markSessionActive } from '@/lib/auth/session';
 import {
   getGoogleOAuthUrl,
   login,
-  verifyCurrentSession,
 } from '@/features/auth/services/authService';
+import { verifyCurrentSession } from '@/features/auth/services/sessionVerification';
 import { LoginBrandPanel } from './LoginBrandPanel';
 import LoginFormPanel from './LoginFormPanel';
 

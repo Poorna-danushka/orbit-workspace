@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useSelector } from 'react-redux';
@@ -6,7 +6,7 @@ import { getDashboardProjects, getDashboardStats, createDashboardTask } from '@/
 import type { DashboardStats } from '@/features/dashboard/types';
 import { getErrorMessage } from '@/lib/errors';
 import type { RootState } from '@/store';
-import type { Project } from '@/types/project';
+import type { Project } from '@/features/projects/types';
 import DashboardOverview from './DashboardOverview';
 
 export default function DashboardPage() {

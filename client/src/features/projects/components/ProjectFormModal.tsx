@@ -1,6 +1,6 @@
 import type { Dispatch, FormEvent, SetStateAction } from 'react';
 import { Loader2, X } from 'lucide-react';
-import type { Project } from '@/types/project';
+import type { Project } from '@/features/projects/types';
 
 interface ProjectForm {
   title: string;

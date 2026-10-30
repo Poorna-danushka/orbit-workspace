@@ -1,5 +1,5 @@
 import api from '@/lib/api/client';
-import type { Task, TaskAttachment } from '@/types/task';
+import type { Task, TaskAttachment } from '@/features/tasks/types';
 
 export interface CreateTaskPayload {
   title: string;

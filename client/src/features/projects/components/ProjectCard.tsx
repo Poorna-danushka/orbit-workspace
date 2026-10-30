@@ -13,7 +13,7 @@ import {
   Users,
 } from 'lucide-react';
 import Avatar from '@/components/ui/Avatar';
-import type { Project } from '@/types/project';
+import type { Project } from '@/features/projects/types';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
   active: {

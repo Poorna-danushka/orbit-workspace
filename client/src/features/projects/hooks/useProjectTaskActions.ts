@@ -9,8 +9,8 @@ import {
   updateTaskStatus,
   uploadTaskAttachment,
 } from '@/features/tasks/services/taskService';
-import type { Task } from '@/types/task';
-import type { NewTaskForm } from './CreateTaskModal';
+import type { Task } from '@/features/tasks/types';
+import type { NewTaskForm } from '../components/CreateTaskModal';
 
 interface ProjectTaskActionsParams {
   projectId: string;

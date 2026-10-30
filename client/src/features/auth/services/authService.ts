@@ -1,7 +1,6 @@
 import api from '@/lib/api/client';
 import { BACKEND_URL } from '@/lib/config';
 import type { User } from '@/types/user';
-import { verifyCurrentSession } from '@/lib/auth/verification';
 
 interface AuthResponse {
   message: string;
@@ -33,4 +32,4 @@ export const getGoogleOAuthUrl = (nextPath?: string) => {
   return url.toString();
 };
 const getCurrentUser = () => api.get<User>('/user/me');
-export { verifyCurrentSession, getCurrentUser };
+export { getCurrentUser };

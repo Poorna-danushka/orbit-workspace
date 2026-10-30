@@ -1,5 +1,5 @@
 import api from '@/lib/api/client';
-import type { Project } from '@/types/project';
+import type { Project } from '@/features/projects/types';
 import type { CreateTaskPayload } from '@/features/tasks/services/taskService';
 import type { DashboardStats } from '@/features/dashboard/types';
 

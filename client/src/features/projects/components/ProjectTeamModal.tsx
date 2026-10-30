@@ -1,7 +1,7 @@
 import { Loader2, Shield, UserX, Users, X } from 'lucide-react';
 import type { Dispatch, SetStateAction } from 'react';
 import Avatar from '@/components/ui/Avatar';
-import type { Project } from '@/types/project';
+import type { Project } from '@/features/projects/types';
 import type { ProjectMemberSearchResult } from '@/features/projects/types';
 
 interface ProjectTeamModalProps {

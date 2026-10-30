@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
-import type { Project } from '@/types/project';
-import type { Task } from '@/types/task';
+import type { Project } from '@/features/projects/types';
+import type { Task } from '@/features/tasks/types';
 
 export function generateProjectPdf(project: Project, tasks: Task[]): void {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });

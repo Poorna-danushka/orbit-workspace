@@ -7,7 +7,7 @@ import {
   removeProjectMember,
   searchProjectMembers,
 } from '@/features/projects/services/projectService';
-import type { Project } from '@/types/project';
+import type { Project } from '@/features/projects/types';
 import type { ProjectMemberSearchResult } from '@/features/projects/types';
 
 export default function useProjectTeamManagement(setProjects: Dispatch<SetStateAction<Project[]>>) {

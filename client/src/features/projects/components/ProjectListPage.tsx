@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { acquireSocket, releaseSocket } from '@/lib/realtime/socket';
 import { getErrorMessage, reportError } from '@/lib/errors';
-import type { Project } from '@/types/project';
+import type { Project } from '@/features/projects/types';
 import {
   createProject,
   deleteProject,
@@ -18,7 +18,7 @@ import ProjectFormModal from './ProjectFormModal';
 import ProjectDeleteModal from './ProjectDeleteModal';
 import ProjectListSummary from './ProjectListSummary';
 import ProjectGrid from './ProjectGrid';
-import useProjectTeamManagement from './useProjectTeamManagement';
+import useProjectTeamManagement from '../hooks/useProjectTeamManagement';
 
 export default function Projects() {
   const { user } = useSelector((state: RootState) => state.auth);
