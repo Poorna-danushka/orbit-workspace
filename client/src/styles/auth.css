@@ -1,0 +1,198 @@
+/* ─── AUTH SCREEN UTILITIES ─────────────────────────────────────────── */
+.ob-auth-top-actions {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-shell,
+.workspace-shell {
+  background: var(--ob-bg);
+  color: var(--ob-text);
+}
+
+.admin-sidebar {
+  background: var(--ob-surface);
+  border-color: var(--ob-border);
+}
+
+.admin-header,
+.admin-mobile-bar {
+  background: color-mix(in srgb, var(--ob-surface) 92%, transparent);
+  border-color: var(--ob-border);
+}
+
+.admin-nav-link {
+  color: var(--ob-text-muted);
+}
+
+.admin-nav-link:hover,
+.admin-nav-active {
+  background: var(--ob-surface-2);
+  color: var(--ob-text);
+}
+
+.admin-nav-active {
+  border: 1px solid var(--ob-border-2);
+}
+
+.admin-logout-button {
+  color: var(--ob-text-muted);
+}
+
+.admin-logout-button:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+html[data-theme='light'] .admin-shell [class~='bg-[#08090d]'],
+html[data-theme='light'] .admin-shell [class~='bg-[#080a0f]'],
+html[data-theme='light'] .admin-shell [class~='bg-[#0d0d0d]'],
+html[data-theme='light'] .admin-shell [class~='bg-[#0d0f14]'],
+html[data-theme='light'] .admin-shell [class~='bg-[#101218]'],
+html[data-theme='light'] .admin-shell [class~='bg-[#11131b]'],
+html[data-theme='light'] .workspace-shell [class~='bg-[#08090d]'],
+html[data-theme='light'] .workspace-shell [class~='bg-[#0d0f16]'],
+html[data-theme='light'] .workspace-shell [class~='bg-[#0d0f16]/85'],
+html[data-theme='light'] .workspace-shell [class~='bg-[#0d0d0d]'],
+html[data-theme='light'] .workspace-shell [class~='bg-[#0e0e0e]'],
+html[data-theme='light'] .workspace-shell [class~='bg-[#111]'] {
+  background-color: var(--ob-surface);
+}
+
+html[data-theme='light'] .admin-shell [class~='bg-white/[0.02]'],
+html[data-theme='light'] .admin-shell [class~='bg-white/[0.03]'],
+html[data-theme='light'] .admin-shell [class~='bg-white/[0.04]'],
+html[data-theme='light'] .admin-shell [class~='bg-white/[0.05]'],
+html[data-theme='light'] .admin-shell [class~='bg-black/20'],
+html[data-theme='light'] .workspace-shell [class~='bg-white/[0.02]'],
+html[data-theme='light'] .workspace-shell [class~='bg-white/[0.03]'],
+html[data-theme='light'] .workspace-shell [class~='bg-white/[0.04]'],
+html[data-theme='light'] .workspace-shell [class~='bg-white/[0.05]'],
+html[data-theme='light'] .workspace-shell [class~='bg-black/20'],
+html[data-theme='light'] .workspace-shell [class~='bg-black/80'] {
+  background-color: var(--ob-surface-2);
+}
+
+html[data-theme='light'] .admin-shell [class~='text-white'],
+html[data-theme='light'] .workspace-shell [class~='text-white'] {
+  color: var(--ob-text);
+}
+
+html[data-theme='light'] .admin-shell [class~='text-gray-300'],
+html[data-theme='light'] .admin-shell [class~='text-gray-400'],
+html[data-theme='light'] .admin-shell [class~='text-gray-500'],
+html[data-theme='light'] .admin-shell [class~='text-gray-600'],
+html[data-theme='light'] .admin-shell [class~='text-gray-700'],
+html[data-theme='light'] .workspace-shell [class~='text-gray-300'],
+html[data-theme='light'] .workspace-shell [class~='text-gray-400'],
+html[data-theme='light'] .workspace-shell [class~='text-gray-500'],
+html[data-theme='light'] .workspace-shell [class~='text-gray-600'],
+html[data-theme='light'] .workspace-shell [class~='text-gray-700'] {
+  color: var(--ob-text-muted);
+}
+
+html[data-theme='light'] .admin-shell [class~='border-white/10'],
+html[data-theme='light'] .admin-shell [class~='border-white/[0.05]'],
+html[data-theme='light'] .admin-shell [class~='border-white/[0.06]'],
+html[data-theme='light'] .admin-shell [class~='border-white/[0.07]'],
+html[data-theme='light'] .admin-shell [class~='border-white/[0.08]'],
+html[data-theme='light'] .workspace-shell [class~='border-white/10'],
+html[data-theme='light'] .workspace-shell [class~='border-white/[0.05]'],
+html[data-theme='light'] .workspace-shell [class~='border-white/[0.06]'],
+html[data-theme='light'] .workspace-shell [class~='border-white/[0.07]'],
+html[data-theme='light'] .workspace-shell [class~='border-white/[0.08]'] {
+  border-color: var(--ob-border);
+}
+
+html[data-theme='light'] .admin-shell [class~='placeholder:text-gray-600']::placeholder,
+html[data-theme='light'] .workspace-shell [class~='placeholder:text-gray-600']::placeholder {
+  color: var(--ob-text-faint);
+}
+
+@media (max-width: 960px) {
+  .ob-auth-screen {
+    display: block !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .ob-auth-brand-panel {
+    display: none !important;
+  }
+
+  .ob-auth-content-panel {
+    width: 100%;
+    min-height: 100dvh;
+    height: auto !important;
+    padding: 78px 32px 36px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .ob-auth-top-actions {
+    top: 14px;
+    right: 14px;
+    gap: 8px;
+  }
+
+  .ob-auth-top-actions .ob-back-btn {
+    padding: 8px 10px;
+    font-size: 0.76rem;
+  }
+
+  .ob-auth-content-panel {
+    padding: 72px 20px 28px !important;
+  }
+}
+
+.ob-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--ob-border-2);
+  background: var(--ob-surface-2);
+  color: var(--ob-text-muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.ob-back-btn:hover {
+  color: var(--ob-text);
+  border-color: var(--ob-primary);
+  background: var(--ob-surface-3);
+}
+
+.ob-google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--ob-surface);
+  border: 1px solid var(--ob-border-2);
+  color: var(--ob-text);
+  font-weight: 500;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.ob-google-btn:hover {
+  border-color: var(--ob-primary);
+  background: var(--ob-surface-2);
+  box-shadow: 0 4px 20px rgba(124, 110, 255, 0.12);
+  transform: translateY(-1px);
+}
+.ob-google-btn:active {
+  transform: translateY(0);
+}

@@ -1,0 +1,199 @@
+@media (max-width: 1050px) {
+  .member-dashboard-main-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .member-deadline-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 18px;
+  }
+}
+
+@media (max-width: 760px) {
+  .member-dashboard {
+    gap: 15px;
+  }
+  .member-dashboard-heading {
+    align-items: flex-start;
+  }
+  .member-dashboard-actions {
+    flex: 0 0 auto;
+  }
+  .member-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .member-stat-card {
+    padding: 13px;
+  }
+  .member-stat-card > strong {
+    margin-top: 11px;
+    font-size: 1.55rem;
+  }
+  .member-stat-top {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .member-dashboard-panel {
+    padding: 16px;
+  }
+  .member-projects-strip {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 15px;
+  }
+  .member-project-chips {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 430px) {
+  .member-dashboard-heading {
+    flex-direction: column;
+  }
+  .member-dashboard-actions {
+    width: 100%;
+  }
+  .member-refresh-button {
+    width: 44px;
+  }
+  .member-dashboard-actions .member-primary-button {
+    flex: 1;
+  }
+  .member-overdue-banner {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .member-overdue-banner p {
+    min-width: 0;
+  }
+  .member-overdue-banner > a {
+    margin-left: 48px;
+  }
+  .member-deadline-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .member-quick-form-row {
+    flex-direction: column;
+  }
+}
+
+@media (min-width: 768px) {
+  .admin-sidebar {
+    display: flex !important;
+    left: 0 !important;
+    transform: none !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .admin-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admin-overview-grid,
+  .admin-lower-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  .account-page {
+    gap: 16px;
+  }
+  .account-page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .account-back-link {
+    align-self: stretch;
+    justify-content: center;
+  }
+  .account-identity-card {
+    padding: 18px;
+  }
+  .account-identity-content {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .account-identity-side {
+    width: 100%;
+    border-top: 1px solid var(--ob-border);
+    padding-top: 12px;
+    text-align: left;
+  }
+  .account-identity-side code {
+    max-width: 100%;
+  }
+  .account-settings-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .account-settings-card {
+    padding: 17px;
+  }
+  .admin-overview {
+    gap: 16px;
+  }
+  .admin-overview-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .admin-action-button {
+    width: 100%;
+  }
+  .admin-metric-grid {
+    gap: 10px;
+  }
+  .admin-metric-card {
+    min-height: 155px;
+    padding: 14px;
+  }
+  .admin-metric-top {
+    margin-bottom: 13px;
+  }
+  .admin-metric-icon {
+    width: 34px;
+    height: 34px;
+  }
+  .admin-panel,
+  .admin-broadcast-panel {
+    padding: 16px;
+  }
+  .admin-growth-chart {
+    height: 215px;
+  }
+  .admin-completion-ring {
+    right: 5%;
+  }
+  .admin-broadcast-panel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .admin-panel-heading-inline {
+    align-items: flex-start;
+  }
+  .admin-text-link {
+    padding-top: 5px;
+    font-size: 0;
+  }
+  .admin-text-link svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 380px) {
+  .admin-metric-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .admin-metric-card {
+    min-height: 140px;
+  }
+  .admin-panel-heading-inline {
+    gap: 8px;
+  }
+  .admin-role-pill {
+    display: none;
+  }
+}

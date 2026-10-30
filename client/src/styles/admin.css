@@ -1,0 +1,369 @@
+/* Admin overview */
+.admin-overview {
+  width: min(100%, 1480px);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.admin-overview-heading,
+.admin-panel-heading,
+.admin-panel-heading-inline,
+.admin-metric-top,
+.admin-broadcast-intro,
+.admin-broadcast-controls,
+.admin-workload-note,
+.admin-progress-labels,
+.admin-chart-footer,
+.admin-alert,
+.admin-alert > div {
+  display: flex;
+  align-items: center;
+}
+
+.admin-overview-heading,
+.admin-panel-heading-inline,
+.admin-metric-top,
+.admin-broadcast-controls,
+.admin-workload-note,
+.admin-progress-labels,
+.admin-chart-footer,
+.admin-alert {
+  justify-content: space-between;
+}
+
+.admin-overview-heading {
+  gap: 20px;
+  padding: 8px 0 2px;
+}
+.admin-overview-heading h1 {
+  margin-top: 8px;
+  color: var(--ob-text);
+  font-size: clamp(1.7rem, 3vw, 2.25rem);
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  line-height: 1.12;
+}
+
+.admin-overview-heading > div > p,
+.admin-panel-heading > div > p,
+.admin-broadcast-intro p {
+  margin-top: 7px;
+  color: var(--ob-text-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.admin-eyebrow,
+.admin-section-kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ob-primary);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.admin-eyebrow-dot,
+.admin-legend-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--ob-success);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--ob-success) 55%, transparent);
+}
+
+.admin-action-button,
+.admin-broadcast-controls button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid var(--ob-border-2);
+  border-radius: 12px;
+  background: var(--ob-surface);
+  color: var(--ob-text);
+  padding: 0 15px;
+  font-size: 0.83rem;
+  font-weight: 650;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+  cursor: pointer;
+}
+
+.admin-action-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--ob-primary);
+  background: var(--ob-surface-2);
+}
+
+.admin-action-button:disabled,
+.admin-broadcast-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.admin-alert {
+  gap: 14px;
+  border: 1px solid color-mix(in srgb, var(--ob-danger) 30%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--ob-danger) 8%, var(--ob-surface));
+  padding: 14px 16px;
+  color: var(--ob-text);
+  font-size: 0.88rem;
+}
+
+.admin-alert > div {
+  gap: 10px;
+}
+.admin-alert > div svg {
+  flex: 0 0 auto;
+  color: var(--ob-danger);
+}
+.admin-alert button {
+  border: 0;
+  background: transparent;
+  color: var(--ob-danger);
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.admin-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-metric-card,
+.admin-panel,
+.admin-broadcast-panel {
+  min-width: 0;
+  border: 1px solid var(--ob-border);
+  border-radius: 18px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--ob-surface) 92%, var(--ob-primary) 8%),
+    var(--ob-surface) 70%
+  );
+  box-shadow: 0 12px 34px color-mix(in srgb, var(--ob-bg) 24%, transparent);
+}
+
+.admin-metric-card {
+  min-height: 174px;
+  padding: 19px 20px 17px;
+  transition:
+    transform 170ms ease,
+    border-color 170ms ease;
+}
+.admin-metric-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--ob-border-2);
+}
+.admin-metric-top {
+  margin-bottom: 17px;
+}
+
+.admin-metric-icon,
+.admin-panel-icon,
+.admin-broadcast-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--ob-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ob-primary) 10%, var(--ob-surface));
+  color: var(--ob-primary);
+}
+
+.tone-cyan .admin-metric-icon {
+  color: var(--ob-cyan);
+  background: color-mix(in srgb, var(--ob-cyan) 10%, var(--ob-surface));
+}
+.tone-green .admin-metric-icon {
+  color: var(--ob-success);
+  background: color-mix(in srgb, var(--ob-success) 10%, var(--ob-surface));
+}
+.tone-amber .admin-metric-icon {
+  color: var(--ob-warning);
+  background: color-mix(in srgb, var(--ob-warning) 10%, var(--ob-surface));
+}
+
+.admin-metric-period,
+.admin-metric-flag {
+  border: 1px solid var(--ob-border);
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: var(--ob-text-muted);
+  font-size: 0.66rem;
+  font-weight: 650;
+}
+
+.admin-metric-flag {
+  border-color: color-mix(in srgb, var(--ob-warning) 28%, transparent);
+  background: color-mix(in srgb, var(--ob-warning) 9%, transparent);
+  color: var(--ob-warning);
+}
+.admin-metric-label {
+  color: var(--ob-text-muted);
+  font-size: 0.8rem;
+  font-weight: 550;
+}
+.admin-metric-value {
+  min-height: 37px;
+  margin-top: 5px;
+  color: var(--ob-text);
+  font-size: clamp(1.7rem, 2.2vw, 2rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 760;
+  letter-spacing: -0.045em;
+  line-height: 1.2;
+}
+.admin-metric-note {
+  margin-top: 5px;
+  color: var(--ob-text-faint);
+  font-size: 0.72rem;
+}
+.admin-skeleton {
+  display: inline-block;
+  width: 84px;
+  height: 25px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, var(--ob-surface-2), var(--ob-surface-3), var(--ob-surface-2));
+  background-size: 200% 100%;
+  animation: admin-skeleton-shimmer 1.3s linear infinite;
+}
+@keyframes admin-skeleton-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.admin-overview-grid,
+.admin-lower-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(290px, 0.85fr);
+  gap: 16px;
+}
+.admin-panel {
+  padding: 22px;
+}
+.admin-panel-heading {
+  justify-content: space-between;
+  gap: 12px;
+}
+.admin-panel-heading h2,
+.admin-broadcast-intro h2 {
+  margin-top: 6px;
+  color: var(--ob-text);
+  font-size: 1.05rem;
+  font-weight: 720;
+  letter-spacing: -0.025em;
+}
+.admin-panel-heading > div > p {
+  font-size: 0.77rem;
+}
+.admin-panel-icon {
+  width: 36px;
+  height: 36px;
+}
+.admin-growth-chart {
+  width: 100%;
+  height: 248px;
+  margin-top: 14px;
+}
+
+.admin-chart-placeholder,
+.admin-empty-chart {
+  display: grid;
+  min-height: 248px;
+  place-items: center;
+  color: var(--ob-text-muted);
+  font-size: 0.85rem;
+}
+
+.admin-chart-footer {
+  border-top: 1px solid var(--ob-border);
+  padding-top: 13px;
+  color: var(--ob-text-muted);
+  font-size: 0.72rem;
+}
+.admin-chart-footer > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.admin-legend-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--ob-primary);
+}
+
+.admin-completion {
+  display: flex;
+  min-height: 178px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.admin-completion-value {
+  color: var(--ob-text);
+  font-size: 2.65rem;
+  font-weight: 760;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+.admin-completion-caption {
+  margin-top: 7px;
+  color: var(--ob-text-muted);
+  font-size: 0.75rem;
+}
+.admin-completion-ring {
+  position: absolute;
+  top: 50%;
+  right: max(4%, calc(50% - 136px));
+  display: grid;
+  width: 47px;
+  height: 47px;
+  place-items: center;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: conic-gradient(var(--ob-success) var(--completion), var(--ob-surface-3) 0);
+  color: var(--ob-success);
+}
+.admin-completion-ring::before {
+  position: absolute;
+  inset: 4px;
+  border-radius: inherit;
+  background: var(--ob-surface);
+  content: '';
+}
+.admin-completion-ring svg {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.admin-progress-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ob-surface-3);
+}
+.admin-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--ob-success), var(--ob-cyan));
+  transition: width 300ms ease;
+}

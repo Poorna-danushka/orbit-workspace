@@ -1,4 +1,13 @@
 @import 'tailwindcss';
 @import '../styles/tokens.css';
 @import '../styles/base.css';
-@import '../styles/components.css';
+@import '../styles/foundation.css';
+@import '../styles/landing.css';
+@import '../styles/auth.css';
+@import '../styles/auth-fields.css';
+@import '../styles/admin.css';
+@import '../styles/admin-activity.css';
+@import '../styles/workspace.css';
+@import '../styles/workspace-dashboard.css';
+@import '../styles/workspace-projects.css';
+@import '../styles/workspace-responsive.css';

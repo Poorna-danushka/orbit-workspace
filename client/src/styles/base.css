@@ -12,8 +12,6 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Font aliases for inline style usage */
-  --ob-font-body: var(--font-inter), 'Inter', system-ui, sans-serif;
   --ob-font-display: var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif;
 }
 
