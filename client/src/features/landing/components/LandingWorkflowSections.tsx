@@ -1,6 +1,7 @@
 'use client';
 
 import { WorkflowCard } from './LandingCards';
+import LandingSectionHeading from './LandingSectionHeading';
 
 export default function LandingWorkflowSections() {
   return (
@@ -8,31 +9,16 @@ export default function LandingWorkflowSections() {
       {/* WORKFLOWS */}
       <section id="solutions" className="ob-section" style={{ background: 'var(--ob-surface)' }}>
         <div className="ob-container">
-          <div style={{ textAlign: 'center', maxWidth: 600, margin: '0 auto 60px' }}>
-            <p
-              style={{
-                fontSize: '0.82rem',
-                fontWeight: 600,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                color: 'var(--ob-cyan)',
-                marginBottom: 12,
-              }}
-            >
-              SOLUTIONS
-            </p>
-            <h2
-              style={{
-                fontFamily: 'Space Grotesk, sans-serif',
-                fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)',
-                fontWeight: 800,
-                letterSpacing: '-0.03em',
-                marginBottom: 16,
-              }}
-            >
-              Workflows for every project, <span className="ob-gradient-text-2">big or small</span>
-            </h2>
-          </div>
+          <LandingSectionHeading
+            eyebrow="SOLUTIONS"
+            accent="var(--ob-cyan)"
+            title={
+              <>
+                Workflows for every project,{' '}
+                <span className="ob-gradient-text-2">big or small</span>
+              </>
+            }
+          />
           <div
             style={{
               display: 'grid',

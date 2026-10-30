@@ -5,6 +5,7 @@ import { BACKEND_URL } from '@/lib/config';
 import RemoteImage from '@/components/ui/RemoteImage';
 import type { Project } from '@/features/projects/types';
 import type { Task } from '@/features/tasks/types';
+import ProjectAssigneeSelect from './ProjectAssigneeSelect';
 
 interface TaskDetailsModalProps {
   task: Task | null;
@@ -104,23 +105,12 @@ export default function TaskDetailsModal({
                 </div>
                 <div>
                   <span className="block font-medium text-gray-500 mb-1">Assignee</span>
-                  <select
+                  <ProjectAssigneeSelect
+                    project={project}
                     value={task.assignedTo || ''}
-                    onChange={(e) => onAssigneeChange(e.target.value)}
-                    className="w-full px-2 py-1.5 bg-black/40 border border-white/10 rounded-lg text-gray-300 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
-                  >
-                    <option value="">Unassigned</option>
-                    {project.owner && (
-                      <option value={project.owner.id}>{project.owner.username} (Owner)</option>
-                    )}
-                    {project.members
-                      ?.filter((m) => m.userId !== project.ownerId)
-                      .map((m) => (
-                        <option key={m.user.id} value={m.user.id}>
-                          {m.user.username}
-                        </option>
-                      ))}
-                  </select>
+                    onChange={onAssigneeChange}
+                    density="compact"
+                  />
                 </div>
               </div>
 

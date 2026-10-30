@@ -49,3 +49,9 @@ export function getPostAuthPath(role: string, requestedPath?: string | null): st
 
   return `${destination.pathname}${destination.search}${destination.hash}`;
 }
+
+export function getSessionRedirectUrl(currentPath: string): string | undefined {
+  if (currentPath.startsWith(ROUTES.login)) return undefined;
+  const next = currentPath ? `?next=${encodeURIComponent(currentPath)}` : '';
+  return `${ROUTES.login}${next}`;
+}

@@ -3,16 +3,8 @@ import { Activity, ArrowRight, CheckCircle2, Clock3, Loader2 } from 'lucide-reac
 import type { CSSProperties } from 'react';
 import { formatNumber } from '@/lib/utils/format';
 import { ROUTES } from '@/lib/constants/routes';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
 import type { AdminStats } from '@/features/admin/types';
+import TrendAreaChart from '@/components/ui/TrendAreaChart';
 
 export default function AdminPerformance({
   stats,
@@ -42,59 +34,10 @@ export default function AdminPerformance({
           </div>
         ) : stats?.userGrowth?.length ? (
           <div className="admin-growth-chart" aria-label="New accounts per day">
-            <ResponsiveContainer
-              width="100%"
-              height="100%"
-              minWidth={0}
-              minHeight={220}
-              initialDimension={{ width: 400, height: 248 }}
-            >
-              <AreaChart
-                data={stats.userGrowth}
-                margin={{ top: 12, right: 8, left: -20, bottom: 0 }}
-              >
-                <defs>
-                  <linearGradient id="adminGrowthFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--ob-primary)" stopOpacity={0.28} />
-                    <stop offset="100%" stopColor="var(--ob-primary)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="var(--ob-border)" strokeDasharray="4 5" vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: 'var(--ob-text-muted)', fontSize: 12 }}
-                  dy={8}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: 'var(--ob-text-muted)', fontSize: 11 }}
-                  allowDecimals={false}
-                  width={34}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: 'var(--ob-surface)',
-                    border: '1px solid var(--ob-border-2)',
-                    borderRadius: 12,
-                    color: 'var(--ob-text)',
-                  }}
-                  labelStyle={{ color: 'var(--ob-text-muted)' }}
-                  itemStyle={{ color: 'var(--ob-primary)' }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="users"
-                  name="New accounts"
-                  stroke="var(--ob-primary)"
-                  strokeWidth={3}
-                  fill="url(#adminGrowthFill)"
-                  activeDot={{ r: 5, strokeWidth: 0 }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <TrendAreaChart
+              data={stats.userGrowth.map(({ name, users }) => ({ name, value: users }))}
+              variant="admin"
+            />
           </div>
         ) : (
           <div className="admin-empty-chart">There is no sign-up history to display yet.</div>

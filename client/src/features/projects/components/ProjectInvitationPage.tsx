@@ -72,8 +72,9 @@ export default function ProjectInvitationPage() {
     }
   };
 
-  const loginHref = `/login?next=${encodeURIComponent(`/project-invitations/${token}`)}`;
-  const registerHref = `/register?next=${encodeURIComponent(`/project-invitations/${token}`)}`;
+  const nextPath = ROUTES.invitation(token);
+  const loginHref = `${ROUTES.login}?next=${encodeURIComponent(nextPath)}`;
+  const registerHref = `${ROUTES.register}?next=${encodeURIComponent(nextPath)}`;
 
   return (
     <div className="min-h-screen bg-[#08090d] text-white flex items-center justify-center px-4 py-12">

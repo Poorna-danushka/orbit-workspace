@@ -2,6 +2,7 @@ import type { Dispatch, FormEvent, SetStateAction } from 'react';
 import { Loader2, X } from 'lucide-react';
 import { COLUMNS } from '../constants/kanban';
 import type { Project } from '@/features/projects/types';
+import ProjectAssigneeSelect from './ProjectAssigneeSelect';
 
 export interface NewTaskForm {
   title: string;
@@ -113,23 +114,14 @@ export default function CreateTaskModal({
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-1.5">Assignee</label>
-                  <select
+                  <ProjectAssigneeSelect
+                    project={project}
                     value={newTask.assignedTo}
-                    onChange={(e) => setNewTask((p) => ({ ...p, assignedTo: e.target.value }))}
-                    className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                  >
-                    <option value="">Unassigned</option>
-                    {project.owner && (
-                      <option value={project.owner.id}>{project.owner.username} (Owner)</option>
-                    )}
-                    {project.members
-                      ?.filter((m) => m.userId !== project.ownerId)
-                      .map((m) => (
-                        <option key={m.user.id} value={m.user.id}>
-                          {m.user.username}
-                        </option>
-                      ))}
-                  </select>
+                    onChange={(assignedTo) =>
+                      setNewTask((previous) => ({ ...previous, assignedTo }))
+                    }
+                    density="comfortable"
+                  />
                 </div>
               </div>
               <div className="flex gap-3 pt-2">

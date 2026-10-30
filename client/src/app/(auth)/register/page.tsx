@@ -1,3 +1,7 @@
 'use client';
 
-export { default } from '@/features/auth/components/RegisterPage';
+import CredentialAuthPage from '@/features/auth/components/CredentialAuthPage';
+
+export default function RegisterPage() {
+  return <CredentialAuthPage variant="register" />;
+}

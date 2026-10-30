@@ -27,5 +27,7 @@ export const STATUS_ICONS: Record<string, ReactNode> = {
 export const STATUS_OPTIONS = ['Todo', 'In Progress', 'Review', 'Completed'];
 
 export function isOverdue(task: Task): boolean {
-  return Boolean(task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'Completed');
+  return Boolean(
+    task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'Completed',
+  );
 }

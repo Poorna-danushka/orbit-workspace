@@ -1,3 +1,7 @@
 'use client';
 
-export { default } from '@/features/auth/components/LoginPage';
+import CredentialAuthPage from '@/features/auth/components/CredentialAuthPage';
+
+export default function LoginPage() {
+  return <CredentialAuthPage variant="login" />;
+}

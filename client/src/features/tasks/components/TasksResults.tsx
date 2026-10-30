@@ -21,13 +21,7 @@ type TasksResultsModel = {
 };
 
 export default function TasksResults({ model }: { model: TasksResultsModel }) {
-  const {
-    tasks,
-    filtered,
-    updatingId,
-    onStatusChange,
-    onClearFilters,
-  } = model;
+  const { tasks, filtered, updatingId, onStatusChange, onClearFilters } = model;
   return (
     <>
       {filtered.length === 0 ? (

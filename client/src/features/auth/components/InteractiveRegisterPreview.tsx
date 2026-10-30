@@ -1,93 +1,11 @@
-import { Check, Rocket, Star } from 'lucide-react';
+import { Check, Star } from 'lucide-react';
+import AuthPreviewFrame from './AuthPreviewFrame';
+import AuthPreviewHeader from './AuthPreviewHeader';
 
 export function InteractiveRegisterPreview() {
   return (
-    <div
-      style={{
-        borderRadius: 20,
-        padding: '22px 24px',
-        background: 'var(--ob-auth-widget-bg)',
-        boxShadow: 'var(--ob-shadow)',
-        border: '1px solid var(--ob-auth-widget-border)',
-        position: 'relative',
-        overflow: 'hidden',
-        backdropFilter: 'blur(30px)',
-      }}
-    >
-      {/* Background radial glow */}
-      <div
-        aria-hidden
-        style={{
-          position: 'absolute',
-          top: -30,
-          left: -30,
-          width: 140,
-          height: 140,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, var(--ob-primary-glow) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 16,
-          paddingBottom: 14,
-          borderBottom: '1px solid var(--ob-auth-widget-border)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 8,
-              background: 'var(--ob-auth-widget-card-bg)',
-              border: '1px solid var(--ob-auth-widget-border)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--ob-cyan)',
-            }}
-          >
-            <Rocket size={16} />
-          </div>
-          <div>
-            <p
-              style={{
-                fontWeight: 700,
-                fontSize: 13,
-                color: 'var(--ob-auth-panel-text)',
-                fontFamily: 'Space Grotesk, sans-serif',
-              }}
-            >
-              Free Tier Workspace
-            </p>
-            <p style={{ fontSize: 10, color: 'var(--ob-auth-panel-muted)' }}>
-              Instant Setup • No Credit Card
-            </p>
-          </div>
-        </div>
-
-        <span
-          style={{
-            fontSize: 10,
-            background: 'var(--ob-auth-widget-card-bg)',
-            color: 'var(--ob-cyan)',
-            border: '1px solid var(--ob-auth-widget-border)',
-            padding: '4px 10px',
-            borderRadius: 99,
-            fontWeight: 700,
-          }}
-        >
-          UNLIMITED
-        </span>
-      </div>
-
+    <AuthPreviewFrame variant="register">
+      <AuthPreviewHeader variant="register" />
       {/* Setup Checklist Steps */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
         {[
@@ -194,8 +112,6 @@ export function InteractiveRegisterPreview() {
           </div>
         </div>
       </div>
-    </div>
+    </AuthPreviewFrame>
   );
 }
-
-/* ─── Main Register Form ─────────────────────────────────────────── */

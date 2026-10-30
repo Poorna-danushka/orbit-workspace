@@ -1,10 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { FolderKanban, Loader2, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { FolderKanban, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import { reportError } from '@/lib/errors';
 import { deleteAdminProject, getAdminProjects } from '@/features/admin/services/adminService';
 import type { AdminProject } from '@/features/admin/types';
+import AdminSearchInput from './AdminSearchInput';
 
 export default function AdminProjectsPage() {
   const [projects, setProjects] = useState<AdminProject[]>([]);
@@ -106,15 +107,11 @@ export default function AdminProjectsPage() {
             </button>
           ))}
         </div>
-        <div className="relative w-full md:max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by project name or owner..."
-            className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-gray-600 focus:border-red-500/40 focus:outline-none"
-          />
-        </div>
+        <AdminSearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search by project name or owner..."
+        />
       </div>
 
       {loading ? (

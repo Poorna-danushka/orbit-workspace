@@ -1,27 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
 import { AlertTriangle, CheckCircle2, FolderKanban, Loader2, RefreshCw, Users } from 'lucide-react';
 import { reportError } from '@/lib/errors';
 import { getAdminStats } from '@/features/admin/services/adminService';
 import type { AdminStats } from '@/features/admin/types';
-
-const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444'];
+import AdminAnalyticsPanels from './AdminAnalyticsPanels';
 
 export default function AdminAnalyticsPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -29,8 +13,8 @@ export default function AdminAnalyticsPage() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await getAdminStats();
-      setStats(res.data);
+      const response = await getAdminStats();
+      setStats(response.data);
     } catch (error) {
       reportError(error, 'Failed to fetch admin analytics');
     } finally {
@@ -69,7 +53,6 @@ export default function AdminAnalyticsPage() {
       ),
     },
   ].filter((item) => item.value > 0);
-  const userGrowthData = stats?.userGrowth ?? [];
 
   return (
     <div className="space-y-6">
@@ -133,159 +116,12 @@ export default function AdminAnalyticsPage() {
         })}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.5fr_0.9fr]">
-        <div className="rounded-2xl border border-white/10 bg-[#11131b] p-5">
-          <h2 className="mb-4 text-lg font-semibold text-white">User growth</h2>
-          {userGrowthData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <AreaChart data={userGrowthData}>
-                <defs>
-                  <linearGradient id="adminUserGrowth" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ef4444" stopOpacity={0.5} />
-                    <stop offset="100%" stopColor="#ef4444" stopOpacity={0.05} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  stroke="#ffffff20"
-                  tick={{ fill: '#9ca3af', fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  stroke="#ffffff20"
-                  tick={{ fill: '#9ca3af', fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                  allowDecimals={false}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#0d0f14',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '12px',
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="users"
-                  stroke="#ef4444"
-                  strokeWidth={2.5}
-                  fill="url(#adminUserGrowth)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-[250px] items-center justify-center text-gray-500">
-              No user growth data yet.
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-2xl border border-white/10 bg-[#11131b] p-5">
-          <h2 className="mb-4 text-lg font-semibold text-white">Task status</h2>
-          {taskStatusData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={taskStatusData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={85}
-                  paddingAngle={4}
-                  dataKey="value"
-                >
-                  {taskStatusData.map((entry, index) => (
-                    <Cell key={`${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#0d0f14',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '12px',
-                  }}
-                />
-                <Legend
-                  formatter={(value) => (
-                    <span style={{ color: '#9ca3af', fontSize: 12 }}>{value}</span>
-                  )}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-[250px] items-center justify-center text-gray-500">
-              No task data yet.
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-white/10 bg-[#11131b] p-5">
-        <h2 className="mb-4 text-lg font-semibold text-white">Productivity overview</h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
-            <div className="mb-2 flex items-center justify-between text-sm text-gray-400">
-              <span>Completion rate</span>
-              <span>{productivity}%</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-white/5">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-red-500 to-orange-400"
-                style={{ width: `${productivity}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
-            <div className="mb-2 flex items-center justify-between text-sm text-gray-400">
-              <span>New users today</span>
-              <span>{stats?.newUsersToday ?? 0}</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-white/5">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400"
-                style={{ width: `${Math.min((stats?.newUsersToday ?? 0) * 20, 100)}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <h3 className="mb-3 text-sm font-medium uppercase tracking-[0.16em] text-gray-500">
-            Weekly volume
-          </h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={userGrowthData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" vertical={false} />
-              <XAxis
-                dataKey="name"
-                stroke="#ffffff20"
-                tick={{ fill: '#9ca3af', fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                stroke="#ffffff20"
-                tick={{ fill: '#9ca3af', fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-                allowDecimals={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#0d0f14',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '12px',
-                }}
-              />
-              <Bar dataKey="users" fill="#f97316" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+      <AdminAnalyticsPanels
+        userGrowthData={stats?.userGrowth ?? []}
+        taskStatusData={taskStatusData}
+        productivity={productivity}
+        newUsersToday={stats?.newUsersToday ?? 0}
+      />
     </div>
   );
 }

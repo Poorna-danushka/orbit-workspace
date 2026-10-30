@@ -2,6 +2,7 @@
 
 import { BarChart3, LayoutDashboard, Users, Zap } from 'lucide-react';
 import { FeatureCard } from './LandingCards';
+import LandingSectionHeading from './LandingSectionHeading';
 
 export default function LandingFeatureSections() {
   return (
@@ -49,35 +50,16 @@ export default function LandingFeatureSections() {
       {/* FEATURES */}
       <section id="features" className="ob-section">
         <div className="ob-container">
-          <div style={{ textAlign: 'center', maxWidth: 600, margin: '0 auto 60px' }}>
-            <p
-              style={{
-                fontSize: '0.82rem',
-                fontWeight: 600,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                color: 'var(--ob-primary)',
-                marginBottom: 12,
-              }}
-            >
-              WHY ORBIT
-            </p>
-            <h2
-              style={{
-                fontFamily: 'Space Grotesk, sans-serif',
-                fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)',
-                fontWeight: 800,
-                letterSpacing: '-0.03em',
-                marginBottom: 16,
-              }}
-            >
-              A productivity <span className="ob-gradient-text-2">powerhouse</span>
-            </h2>
-            <p style={{ fontSize: '1rem', color: 'var(--ob-text-muted)', lineHeight: 1.7 }}>
-              Define tasks, set goals, collaborate in real-time, and track everything from one
-              unified workspace.
-            </p>
-          </div>
+          <LandingSectionHeading
+            eyebrow="WHY ORBIT"
+            accent="var(--ob-primary)"
+            title={
+              <>
+                A productivity <span className="ob-gradient-text-2">powerhouse</span>
+              </>
+            }
+            description="Define tasks, set goals, collaborate in real-time, and track everything from one unified workspace."
+          />
           <div
             style={{
               display: 'grid',

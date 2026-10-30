@@ -1,190 +1,21 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { Mail, Loader2, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { getErrorMessage } from '@/lib/errors';
-import { requestPasswordReset } from '@/features/auth/services/authService';
-import ThemeToggle from '@/components/ui/ThemeToggle';
+import { Mail, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react';
 import OrbitIcon from '@/components/ui/OrbitIcon';
 import { ROUTES } from '@/lib/constants/routes';
+import { useForgotPassword } from '../hooks/useForgotPassword';
+import AuthAlert from './AuthAlert';
+import AuthCard from './AuthCard';
+import AuthField from './AuthField';
+import AuthPageLayout from './AuthPageLayout';
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-      await requestPasswordReset(email);
-      setSuccess(true);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err, 'Failed to submit request'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { email, loading, error, success, onEmailChange, onSubmit } = useForgotPassword();
 
   return (
-    <div
-      style={{
-        minHeight: '100dvh',
-        background: 'var(--ob-bg)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px',
-        position: 'relative',
-      }}
-    >
-      <div
-        aria-hidden
-        style={{
-          position: 'fixed',
-          top: '10%',
-          left: '-10%',
-          width: 500,
-          height: 500,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(124,110,255,0.14) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          pointerEvents: 'none',
-        }}
-      />
-      <div
-        aria-hidden
-        style={{
-          position: 'fixed',
-          bottom: '10%',
-          right: '-10%',
-          width: 400,
-          height: 400,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          pointerEvents: 'none',
-        }}
-      />
-
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 60,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 24px',
-          borderBottom: '1px solid var(--ob-border)',
-          background: 'rgba(7,8,15,0.7)',
-          backdropFilter: 'blur(20px)',
-          zIndex: 50,
-        }}
-      >
-        <Link
-          href="/"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            textDecoration: 'none',
-            color: 'var(--ob-text)',
-          }}
-        >
-          <div style={{ color: 'var(--ob-primary)' }}>
-            <OrbitIcon size={24} />
-          </div>
-          <span
-            style={{
-              fontFamily: 'Space Grotesk, sans-serif',
-              fontWeight: 700,
-              fontSize: '0.95rem',
-              color: 'var(--ob-text)',
-            }}
-          >
-            Orbit <span style={{ color: 'var(--ob-primary)' }}>Workspace</span>
-          </span>
-        </Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <ThemeToggle compact />
-          <Link
-            href={ROUTES.login}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '7px 14px',
-              borderRadius: 10,
-              border: '1px solid var(--ob-border-2)',
-              background: 'var(--ob-surface-2)',
-              color: 'var(--ob-text-muted)',
-              textDecoration: 'none',
-              fontSize: '0.82rem',
-              fontWeight: 500,
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLAnchorElement).style.color = 'var(--ob-text)';
-              (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--ob-primary)';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLAnchorElement).style.color = 'var(--ob-text-muted)';
-              (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--ob-border-2)';
-            }}
-          >
-            <ArrowLeft size={14} /> Back to Login
-          </Link>
-        </div>
-      </div>
-
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          width: '100%',
-          maxWidth: 440,
-          background: 'var(--ob-surface)',
-          border: '1px solid var(--ob-border-2)',
-          borderRadius: 24,
-          padding: '40px 36px',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.5), 0 0 60px rgba(124,110,255,0.10)',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          aria-hidden
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: '20%',
-            right: '20%',
-            height: 1,
-            background:
-              'linear-gradient(to right, transparent, rgba(124,110,255,0.7), transparent)',
-          }}
-        />
-        <div
-          aria-hidden
-          style={{
-            position: 'absolute',
-            top: -60,
-            right: -60,
-            width: 160,
-            height: 160,
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(124,110,255,0.15), transparent)',
-            filter: 'blur(30px)',
-            pointerEvents: 'none',
-          }}
-        />
-
+    <AuthPageLayout variant="forgot">
+      <AuthCard>
         {success ? (
           <div style={{ textAlign: 'center', animation: 'fadeInUp 0.5s ease' }}>
             <div
@@ -296,62 +127,19 @@ export default function ForgotPassword() {
               </p>
             </div>
 
-            {error && (
-              <div
-                style={{
-                  marginBottom: 20,
-                  padding: '12px 16px',
-                  borderRadius: 12,
-                  background: 'rgba(244,63,94,0.1)',
-                  border: '1px solid rgba(244,63,94,0.25)',
-                  color: '#f43f5e',
-                  fontSize: '0.875rem',
-                }}
-              >
-                {error}
-              </div>
-            )}
+            <AuthAlert message={error} marginBottom={20} />
 
-            <form
-              onSubmit={handleSubmit}
-              style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
-            >
-              <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    color: 'var(--ob-text)',
-                    marginBottom: 7,
-                  }}
-                >
-                  Email address
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <Mail
-                    size={17}
-                    style={{
-                      position: 'absolute',
-                      left: 14,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: 'var(--ob-text-faint)',
-                      pointerEvents: 'none',
-                    }}
-                  />
-                  <input
-                    id="forgot-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="ob-input"
-                    placeholder="you@company.com"
-                    required
-                    autoComplete="email"
-                  />
-                </div>
-              </div>
+            <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <AuthField
+                id="forgot-email"
+                label="Email address"
+                icon={Mail}
+                type="email"
+                value={email}
+                onChange={onEmailChange}
+                placeholder="you@company.com"
+                autoComplete="email"
+              />
 
               <button
                 type="submit"
@@ -398,7 +186,7 @@ export default function ForgotPassword() {
             </div>
           </>
         )}
-      </div>
-    </div>
+      </AuthCard>
+    </AuthPageLayout>
   );
 }

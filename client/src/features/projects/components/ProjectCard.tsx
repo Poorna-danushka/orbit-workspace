@@ -13,6 +13,7 @@ import {
   Users,
 } from 'lucide-react';
 import Avatar from '@/components/ui/Avatar';
+import { ROUTES } from '@/lib/constants/routes';
 import type { Project } from '@/features/projects/types';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
@@ -91,7 +92,7 @@ export default function ProjectCard({
 
   return (
     <Link
-      href={`/projects/${project.id}`}
+      href={ROUTES.project(project.id)}
       className="group relative flex flex-col rounded-2xl bg-white/[0.025] border border-white/[0.08] shadow-lg shadow-black/10 hover:border-purple-400/40 hover:bg-white/[0.045] transition-all duration-300 overflow-hidden hover:shadow-purple-500/10 hover:shadow-xl"
     >
       {/* Gradient accent bar on hover */}

@@ -7,7 +7,6 @@ import {
   Calendar,
   Loader2,
   RefreshCw,
-  Search,
   Shield,
   Trash2,
   User,
@@ -24,6 +23,7 @@ import {
 } from '@/features/admin/services/adminService';
 import type { AdminUser } from '@/features/admin/types';
 import AdminUserDeleteConfirmation from './AdminUserDeleteConfirmation';
+import AdminSearchInput from './AdminSearchInput';
 
 export default function AdminUsersPage() {
   const { user: currentUser } = useAppSelector((state) => state.auth);
@@ -149,15 +149,11 @@ export default function AdminUsersPage() {
             </button>
           ))}
         </div>
-        <div className="relative w-full md:max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by username or email..."
-            className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-gray-600 focus:border-red-500/40 focus:outline-none"
-          />
-        </div>
+        <AdminSearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search by username or email..."
+        />
       </div>
 
       {loading ? (

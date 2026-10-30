@@ -4,7 +4,7 @@ import { store } from '@/store';
 import { logout } from '@/store/slices/authSlice';
 import { clearUserStorage } from './storage';
 import { sessionEvents } from './events';
-import { ROUTES } from '@/lib/constants/routes';
+import { getSessionRedirectUrl } from './redirect';
 
 type SessionMessage = {
   type: 'logout' | 'session-ended';
@@ -58,9 +58,9 @@ export function endSession(
   }
 
   if (broadcast) getBroadcastChannel()?.postMessage({ type: reason, timestamp: Date.now() });
-  if (typeof window !== 'undefined' && !window.location.pathname.startsWith(ROUTES.login)) {
-    const next = currentPath ? `?next=${encodeURIComponent(currentPath)}` : '';
-    window.location.replace(`${ROUTES.login}${next}`);
+  if (typeof window !== 'undefined') {
+    const redirectUrl = getSessionRedirectUrl(currentPath);
+    if (redirectUrl) window.location.replace(redirectUrl);
   }
 }
 
