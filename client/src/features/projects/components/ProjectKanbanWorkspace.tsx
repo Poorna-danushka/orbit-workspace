@@ -10,7 +10,7 @@ import { ArrowLeft, Plus } from 'lucide-react';
 import type { Project } from '@/features/projects/types';
 import type { Task } from '@/features/tasks/types';
 import KanbanColumn, { COLUMNS } from '@/features/tasks/components/KanbanColumn';
-import ProjectChat from '@/features/chat/components/ProjectChat';
+import ProjectChatView from '@/features/chat/components/ProjectChatView';
 
 interface ProjectKanbanWorkspaceProps {
   project: Project;
@@ -74,7 +74,7 @@ export default function ProjectKanbanWorkspace({
 
         <div className="flex items-center gap-2">
           <div className="relative">
-            <ProjectChat
+            <ProjectChatView
               projectId={projectId}
               currentUserId={currentUserId}
               currentUserName={currentUserName}

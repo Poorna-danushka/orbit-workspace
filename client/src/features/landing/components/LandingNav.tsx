@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowRight, Menu, X } from 'lucide-react';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import OrbitIcon from '@/features/auth/components/OrbitIcon';
+import { ROUTES } from '@/lib/constants/routes';
 
 export default function LandingNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -101,14 +102,14 @@ export default function LandingNav() {
             </nav>
             <ThemeToggle compact />
             <Link
-              href="/login"
+              href={ROUTES.login}
               className="ob-nav-link"
               style={{ fontWeight: 600, padding: '8px 18px' }}
             >
               Log in
             </Link>
             <Link
-              href="/register"
+              href={ROUTES.register}
               className="ob-btn-primary"
               style={{
                 padding: '9px 24px',
@@ -190,7 +191,7 @@ export default function LandingNav() {
           </a>
           <div style={{ height: 1, background: 'var(--ob-border)', margin: '4px 0' }} />
           <Link
-            href="/login"
+            href={ROUTES.login}
             onClick={() => setMobileMenuOpen(false)}
             className="ob-btn-ghost"
             style={{ width: '100%', justifyContent: 'center' }}
@@ -198,7 +199,7 @@ export default function LandingNav() {
             Log in
           </Link>
           <Link
-            href="/register"
+            href={ROUTES.register}
             onClick={() => setMobileMenuOpen(false)}
             className="ob-btn-primary"
             style={{ width: '100%', justifyContent: 'center' }}

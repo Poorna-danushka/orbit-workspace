@@ -7,13 +7,7 @@ import { getAdminActivity } from '@/features/admin/services/adminService';
 import type { AdminActivityItem } from '@/features/admin/types';
 import ErrorState from '@/components/ui/ErrorState';
 import { useAsyncResource } from '@/hooks/useAsyncResource';
-
-function formatDate(value: string): string {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? 'Date unavailable'
-    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
-}
+import { formatDate } from '@/lib/utils/format';
 
 export default function AdminActivityPage() {
   const loadActivity = useCallback(async () => (await getAdminActivity()).data, []);

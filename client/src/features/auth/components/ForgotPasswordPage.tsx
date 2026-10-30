@@ -7,6 +7,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { requestPasswordReset } from '@/features/auth/services/authService';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import OrbitIcon from '@/features/auth/components/OrbitIcon';
+import { ROUTES } from '@/lib/constants/routes';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -114,7 +115,7 @@ export default function ForgotPassword() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <ThemeToggle compact />
           <Link
-            href="/login"
+            href={ROUTES.login}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -251,7 +252,7 @@ export default function ForgotPassword() {
               </p>
             </div>
             <Link
-              href="/login"
+              href={ROUTES.login}
               className="ob-btn-primary"
               style={{
                 width: '100%',
@@ -378,7 +379,7 @@ export default function ForgotPassword() {
 
             <div style={{ textAlign: 'center', marginTop: 24 }}>
               <Link
-                href="/login"
+                href={ROUTES.login}
                 style={{
                   fontSize: '0.85rem',
                   color: 'var(--ob-text-muted)',

@@ -4,6 +4,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import { GoogleIcon } from './GoogleIcon';
 import { PasswordStrength } from './PasswordStrength';
+import { ROUTES } from '@/lib/constants/routes';
 
 interface RegisterFormPanelProps {
   username: string;
@@ -79,7 +80,7 @@ export default function RegisterFormPanel({
             <p style={{ fontSize: '0.88rem', color: 'var(--ob-text-muted)', lineHeight: 1.5 }}>
               Already have an account?{' '}
               <Link
-                href="/login"
+                href={ROUTES.login}
                 style={{ color: 'var(--ob-primary)', fontWeight: 700, textDecoration: 'none' }}
               >
                 Sign in →

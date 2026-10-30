@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAppSelector } from '@/store/hooks';
+import { ROUTES } from '@/lib/constants/routes';
 import { Loader2 } from 'lucide-react';
 import { acquireSocket, releaseSocket } from '@/lib/realtime/socket';
 import { getErrorMessage } from '@/lib/errors';
@@ -262,7 +263,7 @@ export default function ProjectDetail() {
         unreadNotifications={unreadNotifications}
         activeTask={activeTask}
         tasks={tasks}
-        onBack={() => router.push('/projects')}
+        onBack={() => router.push(ROUTES.projects)}
         onChatToggle={handleChatToggle}
         onGenerateProjectPdf={handleGenerateProjectPdf}
         onAddTask={openTaskModal}

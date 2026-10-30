@@ -29,6 +29,6 @@ export function getWorkspacePageName(pathname: string): string {
   return (
     workspaceNavigation.find((item) =>
       item.exact ? pathname === item.href : pathname.startsWith(item.href),
-    )?.name ?? (pathname.includes('/projects/') ? 'Kanban Board' : 'Dashboard')
+    )?.name ?? (pathname.includes(`${ROUTES.projects}/`) ? 'Kanban Board' : 'Dashboard')
   );
 }

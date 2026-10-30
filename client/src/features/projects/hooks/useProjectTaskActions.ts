@@ -11,6 +11,7 @@ import {
 } from '@/features/tasks/services/taskService';
 import type { Task } from '@/features/tasks/types';
 import type { NewTaskForm } from '../components/CreateTaskModal';
+import { getTaskUploadValidationError } from '@/features/tasks/utils/taskUploadValidation';
 
 interface ProjectTaskActionsParams {
   projectId: string;
@@ -177,41 +178,17 @@ export default function useProjectTaskActions({
     }
   };
 
-  // Allowed MIME types and their friendly label — must match server allowlist
-  const ALLOWED_UPLOAD_TYPES: Record<string, string> = {
-    'image/jpeg': 'JPEG image',
-    'image/png': 'PNG image',
-    'image/gif': 'GIF image',
-    'image/webp': 'WebP image',
-    'application/pdf': 'PDF document',
-    'text/plain': 'Plain text file',
-    'application/msword': 'Word document (.doc)',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-      'Word document (.docx)',
-    'application/vnd.ms-excel': 'Excel spreadsheet (.xls)',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-      'Excel spreadsheet (.xlsx)',
-  };
-
   const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0] || !viewingTask) return;
     const file = e.target.files[0];
     setUploadError(null);
 
-    // ── Client-side validation ─────────────────────────────────────────────────
-    if (!ALLOWED_UPLOAD_TYPES[file.type]) {
-      const allowed = 'JPG, PNG, GIF, WebP, PDF, TXT, DOC, DOCX, XLS, XLSX';
-      setUploadError(`"${file.name}" is not an allowed file type. Accepted: ${allowed}`);
+    const validationError = getTaskUploadValidationError(file);
+    if (validationError) {
+      setUploadError(validationError);
       e.target.value = '';
       return;
     }
-    const MAX_MB = 10;
-    if (file.size > MAX_MB * 1024 * 1024) {
-      setUploadError(`"${file.name}" exceeds the ${MAX_MB} MB size limit.`);
-      e.target.value = '';
-      return;
-    }
-    // ─────────────────────────────────────────────────────────────────────────
 
     const formData = new FormData();
     formData.append('file', file);

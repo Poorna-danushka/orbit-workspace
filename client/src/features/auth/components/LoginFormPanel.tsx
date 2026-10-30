@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-
 import type { Dispatch, SetStateAction } from 'react';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import { GoogleIcon } from './GoogleIcon';
+import { ROUTES } from '@/lib/constants/routes';
 
 interface LoginFormPanelProps {
   email: string;
@@ -78,7 +79,7 @@ export default function LoginFormPanel({
             <p style={{ fontSize: '0.88rem', color: 'var(--ob-text-muted)', lineHeight: 1.5 }}>
               Don&apos;t have an account?{' '}
               <Link
-                href="/register"
+                href={ROUTES.register}
                 style={{ color: 'var(--ob-primary)', fontWeight: 700, textDecoration: 'none' }}
               >
                 Create one free →
@@ -157,7 +158,7 @@ export default function LoginFormPanel({
                   Password
                 </label>
                 <Link
-                  href="/forgot-password"
+                  href={ROUTES.forgotPassword}
                   style={{
                     fontSize: '0.8rem',
                     color: 'var(--ob-primary)',

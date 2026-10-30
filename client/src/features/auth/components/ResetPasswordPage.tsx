@@ -17,6 +17,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { resetPassword } from '@/features/auth/services/authService';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import OrbitIcon from '@/features/auth/components/OrbitIcon';
+import { ROUTES } from '@/lib/constants/routes';
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -98,7 +99,7 @@ function ResetPasswordForm() {
           one.
         </p>
         <Link
-          href="/forgot-password"
+          href={ROUTES.forgotPassword}
           className="ob-btn-ghost"
           style={{ display: 'inline-flex', justifyContent: 'center' }}
         >
@@ -150,7 +151,7 @@ function ResetPasswordForm() {
           your security.
         </p>
         <Link
-          href="/login"
+          href={ROUTES.login}
           className="ob-btn-primary"
           style={{
             width: '100%',
@@ -422,7 +423,7 @@ export default function ResetPassword() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <ThemeToggle compact />
           <Link
-            href="/login"
+            href={ROUTES.login}
             style={{
               display: 'flex',
               alignItems: 'center',

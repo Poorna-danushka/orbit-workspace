@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Search, Bell, ChevronRight, Menu } from 'lucide-react';
+import WorkspaceSearchOverlay from './WorkspaceSearchOverlay';
 import Avatar from '@/components/ui/Avatar';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import { notifyError } from '@/lib/errors';
@@ -207,87 +208,13 @@ export default function WorkspaceHeader({
         </Link>
       </div>
 
-      {/* Mobile Search Overlay */}
-      {searchOpen && (
-        <div
-          className="md:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) closeSearch();
-          }}
-        >
-          <div className="bg-[#111] border-b border-white/10 p-4 flex items-center gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none" />
-              <input
-                autoFocus
-                type="text"
-                placeholder="Search tasks, projects…"
-                value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl
-                           text-sm text-white placeholder:text-gray-600
-                           focus:outline-none focus:ring-2 focus:ring-purple-500/40 transition-all"
-              />
-            </div>
-            <button
-              onClick={closeSearch}
-              className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-          {searchResults && (
-            <div className="flex-1 overflow-y-auto bg-[#0e0e0e]">
-              {searchResults.projects.length === 0 && searchResults.tasks.length === 0 ? (
-                <p className="p-6 text-sm text-gray-500 text-center">No results found</p>
-              ) : (
-                <>
-                  {searchResults.projects.length > 0 && (
-                    <div className="p-3">
-                      <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest px-2 mb-2">
-                        Projects
-                      </p>
-                      {searchResults.projects.map((p) => (
-                        <Link
-                          key={p.id}
-                          href={`/projects/${p.id}`}
-                          onClick={closeSearch}
-                          className="block px-3 py-3 hover:bg-white/5 rounded-xl transition-colors"
-                        >
-                          <p className="text-sm text-purple-400 font-medium">{p.title}</p>
-                          {p.description && (
-                            <p className="text-xs text-gray-500 truncate">{p.description}</p>
-                          )}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                  {searchResults.tasks.length > 0 && (
-                    <div className="p-3 border-t border-white/[0.06]">
-                      <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest px-2 mb-2">
-                        Tasks
-                      </p>
-                      {searchResults.tasks.map((t) => (
-                        <Link
-                          key={t.id}
-                          href={`/projects/${t.projectId}`}
-                          onClick={closeSearch}
-                          className="block px-3 py-3 hover:bg-white/5 rounded-xl transition-colors"
-                        >
-                          <p className="text-sm font-medium text-white">{t.title}</p>
-                          <p className="text-xs text-gray-500">
-                            {t.project?.title} · {t.status}
-                          </p>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+      <WorkspaceSearchOverlay
+        searchOpen={searchOpen}
+        searchQuery={searchQuery}
+        searchResults={searchResults}
+        onSearchChange={handleSearchChange}
+        onClose={closeSearch}
+      />
     </>
   );
 }

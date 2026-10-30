@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { ROUTES } from '@/lib/constants/routes';
 import { useAppSelector } from '@/store/hooks';
 import { CheckCircle2, Loader2, ShieldCheck, XCircle } from 'lucide-react';
 import { getErrorMessage } from '@/lib/errors';
@@ -50,7 +51,7 @@ export default function ProjectInvitationPage() {
     setError('');
     try {
       await acceptProjectInvitation(token);
-      router.push('/projects');
+      router.push(ROUTES.projects);
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to accept the invitation.'));
     } finally {

@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { ROUTES } from '@/lib/constants/routes';
 import {
   AlertCircle,
   ArrowRight,
@@ -142,7 +143,7 @@ export default function AccountProfilePage() {
           <h1>Profile & security</h1>
           <p>Manage your identity and keep your Orbit account protected.</p>
         </div>
-        <Link href={isAdmin ? '/admin-dashboard' : '/dashboard'} className="account-back-link">
+        <Link href={isAdmin ? ROUTES.adminDashboard : ROUTES.dashboard} className="account-back-link">
           Back to workspace <ArrowRight size={16} />
         </Link>
       </header>

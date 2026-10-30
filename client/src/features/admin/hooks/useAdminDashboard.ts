@@ -6,10 +6,13 @@ import {
   getAdminStats,
   broadcastAdminMessage,
 } from '@/features/admin/services/adminService';
-import type { AdminActivityItem, AdminStats } from '@/features/admin/types';
+import type {
+  AdminActivityItem,
+  AdminDashboardOverviewProps,
+  AdminStats,
+} from '@/features/admin/types';
 import { getErrorMessage } from '@/lib/errors';
 import { useAsyncResource } from '@/hooks/useAsyncResource';
-import type { AdminDashboardOverviewProps } from '@/features/admin/components/AdminDashboardOverview';
 
 interface AdminDashboardResource {
   stats: AdminStats;

@@ -1,27 +1,51 @@
 'use client';
 
-import { FormEvent, useEffect, useRef, useState } from 'react';
-
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import type { RefObject, Dispatch, SetStateAction } from 'react';
 import type { Socket } from 'socket.io-client';
-import { BACKEND_URL } from '@/lib/config';
-import { getErrorMessage } from '@/lib/errors';
-import { acquireSocket, releaseSocket } from '@/lib/realtime/socket';
+import type { ChatMessage } from '@/features/chat/types';
 import {
   getProjectChatMessages,
   uploadProjectChatFile,
 } from '@/features/chat/services/chatService';
-import type { ChatMessage } from '@/features/chat/types';
-import ProjectChatView from './ProjectChatView';
+import { sendProjectChatMessage } from '@/features/chat/services/sendProjectChatMessage';
+import { getErrorMessage } from '@/lib/errors';
+import { BACKEND_URL } from '@/lib/config';
+import { acquireSocket, releaseSocket } from '@/lib/realtime/socket';
 
-interface ProjectChatProps {
+type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
+
+export interface ProjectChatModel {
+  open: boolean;
+  onToggle?: () => void;
+  connectionStatus: ConnectionStatus;
+  loading: boolean;
+  projectMessages: ChatMessage[];
+  currentUserId: string;
+  currentUserName: string;
+  activeError: string | null;
+  retryChat: () => void;
+  listRef: RefObject<HTMLDivElement | null>;
+  showEmojiPicker: boolean;
+  setShowEmojiPicker: Dispatch<SetStateAction<boolean>>;
+  handleEmojiSelect: (emoji: string) => void;
+  draft: string;
+  setDraft: Dispatch<SetStateAction<string>>;
+  joinedProject: boolean;
+  sending: boolean;
+  uploading: boolean;
+  fileInputRef: RefObject<HTMLInputElement | null>;
+  handleFileUpload: (event: ChangeEvent<HTMLInputElement>) => void;
+  handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}
+
+export interface UseProjectChatOptions {
   projectId: string;
   currentUserId: string;
   currentUserName?: string;
-  open?: boolean;
+  open: boolean;
   onToggle?: () => void;
 }
-
-type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
 const mergeMessages = (current: ChatMessage[], incoming: ChatMessage[]) => {
   const unique = new Map([...current, ...incoming].map((message) => [message.id, message]));
@@ -30,13 +54,13 @@ const mergeMessages = (current: ChatMessage[], incoming: ChatMessage[]) => {
   );
 };
 
-export default function ProjectChat({
+export function useProjectChat({
   projectId,
   currentUserId,
   currentUserName = 'You',
-  open = false,
+  open,
   onToggle,
-}: ProjectChatProps) {
+}: UseProjectChatOptions): ProjectChatModel {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [loading, setLoading] = useState(true);
@@ -56,7 +80,6 @@ export default function ProjectChat({
     if (!open || !projectId || !currentUserId) return;
 
     let cancelled = false;
-
     const socket = acquireSocket();
     socketRef.current = socket;
     const onConnect = () => {
@@ -88,7 +111,7 @@ export default function ProjectChat({
     };
     const onMessageReceived = (message: ChatMessage) => {
       if (message.projectId !== projectId) return;
-      setMessages((prev) => mergeMessages(prev, [message]));
+      setMessages((current) => mergeMessages(current, [message]));
     };
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
@@ -109,8 +132,9 @@ export default function ProjectChat({
           );
         }
       } catch (error) {
-        if (!cancelled)
+        if (!cancelled) {
           setChatError(getErrorMessage(error, 'Unable to load chat messages right now.'));
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -143,39 +167,14 @@ export default function ProjectChat({
   };
   const activeError = chatError || socketError;
 
-  const emitMessage = (content: string) =>
-    new Promise<void>((resolve, reject) => {
-      const socket = socketRef.current;
-      if (!socket?.connected || !joinedProject) {
-        reject(new Error('Chat is not connected to this project.'));
-        return;
-      }
-
-      socket
-        .timeout(10_000)
-        .emit(
-          'sendMessage',
-          { projectId, content },
-          (timeoutError: Error | null, result?: { ok?: boolean; error?: string }) => {
-            if (timeoutError) {
-              reject(new Error('Message could not be sent. Check your connection and try again.'));
-            } else if (result?.error || !result?.ok) {
-              reject(new Error(result?.error || 'Message could not be sent.'));
-            } else {
-              resolve();
-            }
-          },
-        );
-    });
-
-  const handleSubmit = async (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const content = draft.trim();
     if (!content || sending) return;
     setSending(true);
     setChatError(null);
     try {
-      await emitMessage(content);
+      await sendProjectChatMessage(socketRef.current, projectId, joinedProject, content);
       setDraft('');
       setShowEmojiPicker(false);
     } catch (error) {
@@ -186,11 +185,11 @@ export default function ProjectChat({
   };
 
   const handleEmojiSelect = (emoji: string) => {
-    setDraft((prev) => `${prev}${emoji}`);
+    setDraft((current) => `${current}${emoji}`);
     setShowEmojiPicker(false);
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !projectId || !currentUserId) {
       event.target.value = '';
@@ -203,11 +202,11 @@ export default function ProjectChat({
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await uploadProjectChatFile(projectId, formData);
-      const uploadUrl = res.data?.fileUrl ? `${BACKEND_URL}${res.data.fileUrl}` : '';
+      const result = await uploadProjectChatFile(projectId, formData);
+      const uploadUrl = result.data?.fileUrl ? `${BACKEND_URL}${result.data.fileUrl}` : '';
       const friendlyText = uploadUrl ? `📎 ${file.name}\n${uploadUrl}` : `📎 ${file.name}`;
 
-      await emitMessage(friendlyText);
+      await sendProjectChatMessage(socketRef.current, projectId, joinedProject, friendlyText);
     } catch (error) {
       setChatError(getErrorMessage(error, 'File upload failed.'));
     } finally {
@@ -216,29 +215,27 @@ export default function ProjectChat({
     }
   };
 
-  return (
-    <ProjectChatView
-      open={open}
-      onToggle={onToggle}
-      connectionStatus={connectionStatus}
-      loading={loading}
-      projectMessages={projectMessages}
-      currentUserId={currentUserId}
-      currentUserName={currentUserName}
-      activeError={activeError}
-      retryChat={retryChat}
-      listRef={listRef}
-      showEmojiPicker={showEmojiPicker}
-      setShowEmojiPicker={setShowEmojiPicker}
-      handleEmojiSelect={handleEmojiSelect}
-      draft={draft}
-      setDraft={setDraft}
-      joinedProject={joinedProject}
-      sending={sending}
-      uploading={uploading}
-      fileInputRef={fileInputRef}
-      handleFileUpload={handleFileUpload}
-      handleSubmit={handleSubmit}
-    />
-  );
+  return {
+    open,
+    onToggle,
+    connectionStatus,
+    loading,
+    projectMessages,
+    currentUserId,
+    currentUserName,
+    activeError,
+    retryChat,
+    listRef,
+    showEmojiPicker,
+    setShowEmojiPicker,
+    handleEmojiSelect,
+    draft,
+    setDraft,
+    joinedProject,
+    sending,
+    uploading,
+    fileInputRef,
+    handleFileUpload,
+    handleSubmit,
+  };
 }

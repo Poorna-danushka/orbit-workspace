@@ -7,11 +7,10 @@ import {
   getDashboardStats,
   createDashboardTask,
 } from '@/features/dashboard/services/dashboardService';
-import type { DashboardStats } from '@/features/dashboard/types';
+import type { DashboardOverviewProps, DashboardStats } from '@/features/dashboard/types';
 import { getErrorMessage } from '@/lib/errors';
 import { useAsyncResource } from '@/hooks/useAsyncResource';
 import type { Project } from '@/features/projects/types';
-import type { DashboardOverviewProps } from '@/features/dashboard/components/DashboardOverview';
 
 interface DashboardResource {
   stats: DashboardStats;

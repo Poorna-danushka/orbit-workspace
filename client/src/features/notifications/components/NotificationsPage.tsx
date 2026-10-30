@@ -8,55 +8,8 @@ import {
   markNotificationRead,
 } from '@/features/notifications/services/notificationService';
 import type { NotificationItem } from '@/features/notifications/types';
-import {
-  Bell,
-  Check,
-  CheckCheck,
-  Loader2,
-  RefreshCw,
-  UserCheck,
-  Calendar,
-  Shield,
-  Megaphone,
-  AlertTriangle,
-  Info,
-} from 'lucide-react';
-
-const timeAgo = (date: string) => {
-  const diff = Date.now() - new Date(date).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
-};
-
-// Detect notification type from message text
-const detectType = (message: string) => {
-  const m = message.toLowerCase();
-  if (m.includes('[admin]'))
-    return {
-      icon: Megaphone,
-      color: 'text-orange-400',
-      bg: 'bg-orange-400/10',
-      label: 'Announcement',
-    };
-  if (m.includes('assigned'))
-    return { icon: UserCheck, color: 'text-blue-400', bg: 'bg-blue-400/10', label: 'Assignment' };
-  if (m.includes('due') || m.includes('deadline') || m.includes('overdue'))
-    return { icon: Calendar, color: 'text-red-400', bg: 'bg-red-400/10', label: 'Deadline' };
-  if (m.includes('admin') || m.includes('role'))
-    return { icon: Shield, color: 'text-purple-400', bg: 'bg-purple-400/10', label: 'System' };
-  if (m.includes('warning') || m.includes('alert'))
-    return {
-      icon: AlertTriangle,
-      color: 'text-yellow-400',
-      bg: 'bg-yellow-400/10',
-      label: 'Alert',
-    };
-  return { icon: Info, color: 'text-gray-400', bg: 'bg-gray-400/10', label: 'Info' };
-};
+import { Bell, CheckCheck, Loader2, RefreshCw } from 'lucide-react';
+import NotificationCard from './NotificationCard';
 
 type FilterType = 'all' | 'unread' | 'read';
 
@@ -192,62 +145,13 @@ export default function Notifications() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map((n) => {
-            const type = detectType(n.message);
-            const Icon = type.icon;
-            return (
-              <div
-                key={n.id}
-                onClick={() => !n.isRead && markRead(n.id)}
-                className={`flex items-start gap-4 p-4 rounded-2xl border shadow-lg shadow-black/10 transition-all ${
-                  n.isRead
-                    ? 'bg-[#11131b]/60 border-white/[0.06] opacity-60 cursor-default'
-                    : 'bg-[#11131b] border-purple-500/30 hover:border-purple-500/50 cursor-pointer'
-                }`}
-              >
-                {/* Type Icon */}
-                <div
-                  className={`w-9 h-9 rounded-xl ${type.bg} flex items-center justify-center flex-shrink-0`}
-                >
-                  <Icon className={`w-4 h-4 ${type.color}`} />
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span
-                      className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${type.bg} ${type.color}`}
-                    >
-                      {type.label}
-                    </span>
-                    {!n.isRead && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_6px_rgba(168,85,247,0.8)]" />
-                    )}
-                  </div>
-                  <p
-                    className={`text-sm leading-relaxed ${n.isRead ? 'text-gray-500' : 'text-white'}`}
-                  >
-                    {n.message.replace('[Admin] ', '')}
-                  </p>
-                  <p className="text-xs text-gray-600 mt-1.5">{timeAgo(n.createdAt)}</p>
-                </div>
-
-                {/* Mark Read Button */}
-                {!n.isRead && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      markRead(n.id);
-                    }}
-                    className="p-1.5 text-gray-600 hover:text-purple-400 transition-colors rounded-lg hover:bg-purple-500/10 flex-shrink-0"
-                    title="Mark as read"
-                  >
-                    <Check className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            );
-          })}
+          {filtered.map((notification) => (
+            <NotificationCard
+              key={notification.id}
+              notification={notification}
+              onMarkRead={(id) => void markRead(id)}
+            />
+          ))}
         </div>
       )}
     </div>
