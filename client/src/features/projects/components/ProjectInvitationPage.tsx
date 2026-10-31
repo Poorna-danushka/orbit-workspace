@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { ROUTES } from '@/lib/constants/routes';
-import { useAppSelector } from '@/store/hooks';
 import { CheckCircle2, Loader2, ShieldCheck, XCircle } from 'lucide-react';
 import { getErrorMessage } from '@/lib/errors';
+import useInvitationSession from '../hooks/useInvitationSession';
 import {
   acceptProjectInvitation,
   getProjectInvitation,
@@ -17,7 +17,7 @@ import type { ProjectInvitation } from '@/features/projects/types';
 export default function ProjectInvitationPage() {
   const params = useParams<{ token: string }>();
   const router = useRouter();
-  const { user } = useAppSelector((state) => state.auth);
+  const { error: sessionError, state: sessionState, user } = useInvitationSession();
   const [invitation, setInvitation] = useState<ProjectInvitation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -87,6 +87,11 @@ export default function ProjectInvitationPage() {
         </div>
 
         <div className="p-6 sm:p-8">
+          {sessionState === 'error' && (
+            <p role="alert" className="mb-4 text-sm text-red-300">
+              {getErrorMessage(sessionError, 'Unable to verify your sign-in. Please try again.')}
+            </p>
+          )}
           {loading ? (
             <div className="flex items-center justify-center py-8 text-gray-300 gap-3">
               <Loader2 className="w-5 h-5 animate-spin text-purple-400" /> Loading invitation...
@@ -149,7 +154,9 @@ export default function ProjectInvitationPage() {
                 )}
               </div>
 
-              {!user ? (
+              {sessionState === 'checking' ? (
+                <p className="text-sm text-gray-400">Verifying your sign-in...</p>
+              ) : !user ? (
                 <div className="space-y-3">
                   <p className="text-sm text-gray-400">
                     Please sign in or create an account to continue.

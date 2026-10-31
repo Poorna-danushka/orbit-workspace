@@ -27,6 +27,7 @@ if (testDatabaseUrl) {
       TEST_DATABASE_URL: testDatabaseUrl,
       JWT_SECRET: 'orbit-test-access-secret-only',
       JWT_REFRESH_SECRET: 'orbit-test-refresh-secret-only',
+      ACCESS_TOKEN_TTL: '10s',
       CORS_ORIGINS: 'http://127.0.0.1:3100',
       CLIENT_URL: 'http://127.0.0.1:3100',
       GOOGLE_CLIENT_ID: '',
@@ -40,6 +41,7 @@ export default defineConfig({
   testDir: './e2e',
   timeout: 60_000,
   fullyParallel: true,
+  workers: 1,
   reporter: 'list',
   use: {
     baseURL: 'http://127.0.0.1:3100',
