@@ -6,9 +6,12 @@ import axios, {
 } from 'axios';
 import api from '@/lib/api/client';
 import { clearCsrfToken } from '@/lib/api/csrf';
-import { markSessionActive } from '@/lib/auth/session';
+import { endSession, markSessionActive } from '@/lib/auth/session';
 import { sessionEvents } from '@/lib/auth/events';
 import { getSessionRedirectUrl } from '@/lib/auth/redirect';
+import { redirectTo } from '@/lib/auth/navigate';
+
+jest.mock('@/lib/auth/navigate', () => ({ redirectTo: jest.fn() }));
 
 function response(config: InternalAxiosRequestConfig, data: unknown, status = 200): AxiosResponse {
   return {
@@ -50,8 +53,10 @@ describe('real API client auth refresh interceptors', () => {
     originalInstanceAdapter = api.defaults.adapter;
     originalAxiosAdapter = axios.defaults.adapter;
     clearCsrfToken();
+    window.localStorage.removeItem('orbit:last-auth-refresh-at');
     window.history.replaceState({}, '', '/login');
     markSessionActive();
+    jest.mocked(redirectTo).mockClear();
   });
 
   afterEach(() => {
@@ -65,6 +70,16 @@ describe('real API client auth refresh interceptors', () => {
       '/login?next=%2Fprojects%3Ffilter%3Dmine',
     );
     expect(getSessionRedirectUrl('/login?next=%2Fprojects')).toBeUndefined();
+  });
+
+  test('session end redirects exactly once to the login page with the current path', () => {
+    window.history.replaceState({}, '', '/projects?filter=mine');
+
+    endSession();
+    endSession();
+
+    expect(redirectTo).toHaveBeenCalledTimes(1);
+    expect(redirectTo).toHaveBeenCalledWith('/login?next=%2Fprojects%3Ffilter%3Dmine');
   });
 
   test('three parallel expired-token requests share a refresh and replay successfully', async () => {
@@ -107,12 +122,13 @@ describe('real API client auth refresh interceptors', () => {
     expect(results.map(({ data }) => data.ok)).toEqual([true, true, true]);
   });
 
-  test('independent tabs serialize refresh requests through the Web Locks API', async () => {
+  test('two tabs share one refresh request through the Web Locks API', async () => {
     type LockCallback<T> = (lock: Lock | null) => Promise<T>;
     let lockQueue = Promise.resolve();
     let activeRefreshes = 0;
     let maxActiveRefreshes = 0;
     let refreshCount = 0;
+    const refreshMethods: string[] = [];
 
     const requestLock = async <T>(
       _name: string,
@@ -159,6 +175,7 @@ describe('real API client auth refresh interceptors', () => {
       }
       if (path.endsWith('/auth/refresh')) {
         refreshCount += 1;
+        refreshMethods.push(config.method ?? '');
         activeRefreshes += 1;
         maxActiveRefreshes = Math.max(maxActiveRefreshes, activeRefreshes);
         await new Promise<void>((resolve) => setTimeout(resolve, 5));
@@ -172,7 +189,8 @@ describe('real API client auth refresh interceptors', () => {
 
     try {
       await Promise.all([firstTabRefresh(api), secondTabRefresh(api)]);
-      expect(refreshCount).toBe(2);
+      expect(refreshCount).toBe(1);
+      expect(refreshMethods).toEqual(['post']);
       expect(maxActiveRefreshes).toBe(1);
     } finally {
       if (previousLocks) Object.defineProperty(navigator, 'locks', previousLocks);

@@ -5,6 +5,7 @@ import { logout } from '@/store/slices/authSlice';
 import { clearUserStorage } from './storage';
 import { sessionEvents } from './events';
 import { getSessionRedirectUrl } from './redirect';
+import { redirectTo } from './navigate';
 
 type SessionMessage = {
   type: 'logout' | 'session-ended';
@@ -28,7 +29,7 @@ function getBroadcastChannel(): BroadcastChannel | null {
   if (!channel) {
     channel = new BroadcastChannel('orbit-session');
     channel.onmessage = (event: MessageEvent<unknown>) => {
-      if (isSessionMessage(event.data)) endSession(event.data.type, false);
+      if (isSessionMessage(event.data)) endSession(event.data.type, false, false);
     };
   }
   return channel;
@@ -42,6 +43,7 @@ export function markSessionActive(): void {
 export function endSession(
   reason: 'logout' | 'session-ended' = 'session-ended',
   broadcast = true,
+  shouldRedirect = true,
 ): void {
   if (sessionEndHandled) return;
   sessionEndHandled = true;
@@ -58,9 +60,9 @@ export function endSession(
   }
 
   if (broadcast) getBroadcastChannel()?.postMessage({ type: reason, timestamp: Date.now() });
-  if (typeof window !== 'undefined') {
+  if (shouldRedirect && typeof window !== 'undefined') {
     const redirectUrl = getSessionRedirectUrl(currentPath);
-    if (redirectUrl) window.location.replace(redirectUrl);
+    if (redirectUrl) redirectTo(redirectUrl);
   }
 }
 
