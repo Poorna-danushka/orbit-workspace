@@ -1,4 +1,3 @@
-const LOCAL_DATABASE_URL = 'mongodb://localhost:27017/orbit?replicaSet=rs0&directConnection=true';
 const LOCAL_DATABASE_HOSTS = new Set(['localhost', '127.0.0.1', 'mongo']);
 
 const validateDatabaseUrl = (databaseUrl, { requireTestDatabase = false } = {}) => {
@@ -26,9 +25,4 @@ const validateDatabaseUrl = (databaseUrl, { requireTestDatabase = false } = {}) 
   return parsedUrl;
 };
 
-const getLocalDatabaseUrl = (databaseUrl = LOCAL_DATABASE_URL) => {
-  validateDatabaseUrl(databaseUrl);
-  return databaseUrl;
-};
-
-module.exports = { getLocalDatabaseUrl, validateDatabaseUrl };
+module.exports = { validateDatabaseUrl };

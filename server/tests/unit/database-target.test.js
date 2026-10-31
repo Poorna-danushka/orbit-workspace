@@ -1,4 +1,6 @@
-const { getLocalDatabaseUrl, validateDatabaseUrl } = require('../../src/config/database-url.util');
+const { spawnSync } = require('node:child_process');
+const path = require('node:path');
+const { validateDatabaseUrl } = require('../../src/config/database-url.util');
 
 test.each([
   'mongodb://localhost:27017/orbit_test',
@@ -19,7 +21,18 @@ test.each([
 });
 
 test('local database push refuses a remote target', () => {
-  expect(() => getLocalDatabaseUrl('mongodb+srv://cluster.example.test/orbit')).toThrow(
-    'DATABASE_URL must target a local MongoDB host and database',
+  const result = spawnSync(
+    process.execPath,
+    [path.resolve(__dirname, '../../scripts/db-push-local.js')],
+    {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        LOCAL_DATABASE_URL: 'mongodb+srv://cluster.example.test/orbit',
+      },
+    },
   );
+
+  expect(result.status).not.toBe(0);
+  expect(result.stderr).toContain('DATABASE_URL must target a local MongoDB host and database');
 });
