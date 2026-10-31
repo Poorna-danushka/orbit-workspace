@@ -6,7 +6,7 @@
   "scripts": {
     "test": "npm run test:unit && npm run test:integration && npm run test:database",
     "test:unit": "jest --runInBand --testPathIgnorePatterns=tests/integration",
-    "test:integration": "jest --runInBand tests/integration/http-api.test.js tests/integration/socket.test.js tests/integration/refresh-race.test.js",
+    "test:integration": "jest --runInBand tests/integration/http-api.test.js tests/integration/socket.test.js tests/integration/refresh-race.test.js tests/integration/security-contract.test.js",
     "test:database": "jest --runInBand tests/integration/database-workflow.test.js",
     "test:coverage": "jest --runInBand --coverage",
     "dev": "nodemon src/index.js",
