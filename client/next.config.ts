@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const configuredBackendUrl = process.env.NEXT_PUBLIC_SERVER_URL?.trim();
@@ -16,7 +16,10 @@ if (isProduction) {
     throw new Error('NEXT_PUBLIC_SERVER_URL must be a valid HTTPS backend origin');
   }
 
-  if (backend.protocol !== 'https:' || backend.origin !== configuredBackendUrl?.replace(/\/+$/, '')) {
+  if (
+    backend.protocol !== 'https:' ||
+    backend.origin !== configuredBackendUrl?.replace(/\/+$/, '')
+  ) {
     throw new Error('NEXT_PUBLIC_SERVER_URL must be an HTTPS origin without a path');
   }
 
@@ -40,7 +43,12 @@ if (isProduction) {
 
 const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
-  allowedDevOrigins: ['localhost', '127.0.0.1', '172.20.10.11'],
+  allowedDevOrigins: [
+    'localhost',
+    '127.0.0.1',
+    '172.20.10.11',
+    ...(process.env.PLAYWRIGHT_SAME_SITE === 'true' ? ['app.localtest.me'] : []),
+  ],
   turbopack: {
     root: process.cwd(),
   },
@@ -66,9 +74,7 @@ const nextConfig: NextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
           { key: 'X-Frame-Options', value: 'DENY' },
-          ...(productionCsp
-            ? [{ key: 'Content-Security-Policy', value: productionCsp }]
-            : []),
+          ...(productionCsp ? [{ key: 'Content-Security-Policy', value: productionCsp }] : []),
           ...(process.env.NODE_ENV === 'production'
             ? [{ key: 'Strict-Transport-Security', value: 'max-age=31536000' }]
             : []),

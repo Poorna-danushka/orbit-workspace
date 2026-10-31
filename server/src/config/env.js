@@ -1,6 +1,7 @@
 const path = require('path');
 const dotenv = require('dotenv');
 const { validateDatabaseUrl } = require('./database-url.util');
+const logger = require('../utils/logger.util');
 
 if (process.env.NODE_ENV !== 'test') {
   const envPath = path.resolve(__dirname, '../../.env');
@@ -138,6 +139,11 @@ if (!['strict', 'lax', 'none'].includes(COOKIE_SAME_SITE)) {
 }
 if (COOKIE_SAME_SITE === 'none' && !COOKIE_SECURE) {
   throw new Error('COOKIE_SAME_SITE=none requires COOKIE_SECURE=true');
+}
+if (COOKIE_SAME_SITE === 'none') {
+  logger.warn(
+    'third-party cookies are blocked by Safari/iOS, Firefox ETP and Chrome Incognito; use same-site subdomains in production',
+  );
 }
 
 const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN?.trim() || undefined;

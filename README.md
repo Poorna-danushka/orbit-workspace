@@ -197,21 +197,31 @@ docs/
 - Socket.IO authenticates using the access cookie and checks the request
   origin against the configured allowlist.
 
-## Cross-site verification
+## Local cookie verification
 
-The dedicated `cross-site` Playwright project verifies Secure cookies using
-local HTTPS proxies. From the repository root, generate a self-signed
-certificate with `localhost` and `127.0.0.1` Subject Alternative Names:
+The opt-in Playwright projects verify cookie behavior over local HTTPS. From
+the repository root, generate a self-signed certificate with the required
+localhost and `localtest.me` Subject Alternative Names:
 
 ```powershell
 New-Item -ItemType Directory -Force -Path .\client\.certs | Out-Null
 $certDir = (Resolve-Path .\client\.certs).Path
-docker run --rm -v "${certDir}:/certs" alpine/openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /certs/localhost-key.pem -out /certs/localhost-cert.pem -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+docker run --rm -v "${certDir}:/certs" alpine/openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /certs/localhost-key.pem -out /certs/localhost-cert.pem -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,DNS:app.localtest.me,DNS:api.localtest.me"
 docker run --rm -v "${certDir}:/certs" alpine/openssl x509 -in /certs/localhost-cert.pem -noout -subject -ext subjectAltName
 ```
 
 The `.certs/` directory is ignored and the private key must not be committed.
-Start Docker MongoDB, then run the test from `client` in PowerShell:
+`app.localtest.me` and `api.localtest.me` must resolve to loopback. If they do
+not resolve on your machine, do not change DNS or add hosts-file entries
+without approval; use the manual hosts-file steps for your operating system:
+
+- Windows: open Notepad as Administrator and edit
+  `C:\Windows\System32\drivers\etc\hosts`.
+- macOS/Linux: edit `/etc/hosts` with administrator privileges.
+- Add `127.0.0.1 app.localtest.me api.localtest.me`, save, then verify both
+  names resolve to `127.0.0.1`. Do not overwrite existing entries.
+
+Start Docker MongoDB, then run either project from `client` in PowerShell:
 
 ```powershell
 docker compose up -d mongo
@@ -220,38 +230,82 @@ $env:PLAYWRIGHT_CROSS_SITE = 'true'
 npx playwright test --project=cross-site
 ```
 
+```powershell
+$env:PLAYWRIGHT_CROSS_SITE = ''
+$env:PLAYWRIGHT_SAME_SITE = 'true'
+npx playwright test --project=same-site
+```
+
 Playwright starts Next.js on HTTP `127.0.0.1:3000` and the API on HTTP
-`127.0.0.1:5100`. `local-ssl-proxy` forwards `https://localhost:3100` to the
-client and `https://127.0.0.1:5101` to the API. The server process receives
-`COOKIE_SECURE=true`, `COOKIE_SAME_SITE=none`, `CORS_ORIGINS=https://localhost:3100`,
-`CLIENT_URL=https://localhost:3100`, and `ACCESS_TOKEN_TTL=10s`; the client is
-built with `NEXT_PUBLIC_SERVER_URL=https://127.0.0.1:5101`. Playwright ignores
-the local self-signed certificate only in this test configuration.
+`127.0.0.1:5100`; the existing `local-ssl-proxy` scripts expose HTTPS origins.
+The cross-site project uses `https://localhost:3100` and
+`https://127.0.0.1:5101`. The same-site project uses
+`https://app.localtest.me:3100` and `https://api.localtest.me:5101`, with
+`COOKIE_DOMAIN=.localtest.me`. Both projects set a 10-second access-token TTL
+and ignore the local self-signed certificate only for Playwright.
 
 The suite reports separate results for login/reload, silent refresh after the
 10-second access-token TTL, access-cookie deletion, both-cookie deletion and
-single redirect, CSRF mutation while the API cookie is unreadable, logout
-cookie clearing, and socket connection. CI does not run this project: it does
-not set `PLAYWRIGHT_CROSS_SITE=true`, so the default Playwright project
-explicitly excludes `cross-site.spec.ts`.
+single redirect, CSRF mutation after clearing the CSRF cookie, logout cookie
+clearing, and socket connection. The CSRF cookie is unreadable from the
+frontend in cross-site mode; same-site subdomains share the cookie domain. The
+same-site login test also asserts that access and refresh cookies are HttpOnly,
+Secure, SameSite=Lax, and scoped to `.localtest.me`; its logout test checks both
+frontend and API hosts.
 
-## Cross-site deployment checklist
+CI does not run either cookie project. It sets neither
+`PLAYWRIGHT_CROSS_SITE=true` nor `PLAYWRIGHT_SAME_SITE=true`; the default
+Playwright project excludes both `cross-site.spec.ts` and `same-site.spec.ts`.
 
-For a frontend and API on different sites, serve both over HTTPS and configure:
+## Production cookie topology
 
-1. `COOKIE_SECURE=true` and `COOKIE_SAME_SITE=none`.
-2. `COOKIE_DOMAIN` only when the cookie must be shared across subdomains of the
-   same parent domain. Keep it unset for a host-only API cookie otherwise.
-3. `CORS_ORIGINS` as a comma-separated exact list containing the frontend
-   origin; do not use `*`.
-4. `CLIENT_URL` to the frontend origin, and `NEXT_PUBLIC_SERVER_URL` to the
-   API origin.
-5. Verify login, reload, silent refresh, CSRF mutation without JavaScript
-   access to the API cookie, logout, and Socket.IO connection/reconnection in
-   a real HTTPS browser environment.
+**Recommended: same-site subdomains.** Configure custom domains under the same
+registrable domain, for example `app.yourdomain.com` on Vercel and
+`api.yourdomain.com` on Render. Set these server environment values:
 
-The local HTTPS project uses a self-signed development certificate and is not
-a substitute for production HTTPS staging verification.
+```dotenv
+COOKIE_SECURE=true
+COOKIE_SAME_SITE=lax
+COOKIE_DOMAIN=.yourdomain.com
+CORS_ORIGINS=https://app.yourdomain.com
+CLIENT_URL=https://app.yourdomain.com
+```
+
+Set this client environment value in Vercel:
+
+```dotenv
+NEXT_PUBLIC_SERVER_URL=https://api.yourdomain.com
+```
+
+Deployment steps:
+
+1. In Vercel, add `app.yourdomain.com` to the frontend project's Domains and
+   configure the DNS record Vercel specifies. Wait for its TLS certificate to
+   become active.
+2. In Render, add `api.yourdomain.com` as a custom domain to the web service
+   and configure the DNS record Render specifies. Wait for its TLS certificate
+   to become active.
+3. Configure the server and client environment variables above in their
+   respective hosting dashboards, then redeploy both services.
+4. Verify preflight responses, login, reload, refresh, CSRF mutations, logout,
+   and Socket.IO on the HTTPS custom domains.
+
+Default `*.vercel.app` and `*.onrender.com` hostnames are public-suffix
+domains. They cannot share a cookie domain, so those default hosted URLs are
+always cross-site; use custom subdomains for the recommended same-site setup.
+
+SameSite=None cross-site cookies are a fallback when custom domains cannot be
+used. They require `COOKIE_SECURE=true`, `COOKIE_SAME_SITE=none`, and an
+allowlisted exact frontend origin, but browser third-party-cookie policies
+may block them. Startup emits this warning: “third-party cookies are blocked
+by Safari/iOS, Firefox ETP and Chrome Incognito; use same-site subdomains in
+production”. Cross-site cookies are therefore not guaranteed in Safari, Firefox
+Enhanced Tracking Protection, or Chrome Incognito.
+
+| Mode                               | Environment values                                                                                                                                                                                   | Chromium                                    | Safari         | Firefox        | Incognito      |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | -------------- | -------------- | -------------- |
+| Same-site subdomains (recommended) | `COOKIE_SECURE=true`, `COOKIE_SAME_SITE=lax`, `COOKIE_DOMAIN=.yourdomain.com`; exact `CORS_ORIGINS` and `CLIENT_URL`; client `NEXT_PUBLIC_SERVER_URL=https://api.yourdomain.com`                     | Works                                       | Works          | Works          | Works          |
+| Cross-site fallback                | `COOKIE_SECURE=true`, `COOKIE_SAME_SITE=none`; unset `COOKIE_DOMAIN` unless a shared registrable parent exists; exact `CORS_ORIGINS` and `CLIENT_URL`; client `NEXT_PUBLIC_SERVER_URL` points to API | Works where third-party cookies are allowed | NOT guaranteed | NOT guaranteed | NOT guaranteed |
 
 ## API compatibility notes
 

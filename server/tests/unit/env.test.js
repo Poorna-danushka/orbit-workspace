@@ -122,6 +122,17 @@ test('token TTL and cookie settings are validated', () => {
   assert.match(invalidGrace.stderr, /REFRESH_REUSE_GRACE_SECONDS/);
 });
 
+test('SameSite=None emits one third-party cookie compatibility warning', () => {
+  const result = loadSettings({
+    COOKIE_SECURE: 'true',
+    COOKIE_SAME_SITE: 'none',
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const warning =
+    'third-party cookies are blocked by Safari/iOS, Firefox ETP and Chrome Incognito; use same-site subdomains in production';
+  assert.equal(result.stderr.split(warning).length - 1, 1);
+});
+
 test('test mode accepts only the dedicated orbit_test database', () => {
   const wrongDatabase = loadSettings({
     NODE_ENV: 'test',

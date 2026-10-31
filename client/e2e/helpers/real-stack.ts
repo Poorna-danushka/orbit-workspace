@@ -7,7 +7,9 @@ export const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 export const API_URL =
   process.env.PLAYWRIGHT_CROSS_SITE === 'true'
     ? 'https://127.0.0.1:5101/api'
-    : 'http://127.0.0.1:5100/api';
+    : process.env.PLAYWRIGHT_SAME_SITE === 'true'
+      ? 'https://api.localtest.me:5101/api'
+      : 'http://127.0.0.1:5100/api';
 export const E2E_PASSWORD = 'Orbit-e2e-password-123';
 
 const serverPackagePath = path.resolve(process.cwd(), '..', 'server', 'package.json');
@@ -102,7 +104,12 @@ export async function signIn(page: Page, email: string): Promise<void> {
   await page.goto('/login');
   await page.getByLabel('Work Email').fill(email);
   await page.getByRole('textbox', { name: 'Password' }).fill(E2E_PASSWORD);
+  const loginResponsePromise = page.waitForResponse(
+    (response) => new URL(response.url()).pathname === `${new URL(API_URL).pathname}/auth/login`,
+  );
   await page.getByRole('button', { name: 'Sign In to Workspace' }).click();
+  const loginResponse = await loginResponsePromise;
+  expect(loginResponse.status(), await loginResponse.text()).toBe(200);
   await expect(page).toHaveURL(/\/dashboard$/);
 }
 
