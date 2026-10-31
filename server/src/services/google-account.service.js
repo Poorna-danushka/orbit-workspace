@@ -76,4 +76,4 @@ const resolveGoogleAccount = async (identity, database = prisma) => {
   }
 };
 
-module.exports = { resolveGoogleAccount, GoogleAccountConflictError };
+module.exports = { resolveGoogleAccount };

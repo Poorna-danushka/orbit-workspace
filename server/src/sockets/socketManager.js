@@ -4,13 +4,13 @@ const env = require('../config/env');
 const { authenticateSocket } = require('../middlewares/socket-auth.middleware');
 const { createFixedWindowLimiter } = require('../utils/rate-limit.util');
 const logger = require('../utils/logger.util');
+const { isAllowedSocketOrigin } = require('../utils/socket-origin.util');
 
 let io;
 
 const projectRoom = (projectId) => `project:${projectId}`;
 const userRoom = (userId) => `user:${userId}`;
 const messageLimiter = createFixedWindowLimiter({ limit: 30, windowMs: 60_000 });
-const isAllowedSocketOrigin = (origin) => !origin || env.CORS_ORIGINS.includes(origin);
 
 const acknowledge = (callback, payload) => {
   if (typeof callback === 'function') callback(payload);
@@ -162,5 +162,4 @@ module.exports = {
   getUserRoom,
   revokeProjectRoomAccess,
   disconnectUser,
-  isAllowedSocketOrigin,
 };

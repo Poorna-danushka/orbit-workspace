@@ -19,10 +19,18 @@
     "test:e2e": "playwright test"
   },
   "knip": {
-    "entry": ["src/**/*.{ts,tsx}!"],
+    "entry": [
+      "tests/**/*.{ts,tsx,js}",
+      "e2e/**/*.ts",
+      "*.config.{js,mjs,cjs,ts}"
+    ],
     "project": [
-      "src/**/*.{ts,tsx,css}",
-      "tests/**/*.{ts,tsx,js}"
+      "src/**/*.{ts,tsx}!",
+      "src/**/*.css",
+      "scripts/**/*.mjs",
+      "tests/**/*.{ts,tsx,js}",
+      "e2e/**/*.ts",
+      "*.config.{js,mjs,cjs,ts}"
     ]
   },
   "dependencies": {

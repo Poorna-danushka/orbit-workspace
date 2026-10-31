@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const env = require('../../src/config/env');
-const { isAllowedSocketOrigin } = require('../../src/sockets/socketManager');
+const { isAllowedSocketOrigin } = require('../../src/utils/socket-origin.util');
 
 test('socket origin policy rejects browser origins not explicitly configured', () => {
   assert.equal(isAllowedSocketOrigin('https://unapproved.example.invalid'), false);
