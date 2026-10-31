@@ -27,6 +27,24 @@ if (!['development', 'test', 'production'].includes(NODE_ENV)) {
   throw new Error('NODE_ENV must be development, test, or production');
 }
 
+const parseDuration = (value, name) => {
+  const match = /^([1-9]\d*)(ms|s|m|h|d)$/.exec(value);
+  if (!match) {
+    throw new Error(`${name} must be a positive duration such as 15m or 7d`);
+  }
+  const units = { ms: 1, s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 };
+  const milliseconds = Number(match[1]) * units[match[2]];
+  if (!Number.isSafeInteger(milliseconds)) {
+    throw new Error(`${name} is too large`);
+  }
+  return milliseconds;
+};
+
+const ACCESS_TOKEN_TTL = process.env.ACCESS_TOKEN_TTL?.trim() || '15m';
+const REFRESH_TOKEN_TTL = process.env.REFRESH_TOKEN_TTL?.trim() || '7d';
+const ACCESS_TOKEN_TTL_MS = parseDuration(ACCESS_TOKEN_TTL, 'ACCESS_TOKEN_TTL');
+const REFRESH_TOKEN_TTL_MS = parseDuration(REFRESH_TOKEN_TTL, 'REFRESH_TOKEN_TTL');
+
 if (NODE_ENV === 'test') {
   let testDatabaseUrl;
   try {
@@ -112,6 +130,28 @@ const CORS_ORIGINS = process.env.CORS_ORIGINS
   .map((origin) => parseOrigin(origin, 'CORS_ORIGINS'));
 const CLIENT_URL = parseOrigin(process.env.CLIENT_URL, 'CLIENT_URL');
 
+const cookieSecureValue = process.env.COOKIE_SECURE?.trim().toLowerCase();
+if (cookieSecureValue && !['true', 'false'].includes(cookieSecureValue)) {
+  throw new Error('COOKIE_SECURE must be either true or false');
+}
+const COOKIE_SECURE = cookieSecureValue
+  ? cookieSecureValue === 'true'
+  : NODE_ENV === 'production' || CLIENT_URL.startsWith('https://');
+
+const COOKIE_SAME_SITE = process.env.COOKIE_SAME_SITE?.trim().toLowerCase() ||
+  (COOKIE_SECURE ? 'none' : 'lax');
+if (!['strict', 'lax', 'none'].includes(COOKIE_SAME_SITE)) {
+  throw new Error('COOKIE_SAME_SITE must be strict, lax, or none');
+}
+if (COOKIE_SAME_SITE === 'none' && !COOKIE_SECURE) {
+  throw new Error('COOKIE_SAME_SITE=none requires COOKIE_SECURE=true');
+}
+
+const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN?.trim() || undefined;
+if (COOKIE_DOMAIN && (!/^[.]?[A-Za-z0-9.-]+$/.test(COOKIE_DOMAIN) || COOKIE_DOMAIN.includes('..'))) {
+  throw new Error('COOKIE_DOMAIN must be a valid cookie domain');
+}
+
 const smtpPort = Number(process.env.SMTP_PORT || 587);
 if (!Number.isInteger(smtpPort) || smtpPort < 1 || smtpPort > 65535) {
   throw new Error('SMTP_PORT must be an integer between 1 and 65535');
@@ -154,12 +194,18 @@ module.exports = {
   DATABASE_URL: process.env.DATABASE_URL,
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
+  ACCESS_TOKEN_TTL,
+  ACCESS_TOKEN_TTL_MS,
+  REFRESH_TOKEN_TTL,
+  REFRESH_TOKEN_TTL_MS,
   JWT_ISSUER: process.env.JWT_ISSUER,
   JWT_AUDIENCE: process.env.JWT_AUDIENCE,
   NODE_ENV,
   CORS_ORIGINS,
   CLIENT_URL,
-  COOKIE_SECURE: NODE_ENV === 'production' || CLIENT_URL.startsWith('https://'),
+  COOKIE_SECURE,
+  COOKIE_SAME_SITE,
+  COOKIE_DOMAIN,
   PORT: port,
   SMTP_HOST: process.env.SMTP_HOST,
   SMTP_PORT: smtpPort,

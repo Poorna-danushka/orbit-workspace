@@ -3,7 +3,7 @@
  *
  * Each code maps to a specific HTTP status and client-side handling strategy.
  * The contract: AUTH_TOKEN_EXPIRED and AUTH_TOKEN_MISSING trigger silent refresh.
- * All AUTH_REFRESH_* codes mean "log the user out".
+ * AUTH_TOKEN_INVALID, AUTH_USER_NOT_FOUND, and every AUTH_REFRESH_* code end the session.
  */
 
 // Authentication & Authorization (401, 403)

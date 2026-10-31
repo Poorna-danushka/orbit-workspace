@@ -40,9 +40,10 @@ const csrfTokenSetter = (req, res, next) => {
     const csrfToken = createCsrfToken();
     res.cookie('csrfToken', csrfToken, {
       secure: env.COOKIE_SECURE,
-      sameSite: env.COOKIE_SECURE ? 'none' : 'lax',
+      sameSite: env.COOKIE_SAME_SITE,
       path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      ...(env.COOKIE_DOMAIN ? { domain: env.COOKIE_DOMAIN } : {}),
+      maxAge: env.REFRESH_TOKEN_TTL_MS
     });
     // Attach to request context
     req.csrfToken = csrfToken;
