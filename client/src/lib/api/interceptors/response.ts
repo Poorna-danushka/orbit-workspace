@@ -58,7 +58,7 @@ export function registerResponseInterceptor(api: AxiosInstance): void {
       if (action === 'refresh' && request && !request._retry) {
         request._retry = true;
         try {
-          await refreshSession(api);
+          await refreshSession(api, request._requestStartedAt ?? Date.now());
           return api(request);
         } catch (refreshError) {
           return Promise.reject(attachApiError(refreshError));

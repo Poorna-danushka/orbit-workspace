@@ -43,9 +43,9 @@ async function performRefreshWithLock(
   await performRefreshOnce(api, requestStartedAt);
 }
 
-export function refreshSession(api: AxiosInstance): Promise<void> {
+export function refreshSession(api: AxiosInstance, requestStartedAt = Date.now()): Promise<void> {
   if (!refreshPromise) {
-    const request = performRefreshWithLock(api, Date.now());
+    const request = performRefreshWithLock(api, requestStartedAt);
     const wrappedRequest = request.finally(() => {
       if (refreshPromise === wrappedRequest) refreshPromise = null;
     });

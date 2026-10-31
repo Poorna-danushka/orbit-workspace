@@ -189,6 +189,7 @@ describe('real API client auth refresh interceptors', () => {
 
     try {
       await Promise.all([firstTabRefresh(api), secondTabRefresh(api)]);
+      await secondTabRefresh(api, Date.now() - 1_000);
       expect(refreshCount).toBe(1);
       expect(refreshMethods).toEqual(['post']);
       expect(maxActiveRefreshes).toBe(1);

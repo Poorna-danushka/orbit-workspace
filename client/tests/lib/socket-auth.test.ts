@@ -49,6 +49,7 @@ describe('socket authentication refresh', () => {
     originalAxiosAdapter = axios.defaults.adapter;
     socket = new FakeSocket();
     jest.mocked(io).mockReturnValue(socket as unknown as Socket);
+    window.localStorage.removeItem('orbit:last-auth-refresh-at');
     window.history.replaceState({}, '', '/login');
     markSessionActive();
   });
