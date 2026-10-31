@@ -6,7 +6,7 @@ import { expect, type BrowserContext, type Page, type Request } from '@playwrigh
 export const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 export const API_URL =
   process.env.PLAYWRIGHT_CROSS_SITE === 'true'
-    ? 'http://127.0.0.1:5101/api'
+    ? 'https://127.0.0.1:5101/api'
     : 'http://127.0.0.1:5100/api';
 export const E2E_PASSWORD = 'Orbit-e2e-password-123';
 
@@ -59,9 +59,7 @@ interface TestDatabase {
     }): Promise<{ status: string } | null>;
   };
   projectMember: {
-    create(args: {
-      data: { projectId: string; userId: string; role: 'member' };
-    }): Promise<unknown>;
+    create(args: { data: { projectId: string; userId: string; role: 'member' } }): Promise<unknown>;
   };
 }
 
@@ -91,14 +89,10 @@ export async function registerUser(
   const response = await context.request.post(`${API_URL}/auth/register`, {
     data: { username, email, password: E2E_PASSWORD },
   });
-  expect(response.status()).toBe(201);
-  const body: unknown = await response.json();
-  if (
-    !body ||
-    typeof body !== 'object' ||
-    !('user' in body) ||
-    !isE2eUser(body.user)
-  ) {
+  const responseBody = await response.text();
+  expect(response.status(), responseBody).toBe(201);
+  const body: unknown = JSON.parse(responseBody);
+  if (!body || typeof body !== 'object' || !('user' in body) || !isE2eUser(body.user)) {
     throw new Error('Registration response did not contain a valid user.');
   }
   return body.user;

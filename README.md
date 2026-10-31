@@ -134,9 +134,8 @@ For authenticated browser tests, start Docker MongoDB and set
 `npm test`. Playwright starts its own API and frontend processes. For the
 cross-site project, run from `client` with
 `$env:PLAYWRIGHT_CROSS_SITE='true'` and `TEST_DATABASE_URL` set, then run
-`npx playwright test --project=cross-site`. The local HTTP setup cannot
-validate Secure-cookie persistence in Chromium; use the staging checklist
-below for HTTPS verification.
+`npx playwright test --project=cross-site`. See [Cross-site verification](#cross-site-verification)
+below for the local HTTPS setup.
 
 ## Project structure
 
@@ -198,6 +197,44 @@ docs/
 - Socket.IO authenticates using the access cookie and checks the request
   origin against the configured allowlist.
 
+## Cross-site verification
+
+The dedicated `cross-site` Playwright project verifies Secure cookies using
+local HTTPS proxies. From the repository root, generate a self-signed
+certificate with `localhost` and `127.0.0.1` Subject Alternative Names:
+
+```powershell
+New-Item -ItemType Directory -Force -Path .\client\.certs | Out-Null
+$certDir = (Resolve-Path .\client\.certs).Path
+docker run --rm -v "${certDir}:/certs" alpine/openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /certs/localhost-key.pem -out /certs/localhost-cert.pem -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+docker run --rm -v "${certDir}:/certs" alpine/openssl x509 -in /certs/localhost-cert.pem -noout -subject -ext subjectAltName
+```
+
+The `.certs/` directory is ignored and the private key must not be committed.
+Start Docker MongoDB, then run the test from `client` in PowerShell:
+
+```powershell
+docker compose up -d mongo
+$env:TEST_DATABASE_URL = 'mongodb://127.0.0.1:27017/orbit_test?replicaSet=rs0&directConnection=true'
+$env:PLAYWRIGHT_CROSS_SITE = 'true'
+npx playwright test --project=cross-site
+```
+
+Playwright starts Next.js on HTTP `127.0.0.1:3000` and the API on HTTP
+`127.0.0.1:5100`. `local-ssl-proxy` forwards `https://localhost:3100` to the
+client and `https://127.0.0.1:5101` to the API. The server process receives
+`COOKIE_SECURE=true`, `COOKIE_SAME_SITE=none`, `CORS_ORIGINS=https://localhost:3100`,
+`CLIENT_URL=https://localhost:3100`, and `ACCESS_TOKEN_TTL=10s`; the client is
+built with `NEXT_PUBLIC_SERVER_URL=https://127.0.0.1:5101`. Playwright ignores
+the local self-signed certificate only in this test configuration.
+
+The suite reports separate results for login/reload, silent refresh after the
+10-second access-token TTL, access-cookie deletion, both-cookie deletion and
+single redirect, CSRF mutation while the API cookie is unreadable, logout
+cookie clearing, and socket connection. CI does not run this project: it does
+not set `PLAYWRIGHT_CROSS_SITE=true`, so the default Playwright project
+explicitly excludes `cross-site.spec.ts`.
+
 ## Cross-site deployment checklist
 
 For a frontend and API on different sites, serve both over HTTPS and configure:
@@ -213,10 +250,8 @@ For a frontend and API on different sites, serve both over HTTPS and configure:
    access to the API cookie, logout, and Socket.IO connection/reconnection in
    a real HTTPS browser environment.
 
-The cross-site Playwright project currently uses HTTP origins because the
-local services do not provide TLS. Chromium receives the auth response but
-does not store the `Secure` cookies in that environment, so this check is
-reported as **CROSS-SITE UNVERIFIED**, not as a passing end-to-end flow.
+The local HTTPS project uses a self-signed development certificate and is not
+a substitute for production HTTPS staging verification.
 
 ## API compatibility notes
 

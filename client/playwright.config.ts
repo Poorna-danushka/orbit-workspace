@@ -2,12 +2,12 @@ import { defineConfig, type PlaywrightTestConfig } from '@playwright/test';
 
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 const crossSite = process.env.PLAYWRIGHT_CROSS_SITE === 'true';
-const frontendOrigin = crossSite ? 'http://localhost:3100' : 'http://127.0.0.1:3100';
-const apiOrigin = crossSite ? 'http://127.0.0.1:5101' : 'http://127.0.0.1:5100';
+const frontendOrigin = crossSite ? 'https://localhost:3100' : 'http://127.0.0.1:3100';
+const apiOrigin = crossSite ? 'https://127.0.0.1:5101' : 'http://127.0.0.1:5100';
 const webServers: Extract<NonNullable<PlaywrightTestConfig['webServer']>, unknown[]> = [
   {
-    command: `npm run dev -- --hostname ${crossSite ? 'localhost' : '127.0.0.1'} --port 3100`,
-    url: `${frontendOrigin}/login`,
+    command: `npm run dev -- --hostname 127.0.0.1 --port ${crossSite ? '3000' : '3100'}`,
+    url: `http://127.0.0.1:${crossSite ? '3000' : '3100'}/login`,
     reuseExistingServer: false,
     timeout: 120_000,
     env: {
@@ -20,11 +20,11 @@ const webServers: Extract<NonNullable<PlaywrightTestConfig['webServer']>, unknow
 if (testDatabaseUrl) {
   webServers.push({
     command: 'npm --prefix ../server start',
-    url: `${apiOrigin}/api/csrf-token`,
+    url: `http://127.0.0.1:5100/api/csrf-token`,
     reuseExistingServer: false,
     timeout: 120_000,
     env: {
-      PORT: crossSite ? '5101' : '5100',
+      PORT: '5100',
       NODE_ENV: 'test',
       DATABASE_URL: testDatabaseUrl,
       TEST_DATABASE_URL: testDatabaseUrl,
@@ -40,6 +40,25 @@ if (testDatabaseUrl) {
       GOOGLE_CALLBACK_URL: '',
     },
   });
+
+  if (crossSite) {
+    webServers.push(
+      {
+        command: 'npm run proxy:api:tls',
+        url: `${apiOrigin}/api/csrf-token`,
+        reuseExistingServer: false,
+        timeout: 30_000,
+        ignoreHTTPSErrors: true,
+      },
+      {
+        command: 'npm run proxy:client:tls',
+        url: `${frontendOrigin}/login`,
+        reuseExistingServer: false,
+        timeout: 30_000,
+        ignoreHTTPSErrors: true,
+      },
+    );
+  }
 }
 
 export default defineConfig({
@@ -50,6 +69,7 @@ export default defineConfig({
   reporter: 'list',
   use: {
     baseURL: frontendOrigin,
+    ignoreHTTPSErrors: crossSite,
     trace: 'retain-on-failure',
   },
   projects: crossSite
