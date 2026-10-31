@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const userController = require('../controllers/user.controller');
 const { verifyToken } = require('../middlewares/auth.middleware');
 const { createRateLimiter } = require('../utils/rate-limit.util');
@@ -12,12 +10,6 @@ const {
   searchUsersValidation,
   updateProfileValidation,
 } = require('../validators/user.validators');
-
-// Ensure uploads directory exists
-const uploadDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
 
 const avatarStorage = multer.memoryStorage();
 

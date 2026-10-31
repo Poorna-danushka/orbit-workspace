@@ -72,7 +72,6 @@ const verifyGoogleAuthorizationCode = async (
 };
 
 module.exports = {
-  createGoogleOAuthClient,
   createGoogleAuthorizationRequest,
   verifyGoogleAuthorizationCode,
 };
