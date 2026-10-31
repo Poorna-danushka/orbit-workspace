@@ -2,6 +2,7 @@ const request = require('supertest');
 const app = require('../../src/app');
 const prisma = require('../../src/config/prisma');
 const cleanupTestUsers = require('../helpers/cleanup-test-users');
+const { ensureGoogleIdUniqueIndex } = require('../../src/services/google-id-index.service');
 
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 const databaseTest = testDatabaseUrl ? test : test.skip;
@@ -45,6 +46,7 @@ beforeAll(async () => {
   }
 
   await prisma.$connect();
+  await ensureGoogleIdUniqueIndex(prisma);
   databaseConnected = true;
 }, 60_000);
 

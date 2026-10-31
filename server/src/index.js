@@ -4,6 +4,7 @@ const prisma = require('./config/prisma');
 const env = require('./config/env');
 const { initSocket } = require('./sockets/socketManager');
 const logger = require('./utils/logger.util');
+const { ensureGoogleIdUniqueIndex } = require('./services/google-id-index.service');
 
 const PORT = env.PORT;
 const server = http.createServer(app);
@@ -21,6 +22,7 @@ const startServer = async () => {
   try {
     await prisma.$connect();
     logger.info('Prisma connected successfully');
+    await ensureGoogleIdUniqueIndex(prisma);
     initSocket(server);
     server.listen(PORT, () => logger.info('Server listening', { port: PORT }));
   } catch (error) {
