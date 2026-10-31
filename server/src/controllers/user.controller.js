@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const prisma = require('../config/prisma');
 const { isAllowedFileContent } = require('../utils/file-validation.util');
 const logger = require('../utils/logger.util');
+const { activeRefreshTokenWhere } = require('../utils/refresh-token-query.util');
 
 exports.getMe = async (req, res) => {
   try {
@@ -49,7 +50,7 @@ exports.changePassword = async (req, res) => {
     await prisma.$transaction([
       prisma.user.update({ where: { id: userId }, data: { password: hashed } }),
       prisma.refreshToken.updateMany({
-        where: { userId, revokedAt: null },
+        where: activeRefreshTokenWhere({ userId }),
         data: { revokedAt: new Date() },
       }),
     ]);

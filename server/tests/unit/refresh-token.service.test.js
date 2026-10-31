@@ -4,6 +4,13 @@ const ErrorCodes = require('../../src/utils/error-codes');
 const { rotateRefreshToken } = require('../../src/services/refresh-token.service');
 const { hashToken } = require('../../src/utils/token.util');
 
+const matchesRevocationFilter = (record, where) =>
+  !where.OR ||
+  where.OR.some((condition) => {
+    if (condition.revokedAt === null) return record.revokedAt === null;
+    return condition.revokedAt?.isSet === false && !Object.hasOwn(record, 'revokedAt');
+  });
+
 const createDatabase = (records) => {
   const state = new Map(records.map((record) => [record.tokenHash, { ...record }]));
   const updateMany = async ({ where, data }) => {
@@ -11,7 +18,7 @@ const createDatabase = (records) => {
     for (const record of state.values()) {
       const matchesToken = !where.tokenHash || record.tokenHash === where.tokenHash;
       const matchesUser = !where.userId || record.userId === where.userId;
-      const matchesRevoked = !Object.hasOwn(where, 'revokedAt') || record.revokedAt === where.revokedAt;
+      const matchesRevoked = matchesRevocationFilter(record, where);
       if (matchesToken && matchesUser && matchesRevoked) {
         Object.assign(record, data);
         count += 1;
@@ -68,6 +75,17 @@ test('refresh reuse inside the grace window returns access without rotating agai
     [...database.state.values()].filter((record) => !record.revokedAt).length,
     1,
   );
+});
+
+test('refresh rotates legacy records with no revokedAt field', async () => {
+  const legacyToken = { ...activeToken };
+  delete legacyToken.revokedAt;
+  const database = createDatabase([legacyToken]);
+
+  const session = await rotateRefreshToken(user, activeToken.tokenHash, database);
+
+  assert.ok(session.refreshToken);
+  assert.ok(database.state.get(activeToken.tokenHash).revokedAt instanceof Date);
 });
 
 test('refresh reuse outside the grace window revokes active refresh tokens', async () => {

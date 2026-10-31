@@ -2,6 +2,7 @@ const prisma = require('../config/prisma');
 const AppError = require('../utils/AppError');
 const ErrorCodes = require('../utils/error-codes');
 const { generateAccessToken, generateRefreshToken } = require('../utils/token.util');
+const { activeRefreshTokenWhere } = require('../utils/refresh-token-query.util');
 const { REFRESH_REUSE_GRACE_SECONDS } = require('../config/env');
 
 const isWithinRefreshGraceWindow = (tokenRecord, now) => {
@@ -12,7 +13,7 @@ const isWithinRefreshGraceWindow = (tokenRecord, now) => {
 
 const revokeActiveRefreshTokens = (database, userId, revokedAt) =>
   database.refreshToken.updateMany({
-    where: { userId, revokedAt: null },
+    where: activeRefreshTokenWhere({ userId }),
     data: { revokedAt },
   });
 
@@ -63,7 +64,7 @@ const rotateRefreshToken = async (
   try {
     rotated = await database.$transaction(async (transaction) => {
       const result = await transaction.refreshToken.updateMany({
-        where: { tokenHash, revokedAt: null },
+        where: activeRefreshTokenWhere({ tokenHash }),
         data: { revokedAt: now, replacedBy: nextRefresh.tokenHash },
       });
       if (result.count !== 1) return false;
@@ -73,6 +74,8 @@ const rotateRefreshToken = async (
           userId: user.id,
           tokenHash: nextRefresh.tokenHash,
           expiresAt: nextRefresh.expiresAt,
+          revokedAt: null,
+          replacedBy: null,
         },
       });
       return true;

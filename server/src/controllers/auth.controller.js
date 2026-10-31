@@ -14,6 +14,7 @@ const AppError = require('../utils/AppError');
 const ErrorCodes = require('../utils/error-codes');
 const logger = require('../utils/logger.util');
 const { clearAllAuthCookies, setAccessCookie, setAuthCookies } = require('../utils/auth-cookies.util');
+const { activeRefreshTokenWhere } = require('../utils/refresh-token-query.util');
 
 const sendRefreshResponse = (res, user, accessToken, refreshToken) => {
   if (refreshToken) {
@@ -77,6 +78,8 @@ exports.register = async (req, res) => {
       userId: user.id,
       tokenHash: refreshPayload.tokenHash,
       expiresAt: refreshPayload.expiresAt,
+      revokedAt: null,
+      replacedBy: null,
     },
   });
 
@@ -108,6 +111,8 @@ exports.login = async (req, res) => {
       userId: user.id,
       tokenHash: refreshPayload.tokenHash,
       expiresAt: refreshPayload.expiresAt,
+      revokedAt: null,
+      replacedBy: null,
     },
   });
 
@@ -164,7 +169,10 @@ exports.logout = async (req, res) => {
   }
 
   if (userId) {
-    await prisma.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } });
+    await prisma.refreshToken.updateMany({
+      where: activeRefreshTokenWhere({ userId }),
+      data: { revokedAt: new Date() },
+    });
   }
 
   clearAllAuthCookies(res);
@@ -223,7 +231,10 @@ exports.resetPassword = async (req, res) => {
   await prisma.$transaction([
     prisma.user.update({ where: { id: tokenRecord.userId }, data: { password: hashedPassword } }),
     prisma.passwordResetToken.update({ where: { tokenHash }, data: { used: true } }),
-    prisma.refreshToken.updateMany({ where: { userId: tokenRecord.userId, revokedAt: null }, data: { revokedAt: new Date() } }),
+    prisma.refreshToken.updateMany({
+      where: activeRefreshTokenWhere({ userId: tokenRecord.userId }),
+      data: { revokedAt: new Date() },
+    }),
   ]);
 
   res.json({ message: 'Password reset successfully. You can now log in.' });

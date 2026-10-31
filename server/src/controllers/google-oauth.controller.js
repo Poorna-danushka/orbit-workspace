@@ -134,6 +134,8 @@ exports.googleCallback = async (req, res) => {
         userId: user.id,
         tokenHash: refreshPayload.tokenHash,
         expiresAt: refreshPayload.expiresAt,
+        revokedAt: null,
+        replacedBy: null,
       },
     });
 

@@ -9,6 +9,13 @@ const mockDatabase = {
   },
 };
 
+const matchesRevocationFilter = (record, where) =>
+  !where.OR ||
+  where.OR.some((condition) => {
+    if (condition.revokedAt === null) return record.revokedAt === null;
+    return condition.revokedAt?.isSet === false && !Object.hasOwn(record, 'revokedAt');
+  });
+
 const mockPrisma = {
   user: {
     findUnique: jest.fn(async () => mockDatabase.user),
@@ -21,7 +28,7 @@ const mockPrisma = {
         if (
           (!where.tokenHash || record.tokenHash === where.tokenHash) &&
           (!where.userId || record.userId === where.userId) &&
-          (!Object.hasOwn(where, 'revokedAt') || record.revokedAt === where.revokedAt)
+          matchesRevocationFilter(record, where)
         ) {
           Object.assign(record, data);
           count += 1;
