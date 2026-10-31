@@ -41,3 +41,14 @@ export interface ProjectInvitation {
 export interface ProjectInvitationResponse {
   invitation: ProjectInvitation;
 }
+
+type ChatUser = Pick<User, 'id' | 'username' | 'avatar'>;
+
+export interface ChatMessage {
+  id: string;
+  projectId: string;
+  senderId: string;
+  content: string;
+  createdAt: string;
+  sender?: ChatUser;
+}

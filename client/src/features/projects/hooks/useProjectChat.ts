@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import type { RefObject, Dispatch, SetStateAction } from 'react';
 import type { Socket } from 'socket.io-client';
-import type { ChatMessage } from '@/features/chat/types';
+import type { ChatMessage } from '../types';
 import {
   getProjectChatMessages,
   uploadProjectChatFile,
-} from '@/features/chat/services/chatService';
-import { sendProjectChatMessage } from '@/features/chat/services/sendProjectChatMessage';
+} from '../services/projectChatService';
+import { sendProjectChatMessage } from '../services/sendProjectChatMessage';
 import { getErrorMessage } from '@/lib/errors';
 import { BACKEND_URL } from '@/lib/config';
 import { acquireSocket, releaseSocket } from '@/lib/realtime/socket';
