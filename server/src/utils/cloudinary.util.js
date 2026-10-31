@@ -11,11 +11,11 @@ const cloudinary = require('../config/cloudinary');
 const uploadBufferToCloudinary = (buffer, folder = 'orbit/attachments', resourceType = 'auto', options = {}) => {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: resourceType, ...options },
       (error, result) => {
         if (error) return reject(error);
         resolve(result);
       },
-      { folder, resource_type: resourceType, ...options },
     );
     uploadStream.end(buffer);
   });

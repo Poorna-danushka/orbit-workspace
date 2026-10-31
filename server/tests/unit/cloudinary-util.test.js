@@ -6,14 +6,14 @@ const {
   deleteCloudinaryAsset,
 } = require('../../src/utils/cloudinary.util');
 
-test('Cloudinary attachment operations use the supported SDK signatures and authenticated delivery', async () => {
+test('Cloudinary attachment operations use the supported v2 SDK signatures and authenticated delivery', async () => {
   const originalUploadStream = cloudinary.uploader.upload_stream;
   const originalPrivateDownloadUrl = cloudinary.utils.private_download_url;
   const originalDestroy = cloudinary.uploader.destroy;
 
   try {
     let uploadOptions;
-    cloudinary.uploader.upload_stream = (callback, options) => {
+    cloudinary.uploader.upload_stream = (options, callback) => {
       uploadOptions = options;
       return {
         end(buffer) {
