@@ -42,7 +42,7 @@ const authenticateSocket = async (socket, next) => {
       err.data = { code: ErrorCodes.AUTH_USER_NOT_FOUND };
       return next(err);
     }
-    
+
     socket.data.userId = user.id;
     socket.data.authExpiresAt = decoded.exp * 1000;
     return next();

@@ -41,7 +41,7 @@ const createFixedWindowLimiter = ({ limit, windowMs, now = Date.now }) => {
  */
 const createRateLimiter = (options) => {
   const customMessage = options.message;
-  
+
   return rateLimit({
     ...options,
     standardHeaders: options.standardHeaders ?? true,
@@ -50,17 +50,17 @@ const createRateLimiter = (options) => {
       // Calculate seconds until reset (minimum 1)
       const resetTime = req.rateLimit?.resetTime || new Date(Date.now() + options.windowMs);
       const retryAfter = Math.max(1, Math.ceil((resetTime - Date.now()) / 1000));
-      
+
       res.set('Retry-After', retryAfter);
-      
+
       const error = AppError.tooManyRequests(
         ErrorCodes.RATE_LIMITED,
         customMessage || 'Too many requests. Please try again later.'
       );
-      
+
       // Preserve requestId if present
       error.requestId = req.id;
-      
+
       next(error);
     },
   });

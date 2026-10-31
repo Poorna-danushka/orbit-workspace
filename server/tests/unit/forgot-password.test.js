@@ -98,7 +98,7 @@ test('forgotPassword returns identical response even when email sending fails', 
   try {
     prisma.user.findUnique = async () => ({ id: 'user-123', email: 'existing@example.com' });
     prisma.passwordResetToken.create = async () => ({ id: 'token-123' });
-    
+
     // Mock email service to throw error
     sendPasswordResetEmail.mockRejectedValue(new Error('SMTP connection failed'));
 

@@ -33,4 +33,3 @@
 
 - **GONE** (410): Defined in error-codes.js and AppError factory, but no call sites
 - **BAD_GATEWAY** (502): Defined in AppError factory, but no call sites
-

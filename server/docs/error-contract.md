@@ -323,7 +323,7 @@ Cookie: accessToken=valid_user_jwt
 ### For Backend Developers
 
 1. **Controller Migration** (mechanical):
-   - Replace `res.status(XXX).json({ message: '...' })` 
+   - Replace `res.status(XXX).json({ message: '...' })`
    - With `next(AppError.xxx(code, message))`
 
 2. **Validation Migration**:

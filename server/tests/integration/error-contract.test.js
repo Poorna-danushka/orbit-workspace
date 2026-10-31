@@ -41,12 +41,12 @@ describe('Error Contract Integration Tests', () => {
     expect(response.body.message).toBeDefined();
     expect(response.body.errors).toBeInstanceOf(Array);
     expect(response.body.errors.length).toBeGreaterThan(0);
-    
+
     const emailError = response.body.errors.find(e => e.field === 'email');
     expect(emailError).toBeDefined();
     expect(emailError.message).toBeDefined();
     expect(emailError).not.toHaveProperty('msg');
-    
+
     expect(response.body.requestId).toBeDefined();
     expect(response.headers['x-request-id']).toBe(response.body.requestId);
   });
@@ -249,7 +249,7 @@ describe('Error Contract Integration Tests', () => {
     // We test the middleware directly since integration with socket.io server
     // is complex and already covered in socket.test.js
     const { authenticateSocket } = require('../../src/middlewares/socket-auth.middleware');
-    
+
     // Test AUTH_TOKEN_MISSING
     const socketNoToken = {
       handshake: { headers: {} },
@@ -259,7 +259,7 @@ describe('Error Contract Integration Tests', () => {
     authenticateSocket(socketNoToken, (err) => {
       expect(err).toBeDefined();
       expect(err.data.code).toBe('AUTH_TOKEN_MISSING');
-      
+
       // Test AUTH_TOKEN_INVALID
       const socketInvalidToken = {
         handshake: { headers: { cookie: 'accessToken=invalid-token' } },

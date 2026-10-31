@@ -52,5 +52,3 @@ test('admin authentication distinguishes invalid tokens from account-service out
     prisma.user.findUnique = originalFindUnique;
   }
 });
-
-

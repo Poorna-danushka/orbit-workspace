@@ -214,7 +214,7 @@ exports.forgotPassword = async (req, res) => {
 
 exports.resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
-  
+
   if (!token) {
     throw AppError.badRequest(ErrorCodes.VALIDATION_ERROR, 'Reset token is required');
   }

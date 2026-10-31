@@ -135,8 +135,8 @@ const errorHandler = (err, req, res, next) => {
 
     // Payload Too Large (body-parser/express-json)
     else if (
-      error.status === 413 || 
-      error.code === 'ENTITY_TOO_LARGE' || 
+      error.status === 413 ||
+      error.code === 'ENTITY_TOO_LARGE' ||
       error.type === 'entity.too.large'
     ) {
       error = new AppError('Request payload is too large', 413, ErrorCodes.PAYLOAD_TOO_LARGE);
