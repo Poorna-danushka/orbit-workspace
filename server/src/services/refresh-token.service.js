@@ -2,13 +2,12 @@ const prisma = require('../config/prisma');
 const AppError = require('../utils/AppError');
 const ErrorCodes = require('../utils/error-codes');
 const { generateAccessToken, generateRefreshToken } = require('../utils/token.util');
-
-const REFRESH_REUSE_GRACE_MS = 10_000;
+const { REFRESH_REUSE_GRACE_SECONDS } = require('../config/env');
 
 const isWithinRefreshGraceWindow = (tokenRecord, now) => {
   if (!tokenRecord.revokedAt || !tokenRecord.replacedBy) return false;
   const age = now.getTime() - new Date(tokenRecord.revokedAt).getTime();
-  return age >= 0 && age <= REFRESH_REUSE_GRACE_MS;
+  return age >= 0 && age <= REFRESH_REUSE_GRACE_SECONDS * 1000;
 };
 
 const revokeActiveRefreshTokens = (database, userId, revokedAt) =>

@@ -116,6 +116,10 @@ test('token TTL and cookie settings are validated', () => {
   });
   assert.notEqual(insecureCrossSite.status, 0);
   assert.match(insecureCrossSite.stderr, /requires COOKIE_SECURE=true/);
+
+  const invalidGrace = loadSettings({ REFRESH_REUSE_GRACE_SECONDS: '0' });
+  assert.notEqual(invalidGrace.status, 0);
+  assert.match(invalidGrace.stderr, /REFRESH_REUSE_GRACE_SECONDS/);
 });
 
 test('test mode accepts only the dedicated orbit_test database', () => {

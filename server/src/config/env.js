@@ -152,6 +152,11 @@ if (COOKIE_DOMAIN && (!/^[.]?[A-Za-z0-9.-]+$/.test(COOKIE_DOMAIN) || COOKIE_DOMA
   throw new Error('COOKIE_DOMAIN must be a valid cookie domain');
 }
 
+const REFRESH_REUSE_GRACE_SECONDS = Number(process.env.REFRESH_REUSE_GRACE_SECONDS || 10);
+if (!Number.isSafeInteger(REFRESH_REUSE_GRACE_SECONDS) || REFRESH_REUSE_GRACE_SECONDS < 1) {
+  throw new Error('REFRESH_REUSE_GRACE_SECONDS must be a positive integer');
+}
+
 const smtpPort = Number(process.env.SMTP_PORT || 587);
 if (!Number.isInteger(smtpPort) || smtpPort < 1 || smtpPort > 65535) {
   throw new Error('SMTP_PORT must be an integer between 1 and 65535');
@@ -198,6 +203,7 @@ module.exports = {
   ACCESS_TOKEN_TTL_MS,
   REFRESH_TOKEN_TTL,
   REFRESH_TOKEN_TTL_MS,
+  REFRESH_REUSE_GRACE_SECONDS,
   JWT_ISSUER: process.env.JWT_ISSUER,
   JWT_AUDIENCE: process.env.JWT_AUDIENCE,
   NODE_ENV,
