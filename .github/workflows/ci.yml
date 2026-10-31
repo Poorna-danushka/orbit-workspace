@@ -1,284 +1,172 @@
-# =============================================================================
-# Orbit — Full-stack CI + GHCR publish
-#
-# Runs on changes to the client, server, Docker configuration, or this workflow.
-#
-# What this workflow does:
-#   1. Install server/ dependencies via npm ci
-#      (postinstall hook automatically runs: npx prisma generate)
-#   2. Verify Prisma Client generation (schema syntax + generator config)
-#   3. Run backend and frontend tests, lint, type checks, and the frontend build
-#   4. Build the server/Dockerfile
-#   5. On push to main only: authenticate to GHCR and publish the image
-#
-# Push behaviour:
-#   pull_request → build image, do NOT push to GHCR
-#   push to main → build image, push to GHCR with :latest and :<git-sha> tags
-#
-# What this workflow deliberately does NOT do:
-#   - Lint backend files (server/ has no ESLint config)
-#   - Deploy anywhere                    (Phase 8+)
-#   - Connect to production MongoDB       (tests use an ephemeral local service)
-#   - Add application secrets            (Docker build is secret-free)
-# =============================================================================
-
 name: CI
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      # Run CI when backend source changes
-      - 'server/**'
-      # Run CI when frontend source or dependencies change
-      - 'client/**'
-      # Root scripts and project documentation affect the testing commands
-      - 'package.json'
-      - 'TESTING.md'
-      # Run CI when Docker Compose changes
-      - 'docker-compose.yml'
-      # Always re-run CI when the workflow itself changes
-      - '.github/workflows/**'
-
   pull_request:
-    branches:
-      - main
-    paths:
-      - 'server/**'
-      - 'client/**'
-      - 'package.json'
-      - 'TESTING.md'
-      - 'docker-compose.yml'
-      - '.github/workflows/**'
 
-# ---------------------------------------------------------------------------
-# Permissions
-#   contents: read   — required to checkout the repository
-#   packages: write  — required to push images to GitHub Container Registry
-#
-# packages: write is intentionally scoped to this workflow only and uses the
-# built-in GITHUB_TOKEN. No personal access token (PAT) is required.
-# ---------------------------------------------------------------------------
 permissions:
   contents: read
-  packages: write
 
 jobs:
-  ci:
-    name: Full-stack CI
+  client:
+    name: Client verification
     runs-on: ubuntu-latest
-    env:
-      TEST_DATABASE_URL: mongodb://127.0.0.1:27017/orbit_test
-
-    services:
-      mongodb:
-        # Run as a single-node replica set so Prisma can use transactions.
-        # Prisma with MongoDB requires a replica set even for single-node
-        # deployments because it uses MongoDB multi-document transactions
-        # internally (error P2031 is thrown otherwise).
-        #
-        # NOTE: --replSet is a MongoDB process argument, NOT a docker create
-        # flag. It must go in `command`, not `options`. Values in `options`
-        # are passed to `docker create`; values in `command` are passed to
-        # the container entry-point (i.e. the mongod process).
-        image: mongo:7.0
-        command: --replSet rs0
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --quiet --eval 'db.adminCommand(\"ping\").ok'"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 20
-
     steps:
-      # -----------------------------------------------------------------------
-      # 1. Checkout
-      # -----------------------------------------------------------------------
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # -----------------------------------------------------------------------
-      # 2. Initialise the MongoDB replica set
-      #    - The mongo:7.0 service container starts with --replSet rs0 but does
-      #      NOT self-initiate. rs.initiate() must be called once before any
-      #      client connects, otherwise Prisma's first write throws P2031
-      #      ("server is not a member of a replica set").
-      #    - We call rs.initiate() using the Docker exec API via the service
-      #      container ID exposed by GitHub Actions as the mongodb service alias.
-      #    - The 30-second sleep gives the newly-initiated primary enough time
-      #      to hold its first election before the test suite connects.
-      # -----------------------------------------------------------------------
-      - name: Initialise MongoDB replica set
-        run: |
-          # mongosh lives inside the container, not on the runner.
-          # Use docker exec to reach it via the running mongo:7.0 container.
-          MONGO_CONTAINER=$(docker ps -q --filter ancestor=mongo:7.0)
-          docker exec "$MONGO_CONTAINER" mongosh --eval \
-            "rs.initiate({_id:'rs0',members:[{_id:0,host:'127.0.0.1:27017'}]})"
-          # Wait for primary election before the test suite connects.
-          sleep 5
-          docker exec "$MONGO_CONTAINER" mongosh --eval "rs.status().ok"
-
-      # -----------------------------------------------------------------------
-      # 3. Node.js 22
-      #    - Matches node:22-alpine used in server/Dockerfile
-      #    - cache: 'npm' + cache-dependency-path enables automatic npm cache
-      #      keyed on server/package-lock.json — avoids re-downloading packages
-      #      on every run when dependencies have not changed
-      # -----------------------------------------------------------------------
-      - name: Set up Node.js 22
+      - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: |
-            server/package-lock.json
-            client/package-lock.json
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: client/package-lock.json
 
-      # -----------------------------------------------------------------------
-      # 3. Install backend dependencies
-      #    - Runs from server/ where server/package-lock.json lives
-      #    - npm ci installs exact versions from the lockfile
-      #    - postinstall hook automatically executes:
-      #        npx prisma generate
-      #      which generates the Prisma Client for the native platform
-      #      (binaryTargets includes "native" for the ubuntu-latest runner)
-      # -----------------------------------------------------------------------
-      - name: Install backend dependencies
-        working-directory: server
-        run: npm ci
-
-      # -----------------------------------------------------------------------
-      # 4. Verify Prisma Client generation
-      #    - Re-runs prisma generate explicitly to confirm the schema and
-      #      generator config are valid as a visible CI step.
-      #    - prisma generate reads only the schema file structure — it does
-      #      NOT resolve env() datasource variables (no DATABASE_URL needed).
-      #    - prisma validate was intentionally NOT used here: it calls
-      #      getConfig which resolves env("DATABASE_URL") and exits P1012
-      #      when the variable is absent — making it unusable in secret-free CI.
-      #    - This step is idempotent: postinstall already ran prisma generate
-      #      during npm ci above. Running it again is cheap and makes the
-      #      schema check explicit in the CI log.
-      # -----------------------------------------------------------------------
-      - name: Verify Prisma Client generation
-        working-directory: server
-        run: npx prisma generate
-
-      # -----------------------------------------------------------------------
-      # 5. Backend tests
-      #    Runs in three stages:
-      #      test:unit        — pure unit tests, no database required
-      #      test:integration — Express + Socket.IO integration (Prisma mocked)
-      #      test:database    — full round-trip against the local orbit_test
-      #                         replica set stood up in the service above
-      # -----------------------------------------------------------------------
-      - name: Run backend tests
-        working-directory: server
-        run: npm test
-
-      - name: Install frontend dependencies
+      - name: Install client dependencies
         working-directory: client
         run: npm ci
 
-      - name: Run frontend lint
+      - name: Verify client
         working-directory: client
-        run: npm run lint
-
-      - name: Check frontend types
-        working-directory: client
-        run: npm run typecheck
-
-      - name: Run frontend unit and component tests
-        working-directory: client
-        run: npm run test:unit
-
-      - name: Build frontend
-        working-directory: client
-        run: npm run build
+        run: npm run verify
         env:
           NEXT_PUBLIC_SERVER_URL: https://api.example.test
 
-      - name: Install Playwright browser
+  server:
+    name: Server verification
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: mongodb://127.0.0.1:27017/orbit_test?replicaSet=rs0&directConnection=true
+      TEST_DATABASE_URL: mongodb://127.0.0.1:27017/orbit_test?replicaSet=rs0&directConnection=true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Start MongoDB replica set
+        run: docker compose up -d mongo
+
+      - name: Wait for MongoDB health check
+        run: |
+          container_id="$(docker compose ps -q mongo)"
+          for attempt in $(seq 1 60); do
+            status="$(docker inspect --format='{{.State.Health.Status}}' "$container_id")"
+            if [ "$status" = "healthy" ]; then
+              exit 0
+            fi
+            sleep 5
+          done
+          docker compose logs mongo
+          echo "MongoDB replica set did not become healthy." >&2
+          exit 1
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: server
+        run: npm run db:generate
+
+      - name: Push schema to the isolated test database
+        working-directory: server
+        run: npm run db:push:local
+        env:
+          LOCAL_DATABASE_URL: mongodb://127.0.0.1:27017/orbit_test?replicaSet=rs0&directConnection=true
+
+      - name: Verify server
+        working-directory: server
+        run: npm run verify
+
+  e2e:
+    name: Playwright end-to-end tests
+    runs-on: ubuntu-latest
+    needs:
+      - client
+      - server
+    env:
+      TEST_DATABASE_URL: mongodb://127.0.0.1:27017/orbit_test?replicaSet=rs0&directConnection=true
+      DATABASE_URL: mongodb://127.0.0.1:27017/orbit_test?replicaSet=rs0&directConnection=true
+      JWT_SECRET: orbit-ci-access-secret-only
+      JWT_REFRESH_SECRET: orbit-ci-refresh-secret-only
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            client/package-lock.json
+            server/package-lock.json
+
+      - name: Start MongoDB replica set
+        run: docker compose up -d mongo
+
+      - name: Wait for MongoDB health check
+        run: |
+          container_id="$(docker compose ps -q mongo)"
+          for attempt in $(seq 1 60); do
+            status="$(docker inspect --format='{{.State.Health.Status}}' "$container_id")"
+            if [ "$status" = "healthy" ]; then
+              exit 0
+            fi
+            sleep 5
+          done
+          docker compose logs mongo
+          echo "MongoDB replica set did not become healthy." >&2
+          exit 1
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: server
+        run: npm run db:generate
+
+      - name: Push schema to the isolated test database
+        working-directory: server
+        run: npm run db:push:local
+        env:
+          LOCAL_DATABASE_URL: mongodb://127.0.0.1:27017/orbit_test?replicaSet=rs0&directConnection=true
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('client/package-lock.json') }}
+
+      - name: Install Playwright Chromium
         working-directory: client
         run: npx playwright install --with-deps chromium
 
-      - name: Run browser tests
+      - name: Run Playwright suite
         working-directory: client
-        run: npm run test:e2e
+        run: npx playwright test
         env:
-          CI: true
+          NEXT_PUBLIC_SERVER_URL: http://127.0.0.1:5100
 
-      # -----------------------------------------------------------------------
-      # 6. Set up Docker Buildx
-      #    Required for cache-from / cache-to (GitHub Actions cache) support
-      # -----------------------------------------------------------------------
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # -----------------------------------------------------------------------
-      # 7. Compute Docker image tags (metadata-action)
-      #
-      #    Uses docker/metadata-action to generate correctly-formed image tags
-      #    without hardcoding the repository owner.
-      #
-      #    github.repository_owner is converted to lowercase automatically by
-      #    metadata-action, satisfying the GHCR requirement that image names
-      #    must be fully lowercase (e.g. "Poorna-danushka" → "poorna-danushka").
-      #
-      #    Tags produced on push to main:
-      #      ghcr.io/<owner>/orbit-backend:latest
-      #      ghcr.io/<owner>/orbit-backend:<full-git-sha>
-      #
-      #    Tags produced on pull request:
-      #      ghcr.io/<owner>/orbit-backend:pr-<number>   (image is built but not pushed)
-      # -----------------------------------------------------------------------
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
+      - name: Upload Playwright report after failure
+        if: failure()
+        uses: actions/upload-artifact@v4
         with:
-          images: ghcr.io/${{ github.repository_owner }}/orbit-backend
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=sha,format=long
-
-      # -----------------------------------------------------------------------
-      # 8. Log in to GitHub Container Registry
-      #
-      #    - Only runs on push to main — PRs must NOT push images.
-      #    - Uses the built-in GITHUB_TOKEN (no PAT required).
-      #    - github.actor = the user or bot that triggered the workflow.
-      #    - packages: write permission (declared above) allows GITHUB_TOKEN
-      #      to push to ghcr.io under the repository owner's namespace.
-      # -----------------------------------------------------------------------
-      - name: Log in to GitHub Container Registry
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      # -----------------------------------------------------------------------
-      # 9. Build Docker image (and push to GHCR on main)
-      #
-      #    - context: ./server  — build context is the server/ directory,
-      #      matching exactly what docker compose up --build uses locally.
-      #    - push: true only when event is push to main; false for PRs.
-      #    - tags: provided by metadata-action (step 7 above).
-      #    - cache-from / cache-to: GitHub Actions layer cache reuses unchanged
-      #      Docker layers (especially the npm ci layer) across runs.
-      #    - No application secrets (DATABASE_URL, JWT_SECRET, etc.) are
-      #      required or provided — the Dockerfile is secret-free at build time.
-      # -----------------------------------------------------------------------
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./server
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          name: playwright-report
+          path: |
+            client/test-results/
+            client/playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
