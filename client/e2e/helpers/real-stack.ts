@@ -4,7 +4,10 @@ import path from 'node:path';
 import { expect, type BrowserContext, type Page, type Request } from '@playwright/test';
 
 export const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
-export const API_URL = 'http://127.0.0.1:5100/api';
+export const API_URL =
+  process.env.PLAYWRIGHT_CROSS_SITE === 'true'
+    ? 'http://127.0.0.1:5101/api'
+    : 'http://127.0.0.1:5100/api';
 export const E2E_PASSWORD = 'Orbit-e2e-password-123';
 
 const serverPackagePath = path.resolve(process.cwd(), '..', 'server', 'package.json');
