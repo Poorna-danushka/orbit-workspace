@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const logger = require('../utils/logger.util');
 
 const GOOGLE_ID_INDEX_NAME = 'User_googleId_key';
 
@@ -23,24 +24,43 @@ const ensureGoogleIdUniqueIndex = async (database = prisma) => {
     index.unique === true && index.key?.googleId === 1
   ));
 
-  if (existingIndex && isGoogleIdUniqueIndex(existingIndex)) return;
+  if (existingIndex && isGoogleIdUniqueIndex(existingIndex)) return true;
 
   if (existingIndex) {
-    await database.$runCommandRaw({
-      dropIndexes: 'User',
-      index: existingIndex.name,
-    });
+    try {
+      await database.$runCommandRaw({
+        dropIndexes: 'User',
+        index: existingIndex.name,
+      });
+    } catch (error) {
+      if (error?.code !== 27) throw error;
+      const currentIndexes = await listUserIndexes(database);
+      if (currentIndexes.some(isGoogleIdUniqueIndex)) return true;
+    }
   }
 
-  await database.$runCommandRaw({
-    createIndexes: 'User',
-    indexes: [{
-      key: { googleId: 1 },
-      name: GOOGLE_ID_INDEX_NAME,
-      unique: true,
-      partialFilterExpression: { googleId: { $gt: '' } },
-    }],
-  });
+  try {
+    await database.$runCommandRaw({
+      createIndexes: 'User',
+      indexes: [{
+        key: { googleId: 1 },
+        name: GOOGLE_ID_INDEX_NAME,
+        unique: true,
+        partialFilterExpression: { googleId: { $gt: '' } },
+      }],
+    });
+    return true;
+  } catch (error) {
+    if (error?.code === 11000) {
+      logger.error('Google ID index was not created because duplicate IDs exist', error);
+      return false;
+    }
+    if ([85, 86].includes(error?.code)) {
+      const currentIndexes = await listUserIndexes(database);
+      if (currentIndexes.some(isGoogleIdUniqueIndex)) return true;
+    }
+    throw error;
+  }
 };
 
 module.exports = { ensureGoogleIdUniqueIndex };

@@ -17,7 +17,8 @@
     "build": "npx prisma generate",
     "postinstall": "npx prisma generate",
     "create-admin": "node scripts/create-admin.js",
-    "db:push": "npx prisma db push",
+    "db:push": "npm run db:push:local",
+    "db:push:local": "node scripts/db-push-local.js",
     "db:generate": "npx prisma generate"
   },
   "keywords": [],

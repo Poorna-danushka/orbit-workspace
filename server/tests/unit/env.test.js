@@ -126,6 +126,7 @@ test('test mode accepts only the dedicated orbit_test database', () => {
   const wrongDatabase = loadSettings({
     NODE_ENV: 'test',
     DATABASE_URL: 'mongodb://127.0.0.1:27017/orbit',
+    TEST_DATABASE_URL: 'mongodb://127.0.0.1:27017/orbit',
     CORS_ORIGINS: 'http://localhost:3000',
     CLIENT_URL: 'http://localhost:3000',
     GOOGLE_CLIENT_ID: '',
@@ -133,7 +134,7 @@ test('test mode accepts only the dedicated orbit_test database', () => {
     GOOGLE_CALLBACK_URL: '',
   });
   assert.notEqual(wrongDatabase.status, 0);
-  assert.match(wrongDatabase.stderr, /orbit_test database/);
+  assert.match(wrongDatabase.stderr, /local test database ending in _test/);
 
   const testDatabase = loadSettings({
     NODE_ENV: 'test',
@@ -147,18 +148,18 @@ test('test mode accepts only the dedicated orbit_test database', () => {
   });
   assert.equal(testDatabase.status, 0, testDatabase.stderr);
 
-  const remoteWithoutExplicitTestUrl = loadSettings({
+  const atlasTestDatabase = loadSettings({
     NODE_ENV: 'test',
     DATABASE_URL: 'mongodb+srv://cluster.example.test/orbit_test',
-    TEST_DATABASE_URL: '',
+    TEST_DATABASE_URL: 'mongodb+srv://cluster.example.test/orbit_test',
     CORS_ORIGINS: 'http://localhost:3000',
     CLIENT_URL: 'http://localhost:3000',
     GOOGLE_CLIENT_ID: '',
     GOOGLE_CLIENT_SECRET: '',
     GOOGLE_CALLBACK_URL: '',
   });
-  assert.notEqual(remoteWithoutExplicitTestUrl.status, 0);
-  assert.match(remoteWithoutExplicitTestUrl.stderr, /explicit TEST_DATABASE_URL/);
+  assert.notEqual(atlasTestDatabase.status, 0);
+  assert.match(atlasTestDatabase.stderr, /local test database ending in _test/);
 });
 
 test('production refuses to infer CORS origins from CLIENT_URL', () => {

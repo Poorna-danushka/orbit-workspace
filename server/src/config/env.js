@@ -1,11 +1,14 @@
 const path = require('path');
 const dotenv = require('dotenv');
+const { validateDatabaseUrl } = require('./database-url.util');
 
-const envPath = path.resolve(__dirname, '../../.env');
-const result = dotenv.config({ path: envPath, override: false });
+if (process.env.NODE_ENV !== 'test') {
+  const envPath = path.resolve(__dirname, '../../.env');
+  const result = dotenv.config({ path: envPath, override: false });
 
-if (result.error && result.error.code !== 'ENOENT') {
-  throw new Error(`Failed to load environment variables from ${envPath}: ${result.error.message}`);
+  if (result.error && result.error.code !== 'ENOENT') {
+    throw new Error(`Failed to load environment variables from ${envPath}: ${result.error.message}`);
+  }
 }
 
 const requiredVariables = [
@@ -46,18 +49,10 @@ const ACCESS_TOKEN_TTL_MS = parseDuration(ACCESS_TOKEN_TTL, 'ACCESS_TOKEN_TTL');
 const REFRESH_TOKEN_TTL_MS = parseDuration(REFRESH_TOKEN_TTL, 'REFRESH_TOKEN_TTL');
 
 if (NODE_ENV === 'test') {
-  let testDatabaseUrl;
   try {
-    testDatabaseUrl = new URL(process.env.DATABASE_URL);
+    validateDatabaseUrl(process.env.DATABASE_URL, { requireTestDatabase: true });
   } catch {
-    throw new Error('NODE_ENV=test requires DATABASE_URL to target the dedicated orbit_test database');
-  }
-  const testDatabaseName = decodeURIComponent(testDatabaseUrl.pathname.slice(1).split('/')[0] || '');
-  if (
-    !['mongodb:', 'mongodb+srv:'].includes(testDatabaseUrl.protocol) ||
-    testDatabaseName !== 'orbit_test'
-  ) {
-    throw new Error('NODE_ENV=test requires DATABASE_URL to target the dedicated orbit_test database');
+    throw new Error('NODE_ENV=test requires DATABASE_URL to target a local test database ending in _test');
   }
 
   const configuredTestDatabaseUrl = process.env.TEST_DATABASE_URL?.trim();
@@ -65,8 +60,6 @@ if (NODE_ENV === 'test') {
     if (configuredTestDatabaseUrl !== process.env.DATABASE_URL) {
       throw new Error('In test mode, DATABASE_URL must match TEST_DATABASE_URL');
     }
-  } else if (!['localhost', '127.0.0.1', '::1'].includes(testDatabaseUrl.hostname)) {
-    throw new Error('Remote test databases require an explicit TEST_DATABASE_URL');
   }
 }
 
