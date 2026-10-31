@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const { TokenExpiredError } = require('jsonwebtoken');
+const { JsonWebTokenError, TokenExpiredError } = require('jsonwebtoken');
 const prisma = require('../config/prisma');
 const {
   hashToken,
@@ -156,8 +156,8 @@ exports.logout = async (req, res) => {
     try {
       const decoded = verifyRefreshToken(refreshToken);
       if (!userId) userId = decoded.sub || decoded.userId;
-    } catch {
-      // Ignore verification errors during logout
+    } catch (error) {
+      if (!(error instanceof JsonWebTokenError)) throw error;
     }
     const tokenHash = hashToken(refreshToken);
     await prisma.refreshToken.updateMany({ where: { tokenHash }, data: { revokedAt: new Date() } });
