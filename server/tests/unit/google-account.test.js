@@ -1,22 +1,20 @@
 const assert = require('node:assert/strict');
 const bcrypt = require('bcrypt');
-const {
-  resolveGoogleAccount,
-  GoogleAccountConflictError,
-} = require('../../src/services/google-account.service');
+const { resolveGoogleAccount } = require('../../src/services/google-account.service');
 
 const createDatabase = (initialUsers = []) => {
   const users = [...initialUsers];
   let nextId = 1;
 
-  const findUnique = async ({ where }) => users.find((user) => (
+  const findByCriteria = async ({ where }) => users.find((user) => (
     where.googleId ? user.googleId === where.googleId : user.email === where.email
   )) || null;
 
   return {
     users,
     user: {
-      findUnique,
+      findFirst: findByCriteria,
+      findUnique: findByCriteria,
       async update({ where, data }) {
         const user = users.find((candidate) => candidate.id === where.id);
         if (!user) throw new Error('User not found');
@@ -92,6 +90,9 @@ test('an email already linked to a different Google subject is rejected', async 
 
   await assert.rejects(
     resolveGoogleAccount(identity, database),
-    GoogleAccountConflictError,
+    (error) => (
+      error.name === 'GoogleAccountConflictError' &&
+      error.message === 'This email is linked to a different Google account'
+    ),
   );
 });

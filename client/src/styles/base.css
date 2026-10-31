@@ -1,0 +1,28 @@
+/* ─── BASE ─────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+  background: var(--ob-bg);
+  color: var(--ob-text);
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --ob-font-display: var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--ob-bg);
+  color: var(--ob-text);
+  overflow-x: clip;
+}
+
+::selection {
+  background: rgba(124, 110, 255, 0.28);
+  color: var(--ob-text);
+}

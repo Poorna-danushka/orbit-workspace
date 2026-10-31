@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const authController = require('../../src/controllers/auth.controller');
+const authController = require('../../src/controllers/google-oauth.controller');
 const env = require('../../src/config/env');
 
 const createResponse = () => ({

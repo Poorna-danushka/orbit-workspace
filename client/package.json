@@ -7,11 +7,33 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "lint:structure": "node scripts/check-structure.mjs",
     "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "deps:circular": "madge --circular --extensions ts,tsx src",
+    "verify": "npm run typecheck && npm run lint -- --max-warnings 0 && npm run lint:structure && npm run knip && npm run deps:circular && npm test && npm run build",
+    "knip": "knip",
     "test": "npm run test:unit",
     "test:unit": "jest --runInBand",
     "test:coverage": "jest --coverage --runInBand",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "proxy:client:tls": "local-ssl-proxy --hostname 127.0.0.1 --source 3100 --target 3000 --cert .certs/localhost-cert.pem --key .certs/localhost-key.pem",
+    "proxy:api:tls": "local-ssl-proxy --hostname 127.0.0.1 --source 5101 --target 5100 --cert .certs/localhost-cert.pem --key .certs/localhost-key.pem"
+  },
+  "knip": {
+    "entry": [
+      "tests/**/*.{ts,tsx,js}",
+      "e2e/**/*.ts",
+      "*.config.{js,mjs,cjs,ts}"
+    ],
+    "project": [
+      "src/**/*.{ts,tsx}!",
+      "src/**/*.css",
+      "scripts/**/*.mjs",
+      "tests/**/*.{ts,tsx,js}",
+      "e2e/**/*.ts",
+      "*.config.{js,mjs,cjs,ts}"
+    ]
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -26,7 +48,8 @@
     "react-dom": "19.2.4",
     "react-redux": "^9.3.0",
     "recharts": "^3.8.1",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "sonner": "^2.0.8"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
@@ -43,6 +66,10 @@
     "eslint-config-next": "^16.3.6",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
+    "knip": "^6.43.0",
+    "local-ssl-proxy": "^2.0.5",
+    "madge": "^8.0.0",
+    "prettier": "^3.9.10",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

@@ -1,0 +1,308 @@
+.admin-progress-labels {
+  margin-top: 9px;
+  color: var(--ob-text-muted);
+  font-size: 0.7rem;
+}
+.admin-workload-note {
+  gap: 8px;
+  margin-top: 22px;
+  border-top: 1px solid var(--ob-border);
+  padding-top: 15px;
+  color: var(--ob-text-muted);
+  font-size: 0.74rem;
+}
+.admin-workload-note > svg {
+  color: var(--ob-warning);
+}
+.admin-workload-note > span {
+  flex: 1;
+}
+.admin-workload-note a,
+.admin-icon-link {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--ob-border);
+  border-radius: 10px;
+  color: var(--ob-text-muted);
+  transition:
+    color 150ms ease,
+    border-color 150ms ease;
+}
+.admin-workload-note a:hover,
+.admin-icon-link:hover {
+  border-color: var(--ob-primary);
+  color: var(--ob-primary);
+}
+
+.admin-text-link,
+.admin-manage-users {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  color: var(--ob-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.admin-text-link:hover,
+.admin-manage-users:hover {
+  color: var(--ob-primary-lt);
+}
+
+.admin-activity-list,
+.admin-recent-users {
+  margin-top: 20px;
+}
+.admin-activity-item {
+  display: grid;
+  min-height: 69px;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 12px;
+  position: relative;
+}
+.admin-activity-marker {
+  z-index: 1;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid var(--ob-border);
+  border-radius: 11px;
+  background: var(--ob-surface-2);
+  color: var(--ob-primary);
+}
+.marker-project_create {
+  color: var(--ob-cyan);
+}
+.marker-task_complete {
+  color: var(--ob-success);
+}
+.marker-notification {
+  color: var(--ob-warning);
+}
+.marker-role_change {
+  color: var(--ob-violet);
+}
+.admin-activity-line {
+  position: absolute;
+  top: 32px;
+  bottom: 0;
+  left: 15px;
+  width: 1px;
+  background: var(--ob-border);
+}
+.admin-activity-item:last-child .admin-activity-line {
+  display: none;
+}
+.admin-activity-copy {
+  min-width: 0;
+  padding: 1px 0 17px;
+}
+.admin-activity-copy p {
+  overflow-wrap: anywhere;
+  color: var(--ob-text);
+  font-size: 0.8rem;
+  font-weight: 620;
+  line-height: 1.4;
+}
+.admin-activity-copy > span {
+  display: block;
+  margin-top: 5px;
+  color: var(--ob-text-muted);
+  font-size: 0.69rem;
+  line-height: 1.4;
+}
+.admin-activity-trend {
+  margin-top: 6px;
+  color: var(--ob-text-faint);
+}
+.admin-empty-state {
+  display: flex;
+  min-height: 145px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--ob-text-muted);
+  font-size: 0.82rem;
+  text-align: center;
+}
+.admin-empty-state svg {
+  flex: 0 0 auto;
+  color: var(--ob-primary);
+}
+
+.admin-recent-user {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 11px;
+  border-bottom: 1px solid var(--ob-border);
+  padding: 11px 0;
+}
+.admin-recent-user:first-child {
+  padding-top: 0;
+}
+.admin-recent-user:last-child {
+  border-bottom: 0;
+}
+.admin-user-initial {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--ob-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ob-primary) 12%, var(--ob-surface));
+  color: var(--ob-primary);
+  font-size: 0.83rem;
+  font-weight: 750;
+}
+.initial-1 {
+  color: var(--ob-cyan);
+  background: color-mix(in srgb, var(--ob-cyan) 10%, var(--ob-surface));
+}
+.initial-2 {
+  color: var(--ob-success);
+  background: color-mix(in srgb, var(--ob-success) 10%, var(--ob-surface));
+}
+.initial-3 {
+  color: var(--ob-warning);
+  background: color-mix(in srgb, var(--ob-warning) 10%, var(--ob-surface));
+}
+.admin-user-details {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+.admin-user-details strong,
+.admin-user-details > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-user-details strong {
+  color: var(--ob-text);
+  font-size: 0.77rem;
+  font-weight: 650;
+}
+.admin-user-details > span {
+  color: var(--ob-text-muted);
+  font-size: 0.68rem;
+}
+.admin-role-pill {
+  border: 1px solid var(--ob-border);
+  border-radius: 999px;
+  padding: 4px 8px;
+  color: var(--ob-text-muted);
+  font-size: 0.61rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+.admin-role-pill.role-admin {
+  border-color: color-mix(in srgb, var(--ob-primary) 36%, transparent);
+  color: var(--ob-primary);
+}
+.admin-manage-users {
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid var(--ob-border);
+  padding-top: 14px;
+}
+
+.admin-broadcast-panel {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.65fr) minmax(0, 1.35fr);
+  align-items: start;
+  gap: 26px;
+  padding: 22px;
+  background:
+    radial-gradient(
+      ellipse at 8% 0%,
+      color-mix(in srgb, var(--ob-primary) 12%, transparent),
+      transparent 50%
+    ),
+    var(--ob-surface);
+}
+.admin-broadcast-intro {
+  align-items: flex-start;
+  gap: 13px;
+}
+.admin-broadcast-icon {
+  width: 42px;
+  height: 42px;
+}
+.admin-broadcast-intro h2 {
+  font-size: 0.98rem;
+}
+.admin-broadcast-intro p {
+  max-width: 250px;
+  font-size: 0.74rem;
+}
+.admin-broadcast-form textarea {
+  display: block;
+  width: 100%;
+  min-height: 76px;
+  resize: vertical;
+  border: 1px solid var(--ob-border-2);
+  border-radius: 12px;
+  outline: none;
+  background: color-mix(in srgb, var(--ob-bg) 45%, var(--ob-surface));
+  padding: 12px 14px;
+  color: var(--ob-text);
+  font: inherit;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+.admin-broadcast-form textarea::placeholder {
+  color: var(--ob-text-faint);
+}
+.admin-broadcast-form textarea:focus {
+  border-color: var(--ob-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ob-primary) 16%, transparent);
+}
+.admin-broadcast-controls {
+  gap: 12px;
+  margin-top: 10px;
+}
+.admin-broadcast-controls > span {
+  color: var(--ob-text-faint);
+  font-size: 0.68rem;
+}
+.admin-broadcast-controls button {
+  min-height: 38px;
+  border-color: transparent;
+  background: linear-gradient(110deg, var(--ob-primary-dk), var(--ob-primary));
+  color: #fff;
+  font-size: 0.75rem;
+}
+.admin-broadcast-controls button:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+.admin-form-feedback {
+  margin-top: 10px;
+  font-size: 0.75rem;
+}
+.feedback-success {
+  color: var(--ob-success);
+}
+.feedback-error {
+  color: var(--ob-danger);
+}
+.admin-refresh-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ob-text-muted);
+  font-size: 0.72rem;
+}

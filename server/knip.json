@@ -1,0 +1,15 @@
+{
+  "entry": [
+    "src/routes/**/*.js!",
+    "src/controllers/**/*.js!",
+    "src/utils/error-codes.js!",
+    "scripts/**/*.js",
+    "tests/**/*.js"
+  ],
+  "project": [
+    "src/**/*.js!",
+    "scripts/**/*.js",
+    "tests/**/*.js",
+    "prisma/**/*.prisma"
+  ]
+}

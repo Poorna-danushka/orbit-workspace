@@ -3,7 +3,7 @@ const router = express.Router();
 const uploadController = require('../controllers/upload.controller');
 const { verifyToken } = require('../middlewares/auth.middleware');
 const multer = require('multer');
-const rateLimit = require('express-rate-limit');
+const { createRateLimiter } = require('../utils/rate-limit.util');
 const { validateMongoIdParam } = require('../middlewares/mongo-id.middleware');
 
 const storage = multer.memoryStorage();
@@ -30,12 +30,10 @@ const upload = multer({
     cb(null, true);
   },
 });
-const uploadLimiter = rateLimit({
+const uploadLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
-  limit: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: 'Too many uploads. Please try again later.' },
+  max: 30,
+  message: 'Too many uploads. Please try again later.',
 });
 
 router.use(verifyToken);

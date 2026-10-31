@@ -22,7 +22,10 @@ const validEnvironment = {
 
 const loadSettings = (overrides = {}) => spawnSync(
   process.execPath,
-  ['-e', 'const env = require("./src/config/env"); process.stdout.write(JSON.stringify({ origins: env.CORS_ORIGINS, client: env.CLIENT_URL, secure: env.COOKIE_SECURE, googleOAuth: env.GOOGLE_OAUTH_CONFIGURED }));'],
+  [
+    '-e',
+    'const env = require("./src/config/env"); process.stdout.write(JSON.stringify({ origins: env.CORS_ORIGINS, client: env.CLIENT_URL, secure: env.COOKIE_SECURE, sameSite: env.COOKIE_SAME_SITE, accessTtl: env.ACCESS_TOKEN_TTL, accessTtlMs: env.ACCESS_TOKEN_TTL_MS, refreshTtl: env.REFRESH_TOKEN_TTL, refreshTtlMs: env.REFRESH_TOKEN_TTL_MS, googleOAuth: env.GOOGLE_OAUTH_CONFIGURED }));',
+  ],
   {
     cwd: process.cwd(),
     encoding: 'utf8',
@@ -38,6 +41,11 @@ test('production accepts explicitly configured HTTPS origins and complete Google
     origins: ['https://app.example.test'],
     client: 'https://app.example.test',
     secure: true,
+    sameSite: 'none',
+    accessTtl: '15m',
+    accessTtlMs: 900000,
+    refreshTtl: '7d',
+    refreshTtlMs: 604800000,
     googleOAuth: true,
   });
 });
@@ -82,14 +90,54 @@ test('development permits only the explicitly configured local HTTP origins', ()
     origins: ['http://localhost:3000', 'http://127.0.0.1:3000'],
     client: 'http://localhost:3000',
     secure: false,
+    sameSite: 'lax',
+    accessTtl: '15m',
+    accessTtlMs: 900000,
+    refreshTtl: '7d',
+    refreshTtlMs: 604800000,
     googleOAuth: false,
   });
+});
+
+test('token TTL and cookie settings are validated', () => {
+  const invalidTtl = loadSettings({ ACCESS_TOKEN_TTL: 'forever' });
+  assert.notEqual(invalidTtl.status, 0);
+  assert.match(invalidTtl.stderr, /ACCESS_TOKEN_TTL/);
+
+  const insecureCrossSite = loadSettings({
+    NODE_ENV: 'development',
+    CORS_ORIGINS: 'http://localhost:3000',
+    CLIENT_URL: 'http://localhost:3000',
+    COOKIE_SECURE: 'false',
+    COOKIE_SAME_SITE: 'none',
+    GOOGLE_CLIENT_ID: '',
+    GOOGLE_CLIENT_SECRET: '',
+    GOOGLE_CALLBACK_URL: '',
+  });
+  assert.notEqual(insecureCrossSite.status, 0);
+  assert.match(insecureCrossSite.stderr, /requires COOKIE_SECURE=true/);
+
+  const invalidGrace = loadSettings({ REFRESH_REUSE_GRACE_SECONDS: '0' });
+  assert.notEqual(invalidGrace.status, 0);
+  assert.match(invalidGrace.stderr, /REFRESH_REUSE_GRACE_SECONDS/);
+});
+
+test('SameSite=None emits one third-party cookie compatibility warning', () => {
+  const result = loadSettings({
+    COOKIE_SECURE: 'true',
+    COOKIE_SAME_SITE: 'none',
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const warning =
+    'third-party cookies are blocked by Safari/iOS, Firefox ETP and Chrome Incognito; use same-site subdomains in production';
+  assert.equal(result.stderr.split(warning).length - 1, 1);
 });
 
 test('test mode accepts only the dedicated orbit_test database', () => {
   const wrongDatabase = loadSettings({
     NODE_ENV: 'test',
     DATABASE_URL: 'mongodb://127.0.0.1:27017/orbit',
+    TEST_DATABASE_URL: 'mongodb://127.0.0.1:27017/orbit',
     CORS_ORIGINS: 'http://localhost:3000',
     CLIENT_URL: 'http://localhost:3000',
     GOOGLE_CLIENT_ID: '',
@@ -97,7 +145,7 @@ test('test mode accepts only the dedicated orbit_test database', () => {
     GOOGLE_CALLBACK_URL: '',
   });
   assert.notEqual(wrongDatabase.status, 0);
-  assert.match(wrongDatabase.stderr, /orbit_test database/);
+  assert.match(wrongDatabase.stderr, /local test database ending in _test/);
 
   const testDatabase = loadSettings({
     NODE_ENV: 'test',
@@ -111,18 +159,18 @@ test('test mode accepts only the dedicated orbit_test database', () => {
   });
   assert.equal(testDatabase.status, 0, testDatabase.stderr);
 
-  const remoteWithoutExplicitTestUrl = loadSettings({
+  const atlasTestDatabase = loadSettings({
     NODE_ENV: 'test',
     DATABASE_URL: 'mongodb+srv://cluster.example.test/orbit_test',
-    TEST_DATABASE_URL: '',
+    TEST_DATABASE_URL: 'mongodb+srv://cluster.example.test/orbit_test',
     CORS_ORIGINS: 'http://localhost:3000',
     CLIENT_URL: 'http://localhost:3000',
     GOOGLE_CLIENT_ID: '',
     GOOGLE_CLIENT_SECRET: '',
     GOOGLE_CALLBACK_URL: '',
   });
-  assert.notEqual(remoteWithoutExplicitTestUrl.status, 0);
-  assert.match(remoteWithoutExplicitTestUrl.stderr, /explicit TEST_DATABASE_URL/);
+  assert.notEqual(atlasTestDatabase.status, 0);
+  assert.match(atlasTestDatabase.stderr, /local test database ending in _test/);
 });
 
 test('production refuses to infer CORS origins from CLIENT_URL', () => {

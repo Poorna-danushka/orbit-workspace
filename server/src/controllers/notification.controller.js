@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const logger = require('../utils/logger.util');
 
 exports.getNotifications = async (req, res) => {
   try {
@@ -10,7 +11,7 @@ exports.getNotifications = async (req, res) => {
     });
     res.json(notifications);
   } catch (error) {
-    console.error('Get notifications error:', error);
+    logger.error('Get notifications failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -24,7 +25,7 @@ exports.markAsRead = async (req, res) => {
     if (count === 0) return res.status(404).json({ message: 'Notification not found' });
     res.json({ message: 'Marked as read' });
   } catch (error) {
-    console.error('Mark notification as read error:', error);
+    logger.error('Mark notification as read failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -35,7 +36,7 @@ exports.markAllRead = async (req, res) => {
     await prisma.notification.updateMany({ where: { userId }, data: { isRead: true } });
     res.json({ message: 'All marked as read' });
   } catch (error) {
-    console.error('Mark all notifications as read error:', error);
+    logger.error('Mark all notifications as read failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

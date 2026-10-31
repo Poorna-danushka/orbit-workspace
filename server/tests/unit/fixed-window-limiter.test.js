@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const { createFixedWindowLimiter } = require('../../src/utils/fixed-window-limiter.util');
+const { createFixedWindowLimiter } = require('../../src/utils/rate-limit.util');
 
 test('fixed-window limiter applies per-key limits and resets at the window boundary', () => {
   let currentTime = 1_000;

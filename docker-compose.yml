@@ -1,18 +1,46 @@
 # =============================================================================
 # docker-compose.yml — Orbit workspace
 #
-# Contains ONLY the backend service.
-# - MongoDB remains on MongoDB Atlas (cloud-managed — no container needed)
-# - The Next.js frontend remains deployed on Vercel (no container needed)
+# Local development stack for the backend and MongoDB replica set.
+# The Next.js frontend remains deployed on Vercel (no container needed).
 #
 # Usage:
-#   docker compose up --build     # build + start
-#   docker compose up -d --build  # build + start in background
-#   docker compose logs -f        # stream logs
-#   docker compose down           # stop and remove container
+#   docker compose up -d mongo   # start MongoDB only
+#   docker compose up --build    # build + start all local services
+#   docker compose logs -f       # stream logs
+#   docker compose down          # stop and remove containers
 # =============================================================================
 
 services:
+  mongo:
+    image: mongo:7
+    container_name: orbit-mongo
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - |
+          mongosh --quiet --eval "
+            try {
+              if (rs.status().ok === 1) quit(0);
+            } catch (error) {
+              print(error.message);
+            }
+            const result = rs.initiate({
+              _id: 'rs0',
+              members: [{ _id: 0, host: 'localhost:27017' }]
+            });
+            quit(result.ok === 1 ? 0 : 1);
+          "
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+
   backend:
     # -------------------------------------------------------------------------
     # Build
@@ -42,10 +70,11 @@ services:
     #
     # Secrets are loaded from server/.env at RUNTIME — they are never baked
     # into the Docker image. The .dockerignore ensures .env is excluded from
-    # the build context entirely.
+    # the build context entirely. This file is optional when using Compose
+    # only for MongoDB; the backend still requires its runtime configuration.
     #
     # Variables loaded:
-    #   DATABASE_URL            → Prisma → MongoDB Atlas
+    #   DATABASE_URL            → Prisma → MongoDB Atlas or local MongoDB
     #   JWT_SECRET              → Access token signing
     #   JWT_REFRESH_SECRET      → Refresh token signing
     #   CORS_ORIGINS            → Exact allowed browser origins (comma-separated)
@@ -57,7 +86,8 @@ services:
     #   CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET → Cloudinary SDK
     # -------------------------------------------------------------------------
     env_file:
-      - ./server/.env
+      - path: ./server/.env
+        required: false
 
     # -------------------------------------------------------------------------
     # Restart policy
@@ -76,7 +106,7 @@ services:
     # Express is running correctly.
     #
     # Timeline:
-    #   start_period: 15s  → grace period while Prisma connects to Atlas
+    #   start_period: 15s  → grace period while Prisma connects to MongoDB
     #   interval: 30s      → check every 30 seconds after that
     #   timeout: 10s       → fail the check if no response within 10 s
     #   retries: 3         → mark container unhealthy after 3 consecutive fails
@@ -91,3 +121,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+volumes:
+  mongo-data:

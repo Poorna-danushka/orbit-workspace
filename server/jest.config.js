@@ -8,7 +8,7 @@ module.exports = {
     'src/middlewares/error.middleware.js',
     'src/middlewares/security.middleware.js',
     'src/utils/file-validation.util.js',
-    'src/utils/fixed-window-limiter.util.js',
+    'src/utils/rate-limit.util.js',
     'src/utils/google-oauth-security.util.js',
   ],
   coverageThreshold: {

@@ -21,6 +21,7 @@
 /.next/
 **/.next
 **/.next-e2e/
+**/.swc/
 /out/
 
 # production
@@ -51,3 +52,6 @@ next-env.d.ts
 
 # uploads
 server/uploads/
+
+# Local HTTPS test certificates
+.certs/

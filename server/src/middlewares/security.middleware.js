@@ -1,5 +1,7 @@
 const crypto = require('crypto');
 const env = require('../config/env');
+const AppError = require('../utils/AppError');
+const ErrorCodes = require('../utils/error-codes');
 
 const csrfSecret = env.JWT_SECRET;
 
@@ -38,9 +40,10 @@ const csrfTokenSetter = (req, res, next) => {
     const csrfToken = createCsrfToken();
     res.cookie('csrfToken', csrfToken, {
       secure: env.COOKIE_SECURE,
-      sameSite: env.COOKIE_SECURE ? 'none' : 'lax',
+      sameSite: env.COOKIE_SAME_SITE,
       path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      ...(env.COOKIE_DOMAIN ? { domain: env.COOKIE_DOMAIN } : {}),
+      maxAge: env.REFRESH_TOKEN_TTL_MS
     });
     // Attach to request context
     req.csrfToken = csrfToken;
@@ -76,7 +79,10 @@ const csrfProtection = (req, res, next) => {
 
   const cookieMatches = csrfCookie && csrfHeader && csrfCookie === csrfHeader;
   if (!cookieMatches && !isValidSignedToken(csrfHeader)) {
-    return res.status(403).json({ message: 'CSRF validation failed: Invalid or missing token' });
+    return next(AppError.forbidden(
+      ErrorCodes.CSRF_INVALID,
+      'CSRF validation failed: Invalid or missing token'
+    ));
   }
 
   next();

@@ -2,14 +2,15 @@ const { Server } = require('socket.io');
 const prisma = require('../config/prisma');
 const env = require('../config/env');
 const { authenticateSocket } = require('../middlewares/socket-auth.middleware');
-const { createFixedWindowLimiter } = require('../utils/fixed-window-limiter.util');
+const { createFixedWindowLimiter } = require('../utils/rate-limit.util');
+const logger = require('../utils/logger.util');
+const { isAllowedSocketOrigin } = require('../utils/socket-origin.util');
 
 let io;
 
 const projectRoom = (projectId) => `project:${projectId}`;
 const userRoom = (userId) => `user:${userId}`;
 const messageLimiter = createFixedWindowLimiter({ limit: 30, windowMs: 60_000 });
-const isAllowedSocketOrigin = (origin) => !origin || env.CORS_ORIGINS.includes(origin);
 
 const acknowledge = (callback, payload) => {
   if (typeof callback === 'function') callback(payload);
@@ -58,7 +59,7 @@ const initSocket = (server) => {
         await socket.join(projectRoom(projectId));
         acknowledge(callback, { ok: true });
       } catch (error) {
-        console.error('Socket project room join failed:', error);
+        logger.error('Socket project room join failed', error);
         acknowledge(callback, { error: 'Unable to join project room' });
       }
     };
@@ -106,19 +107,19 @@ const initSocket = (server) => {
         io.to(projectRoom(data.projectId)).emit('messageReceived', message);
         acknowledge(callback, { ok: true });
       } catch (error) {
-        console.error('Socket sendMessage error:', error);
+        logger.error('Socket sendMessage failed', error);
         acknowledge(callback, { error: 'Unable to send message' });
       }
     });
      
     socket.on('disconnect', () => {
       clearTimeout(authExpiryTimer);
-      console.log('User disconnected:', socket.id);
+      logger.info('Socket disconnected');
       void io.in(userRoom(userId)).fetchSockets()
         .then((activeSockets) => {
           if (activeSockets.length === 0) messageLimiter.clear(userId);
         })
-        .catch((error) => console.error('Socket rate-limit cleanup failed:', error?.message || error));
+        .catch((error) => logger.error('Socket rate-limit cleanup failed', error));
     });
   });
 
@@ -161,5 +162,4 @@ module.exports = {
   getUserRoom,
   revokeProjectRoomAccess,
   disconnectUser,
-  isAllowedSocketOrigin,
 };

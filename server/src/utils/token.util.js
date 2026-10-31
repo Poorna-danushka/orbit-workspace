@@ -3,6 +3,9 @@ const jwt = require('jsonwebtoken');
 const {
   JWT_SECRET,
   JWT_REFRESH_SECRET,
+  ACCESS_TOKEN_TTL,
+  REFRESH_TOKEN_TTL,
+  REFRESH_TOKEN_TTL_MS,
   JWT_ISSUER,
   JWT_AUDIENCE,
 } = require('../config/env');
@@ -34,7 +37,7 @@ const generateAccessToken = (user) => {
   return jwt.sign(
     { sub: user.id, role: user.role },
     JWT_SECRET,
-    createSignOptions(jwtId, '15m')
+    createSignOptions(jwtId, ACCESS_TOKEN_TTL)
   );
 };
 
@@ -43,13 +46,13 @@ const generateRefreshToken = (user) => {
   const refreshToken = jwt.sign(
     { sub: user.id, role: user.role },
     JWT_REFRESH_SECRET,
-    createSignOptions(jwtId, '7d')
+    createSignOptions(jwtId, REFRESH_TOKEN_TTL)
   );
 
   return {
     token: refreshToken,
     tokenHash: hashToken(refreshToken),
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
   };
 };
 

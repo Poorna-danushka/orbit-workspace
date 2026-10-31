@@ -16,7 +16,7 @@ const getUsername = (name, email) => {
 };
 
 const resolveGoogleAccount = async (identity, database = prisma) => {
-  const linkedUser = await database.user.findUnique({ where: { googleId: identity.sub } });
+  const linkedUser = await database.user.findFirst({ where: { googleId: identity.sub } });
   if (linkedUser) return { user: linkedUser, created: false };
 
   const existingUser = await database.user.findUnique({ where: { email: identity.email } });
@@ -32,7 +32,7 @@ const resolveGoogleAccount = async (identity, database = prisma) => {
       return { user, created: false };
     } catch (error) {
       if (error?.code !== 'P2002') throw error;
-      const racedUser = await database.user.findUnique({ where: { googleId: identity.sub } });
+      const racedUser = await database.user.findFirst({ where: { googleId: identity.sub } });
       if (racedUser) return { user: racedUser, created: false };
       throw new GoogleAccountConflictError();
     }
@@ -53,7 +53,7 @@ const resolveGoogleAccount = async (identity, database = prisma) => {
     return { user, created: true };
   } catch (error) {
     if (error?.code !== 'P2002') throw error;
-    const racedUser = await database.user.findUnique({ where: { googleId: identity.sub } });
+    const racedUser = await database.user.findFirst({ where: { googleId: identity.sub } });
     if (racedUser) return { user: racedUser, created: false };
 
     const emailOwner = await database.user.findUnique({ where: { email: identity.email } });
@@ -69,11 +69,11 @@ const resolveGoogleAccount = async (identity, database = prisma) => {
       return { user, created: false };
     } catch (linkError) {
       if (linkError?.code !== 'P2002') throw linkError;
-      const linked = await database.user.findUnique({ where: { googleId: identity.sub } });
+      const linked = await database.user.findFirst({ where: { googleId: identity.sub } });
       if (linked) return { user: linked, created: false };
       throw new GoogleAccountConflictError();
     }
   }
 };
 
-module.exports = { resolveGoogleAccount, GoogleAccountConflictError };
+module.exports = { resolveGoogleAccount };

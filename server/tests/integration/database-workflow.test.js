@@ -2,6 +2,8 @@ const request = require('supertest');
 const app = require('../../src/app');
 const prisma = require('../../src/config/prisma');
 const cleanupTestUsers = require('../helpers/cleanup-test-users');
+const { ensureGoogleIdUniqueIndex } = require('../../src/services/google-id-index.service');
+const { validateDatabaseUrl } = require('../../src/config/database-url.util');
 
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 const databaseTest = testDatabaseUrl ? test : test.skip;
@@ -38,13 +40,10 @@ async function createAuthenticatedUser(username, email) {
 beforeAll(async () => {
   if (!testDatabaseUrl) return;
 
-  const parsedUrl = new URL(testDatabaseUrl);
-  const databaseName = decodeURIComponent(parsedUrl.pathname.slice(1).split('/')[0] || '');
-  if (!['mongodb:', 'mongodb+srv:'].includes(parsedUrl.protocol) || databaseName !== 'orbit_test') {
-    throw new Error('Database integration tests require TEST_DATABASE_URL to target the orbit_test database');
-  }
+  validateDatabaseUrl(testDatabaseUrl, { requireTestDatabase: true });
 
   await prisma.$connect();
+  await ensureGoogleIdUniqueIndex(prisma);
   databaseConnected = true;
 }, 60_000);
 

@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const { disconnectUser } = require('../sockets/socketManager');
+const logger = require('../utils/logger.util');
 
 exports.getStats = async (req, res) => {
   try {
@@ -44,7 +45,7 @@ exports.getStats = async (req, res) => {
       tasksCompletedToday, newUsersToday, userGrowth,
     });
   } catch (error) {
-    console.error('Admin stats error:', error);
+    logger.error('Admin stats failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -107,7 +108,7 @@ exports.deleteUser = async (req, res) => {
     await disconnectUser(id);
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
-    console.error('Delete user error:', error);
+    logger.error('Delete user failed', error);
     res.status(500).json({ message: 'Server error while deleting user' });
   }
 };
@@ -130,7 +131,7 @@ exports.updateUserRole = async (req, res) => {
     const user = await prisma.user.update({ where: { id }, data: { role } });
     res.json({ id: user.id, username: user.username, role: user.role });
   } catch (error) {
-    console.error('Update role error:', error);
+    logger.error('Update role failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -143,7 +144,7 @@ exports.getAllProjects = async (req, res) => {
     });
     res.json(projects);
   } catch (error) {
-    console.error('Get projects error:', error);
+    logger.error('Get projects failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -166,7 +167,7 @@ exports.deleteProject = async (req, res) => {
     ]);
     res.json({ message: 'Project deleted' });
   } catch (error) {
-    console.error('Delete project error:', error);
+    logger.error('Delete project failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -189,7 +190,7 @@ exports.getActivity = async (req, res) => {
 
     res.json(activities);
   } catch (error) {
-    console.error('Activity error:', error);
+    logger.error('Activity query failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -205,7 +206,7 @@ exports.broadcastNotification = async (req, res) => {
 
     res.json({ message: `Broadcast sent to ${users.length} users` });
   } catch (error) {
-    console.error('Broadcast error:', error);
+    logger.error('Broadcast failed', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

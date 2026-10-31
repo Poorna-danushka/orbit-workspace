@@ -1,0 +1,278 @@
+/* ─── PREMIUM AUTH FORM FIELDS ─────────────────────────────────────── */
+
+/* Floating label field wrapper */
+.ob-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ob-field-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Icon inside input */
+.ob-field-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: color 0.25s ease;
+  color: var(--ob-text-faint);
+  z-index: 1;
+}
+
+/* Premium Input */
+.ob-input-v2 {
+  width: 100%;
+  height: 52px;
+  padding: 0 48px 0 46px;
+  background: var(--ob-surface);
+  border: 1.5px solid var(--ob-border);
+  border-radius: 14px;
+  color: var(--ob-text);
+  font-size: 0.92rem;
+  font-family: inherit;
+  outline: none;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+  letter-spacing: 0.01em;
+}
+.ob-input-v2::placeholder {
+  color: var(--ob-text-faint);
+  font-size: 0.88rem;
+}
+.ob-input-v2:hover {
+  border-color: var(--ob-border-2);
+  background: var(--ob-surface-2);
+}
+.ob-input-v2:focus {
+  border-color: var(--ob-primary);
+  box-shadow:
+    0 0 0 3px rgba(124, 110, 255, 0.18),
+    0 2px 12px rgba(124, 110, 255, 0.08);
+  background: var(--ob-surface-2);
+}
+.ob-input-v2:focus ~ .ob-field-icon {
+  color: var(--ob-primary);
+}
+.ob-input-v2.has-value {
+  border-color: var(--ob-border-2);
+}
+/* Field label above input */
+.ob-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ob-text-muted);
+  margin-bottom: 7px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+/* Input right action button (password toggle) */
+.ob-input-action {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ob-text-faint);
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 0.2s,
+    background 0.2s;
+  z-index: 2;
+}
+.ob-input-action:hover {
+  color: var(--ob-text-muted);
+  background: var(--ob-surface-3);
+}
+
+/* Auth form card wrapper */
+.ob-auth-form-card {
+  width: 100%;
+  max-width: 420px;
+  animation: slideInRight 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Divider with text */
+.ob-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 20px 0;
+}
+.ob-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--ob-border);
+}
+.ob-divider-text {
+  font-size: 0.75rem;
+  color: var(--ob-text-faint);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* Error alert */
+.ob-error-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(244, 63, 94, 0.08);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  color: #f43f5e;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  animation: fadeInUp 0.3s ease forwards;
+}
+
+/* Password strength bar */
+.ob-pwd-strength {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: fadeIn 0.25s ease forwards;
+}
+.ob-pwd-bar-track {
+  height: 4px;
+  width: 100%;
+  background: var(--ob-surface-3);
+  border-radius: 99px;
+  overflow: hidden;
+  display: flex;
+  gap: 3px;
+}
+.ob-pwd-bar-segment {
+  flex: 1;
+  height: 100%;
+  border-radius: 99px;
+  transition: background 0.4s ease;
+}
+.ob-pwd-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+.ob-pwd-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.71rem;
+  font-weight: 500;
+  transition: color 0.25s ease;
+}
+
+/* Auth form submit button */
+.ob-auth-submit {
+  width: 100%;
+  height: 52px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 14px;
+  justify-content: center;
+  letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+}
+.ob-auth-submit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+.ob-auth-submit:hover::before {
+  transform: translateX(100%);
+}
+
+/* Remember me checkbox */
+.ob-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ob-checkbox {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--ob-primary);
+  cursor: pointer;
+  border-radius: 4px;
+}
+.ob-checkbox-label {
+  font-size: 0.83rem;
+  color: var(--ob-text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Auth form terms text */
+.ob-terms-text {
+  text-align: center;
+  margin-top: 22px;
+  font-size: 0.76rem;
+  color: var(--ob-text-faint);
+  line-height: 1.6;
+}
+.ob-terms-text a {
+  color: var(--ob-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s;
+}
+.ob-terms-text a:hover {
+  color: var(--ob-primary);
+}
+
+/* Animate field icon on focus */
+.ob-field-inner:focus-within .ob-field-icon {
+  color: var(--ob-primary);
+}
+
+/* Keyframe: field entry */
+@keyframes field-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.ob-field {
+  animation: field-slide-in 0.4s ease both;
+}
+.ob-field:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.ob-field:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.ob-field:nth-child(3) {
+  animation-delay: 0.15s;
+}
+.ob-field:nth-child(4) {
+  animation-delay: 0.2s;
+}

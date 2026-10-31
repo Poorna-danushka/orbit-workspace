@@ -2,8 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const errorHandler = require('./middlewares/error.middleware');
+const { requestIdMiddleware } = require('./middlewares/request-id.middleware');
+const { createRateLimiter } = require('./utils/rate-limit.util');
 const env = require('./config/env');
 const authRoutes = require('./routes/auth.routes');
 const projectRoutes = require('./routes/project.routes');
@@ -36,42 +37,41 @@ app.use(cors({
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+  exposedHeaders: ['X-Request-Id', 'Retry-After'],
   credentials: true,
   optionsSuccessStatus: 204,
 }));
 
+app.use(requestIdMiddleware);
 app.use(cookieParser());
 app.use(csrfTokenSetter);
 app.use(csrfProtection);
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: false, limit: '1mb' }));
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "'unsafe-inline'"],
-    styleSrc: ["'self'", "'unsafe-inline'"],
-    imgSrc: ["'self'", 'data:'],
-    connectSrc: ["'self'", ...allowedOrigins],
-    fontSrc: ["'self'", 'data:'],
-    objectSrc: ["'none'"],
-    upgradeInsecureRequests: [],
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:'],
+      connectSrc: ["'self'", ...allowedOrigins],
+      fontSrc: ["'self'", 'data:'],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
   },
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
-app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 
-const apiLimiter = rateLimit({
+const apiLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 1000,
-  standardHeaders: true,
-  legacyHeaders: false,
 });
 
-const authLimiter = rateLimit({
+const authLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
 });
 
 app.use('/api', apiLimiter);
@@ -96,7 +96,12 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
 }));
 
 app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+  res.status(404).json({
+    status: 404,
+    code: 'NOT_FOUND',
+    message: 'Route not found',
+    requestId: req.id || 'unknown',
+  });
 });
 
 app.use(errorHandler);
