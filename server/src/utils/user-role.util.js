@@ -9,4 +9,4 @@ const assertSupportedUserRole = (role) => {
   }
 };
 
-module.exports = { assertSupportedUserRole, isSupportedUserRole };
+module.exports = { assertSupportedUserRole };
