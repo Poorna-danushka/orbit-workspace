@@ -48,6 +48,7 @@ const resolveGoogleAccount = async (identity, database = prisma) => {
         password: hashedPassword,
         avatar: identity.picture,
         googleId: identity.sub,
+        role: 'user',
       },
     });
     return { user, created: true };

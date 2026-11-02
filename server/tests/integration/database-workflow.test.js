@@ -32,7 +32,11 @@ async function createAuthenticatedUser(username, email) {
 
   const profile = await agent.get('/api/user/me');
   expect(profile.status).toBe(200);
-  expect(profile.body.user).toMatchObject({ id: registration.body.user.id, email });
+  expect(profile.body.user).toMatchObject({
+    id: registration.body.user.id,
+    email,
+    role: 'user',
+  });
 
   return { agent, csrfToken: csrf.body.csrfToken, user: registration.body.user };
 }

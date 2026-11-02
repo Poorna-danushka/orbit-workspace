@@ -49,6 +49,7 @@ test('verified Google OIDC callback creates the existing Orbit HttpOnly session'
     verifyIdToken: OAuth2Client.prototype.verifyIdToken,
   };
   const originalPrismaMethods = {
+    findFirst: prisma.user.findFirst,
     findUnique: prisma.user.findUnique,
     create: prisma.user.create,
     refreshTokenCreate: prisma.refreshToken.create,
@@ -90,11 +91,12 @@ test('verified Google OIDC callback creates the existing Orbit HttpOnly session'
         }),
       };
     };
+    prisma.user.findFirst = async () => null;
     prisma.user.findUnique = async () => null;
     prisma.user.create = async ({ data }) => {
       assert.equal(data.googleId, 'stable-google-subject');
       assert.equal(data.email, 'google@example.test');
-      assert.equal(data.role, undefined);
+      assert.equal(data.role, 'user');
       return user;
     };
     prisma.refreshToken.create = async ({ data }) => {
@@ -128,6 +130,7 @@ test('verified Google OIDC callback creates the existing Orbit HttpOnly session'
     Object.assign(env, originalSettings);
     OAuth2Client.prototype.getToken = originalGoogleMethods.getToken;
     OAuth2Client.prototype.verifyIdToken = originalGoogleMethods.verifyIdToken;
+    prisma.user.findFirst = originalPrismaMethods.findFirst;
     prisma.user.findUnique = originalPrismaMethods.findUnique;
     prisma.user.create = originalPrismaMethods.create;
     prisma.refreshToken.create = originalPrismaMethods.refreshTokenCreate;

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppDispatch } from '@/store/hooks';
 import { getErrorMessage } from '@/lib/errors';
+import { isUserRole } from '@/types/user';
 import { setCredentials } from '@/store/slices/authSlice';
 import { saveUserMetadata } from '@/lib/auth/storage';
 import { getPostAuthPath } from '@/lib/auth/redirect';
@@ -52,6 +53,9 @@ export default function useCredentialAuth(variant: CredentialAuthVariant) {
         ? await login({ email, password })
         : await register({ username, email, password });
       const { user } = response.data;
+      if (!isUserRole(user?.role)) {
+        throw new Error('Unsupported account role. Please contact support.');
+      }
       saveUserMetadata(user);
       markSessionActive();
       dispatch(setCredentials({ user }));

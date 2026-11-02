@@ -2,11 +2,25 @@ import { getPostAuthPath } from '@/lib/auth/redirect';
 
 test('admins are always routed to the admin dashboard', () => {
   expect(getPostAuthPath('admin', '/projects')).toBe('/admin-dashboard');
+  expect(getPostAuthPath('admin', '//attacker.example')).toBe('/admin-dashboard');
+  expect(getPostAuthPath('admin', '/dashboard')).toBe('/admin-dashboard');
+});
+
+test('users without a requested destination are routed to the dashboard', () => {
+  expect(getPostAuthPath('user')).toBe('/dashboard');
 });
 
 test('users may continue to a safe internal destination', () => {
   expect(getPostAuthPath('user', '/projects?filter=mine')).toBe('/projects?filter=mine');
 });
+
+test.each([undefined, null, '', 'Admin', 'USER', ' user', 'user ', 'superuser', 1, {}])(
+  'unsupported role %s is sent to login',
+  (role) => {
+    expect(getPostAuthPath(role)).toBe('/login');
+    expect(getPostAuthPath(role, '/projects')).toBe('/login');
+  },
+);
 
 test.each([
   '//attacker.example',

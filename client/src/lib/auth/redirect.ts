@@ -7,8 +7,9 @@ const PUBLIC_AUTH_PATHS = new Set<string>([
   ROUTES.resetPassword,
 ]);
 
-export function getPostAuthPath(role: string, requestedPath?: string | null): string {
+export function getPostAuthPath(role: unknown, requestedPath?: string | null): string {
   if (role === 'admin') return ROUTES.adminDashboard;
+  if (role !== 'user') return ROUTES.login;
   if (
     !requestedPath ||
     !requestedPath.startsWith('/') ||

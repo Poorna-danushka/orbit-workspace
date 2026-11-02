@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
+import { isUserRole } from '@/types/user';
 import { getAvatarUrl } from '@/lib/utils/avatar';
 import { getErrorMessage } from '@/lib/errors';
 import {
@@ -66,6 +67,10 @@ export default function AdminUsersPage() {
   };
 
   const handleToggleRole = async (user: AdminUser) => {
+    if (!isUserRole(user.role)) {
+      setActionError('Cannot change an account with an unsupported role.');
+      return;
+    }
     const nextRole = user.role === 'admin' ? 'user' : 'admin';
     try {
       await changeAdminRole(user.id, nextRole);
@@ -189,7 +194,7 @@ export default function AdminUsersPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span
-                    className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${user.role === 'admin' ? 'border-red-500/20 bg-red-500/10 text-red-400' : 'border-blue-500/20 bg-blue-500/10 text-blue-400'}`}
+                    className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${user.role === 'admin' ? 'border-red-500/20 bg-red-500/10 text-red-400' : user.role === 'user' ? 'border-blue-500/20 bg-blue-500/10 text-blue-400' : 'border-amber-500/20 bg-amber-500/10 text-amber-300'}`}
                   >
                     {user.role}
                   </span>
@@ -203,10 +208,14 @@ export default function AdminUsersPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleToggleRole(user)}
-                    disabled={currentUser?.id === user.id}
+                    disabled={currentUser?.id === user.id || !isUserRole(user.role)}
                     className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {user.role === 'admin' ? 'Demote' : 'Promote'}
+                    {user.role === 'admin'
+                      ? 'Demote'
+                      : user.role === 'user'
+                        ? 'Promote'
+                        : 'Unsupported role'}
                   </button>
                   <button
                     onClick={() => setConfirmDelete(user)}

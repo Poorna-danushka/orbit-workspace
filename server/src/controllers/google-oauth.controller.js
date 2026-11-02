@@ -12,6 +12,7 @@ const AppError = require('../utils/AppError');
 const ErrorCodes = require('../utils/error-codes');
 const env = require('../config/env');
 const logger = require('../utils/logger.util');
+const { assertSupportedUserRole } = require('../utils/user-role.util');
 
 const GOOGLE_OAUTH_COOKIE_NAMES = [
   'googleOAuthState',
@@ -101,6 +102,7 @@ exports.googleCallback = async (req, res) => {
       nonce,
     });
     const { user, created } = await resolveGoogleAccount(identity);
+    assertSupportedUserRole(user.role);
 
     if (created) {
       const pendingInvitations = await prisma.projectInvitation.findMany({

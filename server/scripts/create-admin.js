@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const { PrismaClient } = require('@prisma/client');
+const { assertSupportedUserRole } = require('../src/utils/user-role.util');
 require('dotenv').config();
 
 const prisma = new PrismaClient();
@@ -20,6 +21,7 @@ async function createAdminOnce() {
       if (existingUser.role === 'admin') {
         console.log(`✅ Admin already exists for email: ${ADMIN_EMAIL}`);
       } else {
+        assertSupportedUserRole(existingUser.role);
         await prisma.user.update({
           where: { email: ADMIN_EMAIL },
           data: { role: 'admin' },

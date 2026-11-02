@@ -1,4 +1,5 @@
 import type { User } from '@/types/user';
+import { isUserRole } from '@/types/user';
 import { logger } from '@/lib/utils/logger';
 
 const USER_STORAGE_KEY = 'userInfo';
@@ -10,12 +11,16 @@ function isStoredUser(value: unknown): value is User {
     typeof user.id === 'string' &&
     typeof user.username === 'string' &&
     typeof user.email === 'string' &&
-    typeof user.role === 'string'
+    isUserRole(user.role)
   );
 }
 
 export function saveUserMetadata(user: User): void {
   if (typeof window === 'undefined') return;
+  if (!isUserRole(user.role)) {
+    logger.warn('Unable to persist user display metadata with an unsupported role');
+    return;
+  }
   const metadata: User = {
     id: user.id,
     username: user.username,

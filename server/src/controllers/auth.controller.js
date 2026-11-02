@@ -15,6 +15,7 @@ const ErrorCodes = require('../utils/error-codes');
 const logger = require('../utils/logger.util');
 const { clearAllAuthCookies, setAccessCookie, setAuthCookies } = require('../utils/auth-cookies.util');
 const { activeRefreshTokenWhere } = require('../utils/refresh-token-query.util');
+const { assertSupportedUserRole } = require('../utils/user-role.util');
 
 const sendRefreshResponse = (res, user, accessToken, refreshToken) => {
   if (refreshToken) {
@@ -45,7 +46,7 @@ exports.register = async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, 12);
   const user = await prisma.user.create({
-    data: { username, email, password: hashedPassword },
+    data: { username, email, password: hashedPassword, role: 'user' },
   });
 
   const pendingInvitations = await prisma.projectInvitation.findMany({
@@ -104,6 +105,7 @@ exports.login = async (req, res) => {
   if (!isMatch) {
     throw AppError.badRequest(ErrorCodes.AUTH_INVALID_CREDENTIALS, 'Invalid credentials');
   }
+  assertSupportedUserRole(user.role);
 
   const refreshPayload = generateRefreshToken(user);
   await prisma.refreshToken.create({
@@ -148,6 +150,7 @@ exports.refresh = async (req, res) => {
   if (!user) {
     throw AppError.unauthorized(ErrorCodes.AUTH_USER_NOT_FOUND, 'User account no longer exists');
   }
+  assertSupportedUserRole(user.role);
 
   const session = await rotateRefreshToken(user, hashToken(refreshToken));
   return sendRefreshResponse(res, user, session.accessToken, session.refreshToken);

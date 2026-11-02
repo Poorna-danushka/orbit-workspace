@@ -11,7 +11,7 @@ test('credentials authenticate the user and stop the loading state', () => {
     id: 'user-1',
     username: 'Orbit User',
     email: 'user@example.test',
-    role: 'user',
+    role: 'user' as const,
   };
 
   expect(reducer(initialState, setCredentials({ user }))).toEqual({
@@ -29,7 +29,7 @@ test('logout clears the user session', () => {
         id: 'user-1',
         username: 'Orbit User',
         email: 'user@example.test',
-        role: 'user',
+        role: 'user' as const,
       },
     }),
   );
@@ -40,3 +40,26 @@ test('logout clears the user session', () => {
     loading: false,
   });
 });
+
+test.each(['ADMIN', 'USER', 'Admin', 'User', '', null, undefined, 'unknown', 1])(
+  'unsupported role %s cannot establish an authenticated state',
+  (role) => {
+    const invalidUser = {
+      id: 'user-1',
+      username: 'Orbit User',
+      email: 'user@example.test',
+      role,
+    };
+
+    expect(
+      reducer(initialState, {
+        type: 'auth/setCredentials',
+        payload: { user: invalidUser },
+      }),
+    ).toEqual({
+      user: null,
+      isAuthenticated: false,
+      loading: false,
+    });
+  },
+);

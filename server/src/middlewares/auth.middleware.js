@@ -2,6 +2,7 @@ const { verifyAccessToken } = require('../utils/token.util');
 const prisma = require('../config/prisma');
 const AppError = require('../utils/AppError');
 const ErrorCodes = require('../utils/error-codes');
+const { assertSupportedUserRole } = require('../utils/user-role.util');
 
 const verifyToken = async (req, res, next) => {
   try {
@@ -28,6 +29,8 @@ const verifyToken = async (req, res, next) => {
         'Account is no longer available'
       );
     }
+
+    assertSupportedUserRole(user.role);
 
     req.user = { userId: user.id, role: user.role };
     next();

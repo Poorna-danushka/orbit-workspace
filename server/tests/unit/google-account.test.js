@@ -27,7 +27,7 @@ const createDatabase = (initialUsers = []) => {
           error.code = 'P2002';
           throw error;
         }
-        const user = { id: `new-${nextId++}`, role: 'user', ...data };
+        const user = { id: `new-${nextId++}`, ...data };
         users.push(user);
         return user;
       },
@@ -71,6 +71,7 @@ test('new Google identity creates one default-role Orbit user with a hashed rand
 
   assert.equal(result.created, true);
   assert.equal(result.user.role, 'user');
+  assert.equal(database.users[0].role, 'user');
   assert.equal(result.user.googleId, identity.sub);
   assert.equal(result.user.username, identity.name);
   assert.equal(result.user.avatar, identity.picture);

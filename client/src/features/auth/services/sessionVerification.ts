@@ -1,4 +1,5 @@
 import type { User } from '@/types/user';
+import { isUserRole } from '@/types/user';
 import { getCurrentUser } from '@/features/auth/services/authService';
 import { saveUserMetadata } from '@/lib/auth/storage';
 import { sessionEvents } from '@/lib/auth/events';
@@ -13,7 +14,7 @@ function isUser(value: unknown): value is User {
     typeof user.id === 'string' &&
     typeof user.username === 'string' &&
     typeof user.email === 'string' &&
-    typeof user.role === 'string'
+    isUserRole(user.role)
   );
 }
 
@@ -33,6 +34,7 @@ function clearVerifiedSession(): void {
 }
 
 export function updateVerifiedUser(user: User): void {
+  if (!isUserRole(user.role)) return;
   if (verifiedUser?.id === user.id) verifiedUser = user;
 }
 
